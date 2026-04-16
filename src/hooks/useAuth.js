@@ -1,55 +1,29 @@
-import {
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    signOut,
-    GoogleAuthProvider,
-    signInWithPopup
+import { 
+  createUserWithEmailAndPassword, 
+  updateProfile,
+  signInWithPopup,
+  signInWithEmailAndPassword 
 } from "firebase/auth";
-import { auth } from "../api/firebase";
+import { auth, provider } from "../api/firebase";
 
 export const useAuth = () => {
-    // 1. Login Email & Password
-    const login = async (email, password) => {
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            return userCredential.user;
-        } catch (error) {
-            console.error("Login Error:", error.message);
-            throw error;
-        }
-    };
 
-    // 2. Register Email & Password
-    const register = async (email, password) => {
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            return userCredential.user;
-        } catch (error) {
-            console.error("Register Error:", error.message);
-            throw error;
-        }
-    };
+  const register = async (email, password, name) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-    // 3. Login dengan Google (SESUAI FIGMA)
-    const loginWithGoogle = async () => {
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            return result.user;
-        } catch (error) {
-            console.error("Google Auth Error:", error.message);
-            throw error;
-        }
-    };
+    // simpan nama user
+    await updateProfile(userCredential.user, {
+      displayName: name,
+    });
+  };
 
-    // 4. Logout
-    const logout = async () => {
-        try {
-            await signOut(auth);
-        } catch (error) {
-            console.error("Logout Error:", error.message);
-        }
-    };
+  const login = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
 
-    return { login, register, logout, loginWithGoogle };
+  const loginWithGoogle = () => {
+    return signInWithPopup(auth, provider);
+  };
+
+  return { register, login, loginWithGoogle };
 };
