@@ -10,7 +10,42 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 
 ---
 
-## 🚀 2. Daftar Detail Fitur 
+## 🛠️ 2. Teknologi & Aplikasi yang Digunakan
+
+### 🌐 Frontend
+- **React (Vite)** → Framework utama untuk membangun UI yang cepat dan modular.
+- **Tailwind CSS** → Styling modern berbasis utility-first untuk desain responsif.
+- **Progressive Web App (PWA)** → Agar aplikasi bisa diinstal seperti aplikasi native.
+- **Context API** → State management global (User, Preferences, Favorites).
+
+### 🔐 Backend & Database
+- **Firebase Authentication** → Sistem login (Email & Google SSO).
+- **Firebase Firestore** → Database real-time untuk menyimpan data pengguna, resep, dan aktivitas.
+- **Firebase Storage** → Penyimpanan gambar hasil upload/scanning.
+
+### 🤖 Artificial Intelligence
+- **Google Gemini API (Vision Model)** → Deteksi bahan makanan dari gambar.
+- **Google Gemini API (Generative AI)** → Generate resep otomatis berbasis bahan.
+- **Prompt Engineering** → Menghasilkan resep yang relevan dan berkualitas.
+
+### 📸 Device & API Integration
+- **Web Camera API** → Akses kamera langsung dari browser.
+- **File Upload API** → Upload gambar dari galeri perangkat.
+
+### 💳 Payment & Monetization
+- **Midtrans (Sandbox API)** → Simulasi sistem pembayaran untuk fitur premium.
+
+### 🛒 Integrasi Eksternal
+- **Shopee Affiliate Links** → Pembelian bahan langsung dari aplikasi.
+
+### ⚙️ Deployment & Tools
+- **Vercel / Netlify** → Hosting dan deployment aplikasi.
+- **Figma** → Desain UI/UX dan prototyping.
+- **Git & GitHub** → Version control dan kolaborasi tim.
+
+---
+
+## 🚀 3. Daftar Detail Fitur 
 
 ### 🔐 A. Authentication & Smart Profile
 1. **SSO Google Login:** Login instan menggunakan akun Google.
@@ -62,7 +97,7 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 37. **Payment Gateway Integration:** Simulasi pembayaran aman (Sandbox) melalui Midtrans.
 38. **Premium Badge Identification:** Identitas khusus pada profil pengguna premium.
 39. **Unlimited Scans:** Akses penuh pemindaian tanpa batasan harian.
-40. **Affiliate Grocery Links:** Integrasi tombol belanja langsung ke Shopee/Tokopedia.
+40. **Affiliate Grocery Links:** Integrasi tombol belanja langsung ke Shopee.
 
 ### ✨ G. UI/UX & Technical Implementation
 41. **Bottom Navigation Bar:** Navigasi utama yang ergonomis dan modern.
@@ -86,7 +121,7 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 
 ---
 
-## 📅 3. Timeline Pengembangan (Fast-Track Sprint)
+## 📅 4. Timeline Pengembangan (Fast-Track Sprint)
 
 | Sprint | Durasi | Fokus Utama | Status |
 | :--- | :--- | :--- | :--- |
@@ -100,7 +135,7 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 
 ---
 
-## 📋 4. Detail Sprint Breakdown
+## 📋 5. Detail Sprint Breakdown
 
 ### 🟢 Sprint 1 — Project Setup & Authentication
 **Goal:** Membangun fondasi aplikasi, desain, dan sistem login.
@@ -165,3 +200,7 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
     - Bug Fixing & Deployment ke Netlify/Vercel.
 - **Deliverables:**
     - Aplikasi PWA Live, stabil, dan dapat diinstal di perangkat.
+ 
+---
+
+## DEMO : https://safari-status-23803732.figma.site
