@@ -123,12 +123,12 @@ export default function AccountScreen() {
       dragElastic={0.2}
       onDragEnd={handleDragEnd}
     >
-      {/* Header - Softer gradient in dark mode */}
-      <div className="bg-gradient-to-br from-primary/90 to-primary/70 dark:from-primary/40 dark:to-primary/20 text-white px-6 pt-12 pb-16 rounded-b-3xl">
+      {/* Header - Terang Sesuai Tema Aplikasi */}
+      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-6">
           {/* Profile */}
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-white/20 dark:bg-white/10 flex items-center justify-center backdrop-blur-sm">
+            <div className="w-20 h-20 rounded-full bg-secondary dark:bg-secondary/50 border border-border flex items-center justify-center">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -136,7 +136,7 @@ export default function AccountScreen() {
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                <User className="h-10 w-10 text-white" />
+                <User className="h-10 w-10 text-muted-foreground" />
               )}
             </div>
             <div className="flex-1">
@@ -145,28 +145,28 @@ export default function AccountScreen() {
                   <Input
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
-                    className="bg-white/20 dark:bg-white/10 border-white/30 dark:border-white/20 text-white placeholder:text-white/60 rounded-2xl backdrop-blur-sm"
+                    className="bg-card border-border text-foreground rounded-2xl"
                     placeholder="Nama Anda"
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={handleAttemptSave}
-                      className="p-2 bg-white/20 dark:bg-white/10 rounded-full hover:bg-white/30 dark:hover:bg-white/20 transition-colors backdrop-blur-sm"
+                      className="p-2 bg-primary/10 rounded-full hover:bg-primary/20 transition-colors"
                     >
-                      <Check className="h-4 w-4 text-white" />
+                      <Check className="h-4 w-4 text-primary" />
                     </button>
                     <button
                       onClick={handleCancelEdit}
-                      className="p-2 bg-white/20 dark:bg-white/10 rounded-full hover:bg-white/30 dark:hover:bg-white/20 transition-colors backdrop-blur-sm"
+                      className="p-2 bg-muted rounded-full hover:bg-muted/80 transition-colors"
                     >
-                      <X className="h-4 w-4 text-white" />
+                      <X className="h-4 w-4 text-foreground" />
                     </button>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <h1 className="text-2xl text-white" style={{ fontFamily: 'var(--font-family-display)' }}>
+                    <h1 className="text-2xl text-foreground font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
                       {user?.name || "Guest"}
                     </h1>
                     {user?.isPremium && (
@@ -181,30 +181,30 @@ export default function AccountScreen() {
                           repeatDelay: 3,
                         }}
                       >
-                        <Crown className="h-5 w-5 text-yellow-300" />
+                        <Crown className="h-5 w-5 text-yellow-500" />
                       </motion.div>
                     )}
                     <button
                       onClick={handleEditNameClick}
-                      className="p-1 hover:bg-white/20 dark:hover:bg-white/10 rounded-full transition-colors"
+                      className="p-1 hover:bg-muted rounded-full transition-colors"
                     >
-                      <Edit2 className="h-4 w-4 text-white" />
+                      <Edit2 className="h-4 w-4 text-muted-foreground" />
                     </button>
                   </div>
-                  <p className="text-sm text-white/90">{user?.email || "guest@example.com"}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email || "guest@example.com"}</p>
                 </>
               )}
             </div>
           </div>
 
           {/* Plan Badge */}
-          <div className="bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-4 flex items-center justify-between border border-white/10">
+          <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border shadow-sm">
             <div>
-              <div className="text-sm text-white/80">Paket Saat Ini</div>
-              <div className="font-medium flex items-center gap-2 text-white">
+              <div className="text-sm text-muted-foreground">Paket Saat Ini</div>
+              <div className="font-medium flex items-center gap-2 text-foreground">
                 {user?.isPremium ? (
                   <>
-                    <Crown className="h-4 w-4 text-yellow-300" />
+                    <Crown className="h-4 w-4 text-yellow-500" />
                     <span>Premium</span>
                   </>
                 ) : (
@@ -216,9 +216,8 @@ export default function AccountScreen() {
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   size="sm"
-                  variant="secondary"
+                  className="rounded-full bg-primary text-white hover:bg-primary/90"
                   onClick={() => navigate("/premium")}
-                  className="rounded-full"
                 >
                   <Crown className="h-4 w-4 mr-1" />
                   Upgrade
@@ -351,9 +350,8 @@ function MenuItem({
   if (action) {
     return (
       <div
-        className={`w-full flex items-center justify-between p-4 border-b border-border last:border-0 ${
-          danger ? "text-destructive" : ""
-        }`}
+        className={`w-full flex items-center justify-between p-4 border-b border-border last:border-0 ${danger ? "text-destructive" : ""
+          }`}
       >
         <div className="flex items-center gap-3">
           {icon}
@@ -369,9 +367,8 @@ function MenuItem({
     <motion.button
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`w-full flex items-center justify-between p-4 border-b border-border last:border-0 hover:bg-muted/50 transition-colors ${
-        danger ? "text-destructive" : ""
-      }`}
+      className={`w-full flex items-center justify-between p-4 border-b border-border last:border-0 hover:bg-muted/50 transition-colors ${danger ? "text-destructive" : ""
+        }`}
     >
       <div className="flex items-center gap-3">
         {icon}

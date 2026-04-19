@@ -6,14 +6,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        primary: "var(--primary)",
-        secondary: "var(--secondary)",
-        muted: "var(--muted)",
-        accent: "var(--accent)",
-        border: "var(--border)",
-        ring: "var(--ring)",
+        background: "rgb(var(--background) / <alpha-value>)",
+        foreground: "rgb(var(--foreground) / <alpha-value>)",
+        primary: "rgb(var(--primary) / <alpha-value>)",
+        secondary: "rgb(var(--secondary) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        border: "rgb(var(--border) / <alpha-value>)",
+        ring: "rgb(var(--ring) / <alpha-value>)",
       },
     },
   },

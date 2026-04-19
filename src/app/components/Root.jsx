@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "../../ui/sonner";
 import { UserProvider } from "../lib/user-context";

@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter } from "react-router-dom";
 import Root from "./app/components/Root";
 import OnboardingScreen from "./app/components/pages/Onboarding";
 import LoginScreen from "./app/components/pages/Login";
