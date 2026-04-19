@@ -14,7 +14,7 @@ export default function CookbookScreen() {
   const { selectedPreferences } = usePreferences();
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("all"); // "all", "favorites", "newest"
-  
+
   // Filter recipes based on selected preferences
   const getFilteredRecipes = () => {
     let filtered = mockRecipes;
@@ -42,7 +42,7 @@ export default function CookbookScreen() {
     if (sortBy === "favorites") {
       filtered = filtered.filter((r) => favorites.includes(r.id));
     } else if (sortBy === "newest") {
-      filtered = [...filtered].sort((a, b) => 
+      filtered = [...filtered].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
     }
@@ -72,7 +72,7 @@ export default function CookbookScreen() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-background pb-24"
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
@@ -80,7 +80,7 @@ export default function CookbookScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl">
+      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl text-white">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl flex-1" style={{ fontFamily: 'var(--font-family-display)' }}>
@@ -162,7 +162,7 @@ export default function CookbookScreen() {
               transition={{ delay: index * 0.1 }}
               whileHover={{ scale: 1.02 }}
               onClick={() => navigate(`/recipe/${recipe.id}`)}
-              className="bg-card rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+              className="bg-white rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
             >
               <div className="flex gap-4">
                 <div className="w-32 h-32 flex-shrink-0">
@@ -204,11 +204,10 @@ function FilterChip({
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-        active
-          ? "bg-white text-primary"
-          : "bg-white/10 text-primary-foreground hover:bg-white/20"
-      }`}
+      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${active
+        ? "bg-white text-primary"
+        : "bg-white/10 text-primary-foreground hover:bg-white/20"
+        }`}
     >
       {label}
     </motion.button>
@@ -224,11 +223,10 @@ function SortChip({
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-        active
-          ? "bg-white text-primary"
-          : "bg-white/10 text-primary-foreground hover:bg-white/20"
-      }`}
+      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${active
+        ? "bg-white text-primary"
+        : "bg-white/10 text-primary-foreground hover:bg-white/20"
+        }`}
     >
       {label}
     </motion.button>

@@ -47,7 +47,7 @@ export default function RecipeDetailScreen() {
   const [showChat, setShowChat] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  
+
   // State untuk menyimpan substitusi bahan
   const [ingredientSubstitutions, setIngredientSubstitutions] = useState({});
   // { "Saus Tiram": { substitute: {...}, originalAmount: 1, originalUnit: "sdm" } }
@@ -59,7 +59,7 @@ export default function RecipeDetailScreen() {
 
     const [original, substitute] = parts.map(parseFloat);
     const newAmount = (originalAmount * substitute) / original;
-    
+
     return Math.round(newAmount * 10) / 10;
   };
 
@@ -78,10 +78,10 @@ export default function RecipeDetailScreen() {
   // Function to check if a step uses substituted ingredients
   const getStepSubstitutions = (step) => {
     const substitutionsInStep = [];
-    
+
     Object.keys(ingredientSubstitutions).forEach(originalIngredient => {
       const substitution = ingredientSubstitutions[originalIngredient];
-      
+
       // Check in step instruction
       if (step.instruction.toLowerCase().includes(originalIngredient.toLowerCase())) {
         substitutionsInStep.push({
@@ -91,7 +91,7 @@ export default function RecipeDetailScreen() {
           note: substitution.substitute.note
         });
       }
-      
+
       // Check in step ingredients
       if (step.ingredients) {
         step.ingredients.forEach(ing => {
@@ -109,7 +109,7 @@ export default function RecipeDetailScreen() {
         });
       }
     });
-    
+
     return substitutionsInStep;
   };
 
@@ -132,7 +132,7 @@ export default function RecipeDetailScreen() {
     navigate("/shopping-list");
     toast.success("Ditambahkan ke daftar belanja! 🛒");
   };
-  
+
   const handleTweakerClick = () => {
     if (!user?.isPremium) {
       toast.error("AI Taste Tweaker adalah fitur Premium! Upgrade untuk mengakses.", {
@@ -152,9 +152,9 @@ export default function RecipeDetailScreen() {
       toast.error("Fitur ini hanya untuk pengguna Premium");
       return;
     }
-    
+
     let message = "";
-    switch(type) {
+    switch (type) {
       case "spicy":
         message = "AI sedang membuat versi lebih pedas... 🌶️";
         break;
@@ -219,10 +219,10 @@ export default function RecipeDetailScreen() {
       // Add user message
       const userMessage = { type: 'user', text: chatInput };
       setChatMessages(prev => [...prev, userMessage]);
-      
+
       const currentQuestion = chatInput;
       setChatInput("");
-      
+
       // Simulate AI typing delay
       setTimeout(() => {
         // Add AI response
@@ -273,9 +273,8 @@ export default function RecipeDetailScreen() {
             className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-white shadow-lg"
           >
             <Heart
-              className={`h-6 w-6 ${
-                isSaved ? "fill-red-500 text-red-500" : ""
-              }`}
+              className={`h-6 w-6 ${isSaved ? "fill-red-500 text-red-500" : ""
+                }`}
             />
           </motion.button>
         </div>
@@ -309,7 +308,7 @@ export default function RecipeDetailScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 space-y-6 mt-6">
         {/* Nutrition Info */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg">
+        <div className="bg-white rounded-3xl p-6 shadow-lg">
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-2xl font-medium text-primary">
@@ -341,11 +340,10 @@ export default function RecipeDetailScreen() {
         {/* AI Taste Tweaker */}
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className={`bg-gradient-to-r from-accent/10 to-primary/10 rounded-3xl p-4 border-2 cursor-pointer ${
-            user?.isPremium 
-              ? "border-accent/20" 
+          className={`bg-gradient-to-r from-accent/10 to-primary/10 rounded-3xl p-4 border-2 cursor-pointer ${user?.isPremium
+              ? "border-accent/20"
               : "border-[#D4AF37]/30 bg-gradient-to-r from-[#D4AF37]/5 to-[#E8C968]/5"
-          }`}
+            }`}
           onClick={handleTweakerClick}
         >
           <div className="flex items-center gap-3">
@@ -365,7 +363,7 @@ export default function RecipeDetailScreen() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {user?.isPremium 
+                {user?.isPremium
                   ? "Ubah resep sesuai selera Anda"
                   : "Premium - Ubah resep sesuai selera Anda"}
               </p>
@@ -412,7 +410,7 @@ export default function RecipeDetailScreen() {
               >
                 🌶️↓ Kurangi Pedasnya
               </Button>
-              
+
               {/* Divider */}
               <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
@@ -453,7 +451,7 @@ export default function RecipeDetailScreen() {
         </motion.div>
 
         {/* Portion Scaler */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg">
+        <div className="bg-white rounded-3xl p-6 shadow-lg">
           <div className="flex justify-between items-center">
             <h3 className="font-medium">Porsi</h3>
             <div className="flex items-center gap-4">
@@ -490,7 +488,7 @@ export default function RecipeDetailScreen() {
             {recipe.ingredients.map((ingredient, index) => {
               const substitution = ingredientSubstitutions[ingredient.name];
               const hasSubstitution = Boolean(substitution);
-              
+
               return (
                 <motion.div
                   key={index}
@@ -501,13 +499,12 @@ export default function RecipeDetailScreen() {
                 >
                   {/* Original Ingredient Card */}
                   <div
-                    className={`flex items-center justify-between p-4 rounded-2xl ${
-                      hasSubstitution
+                    className={`flex items-center justify-between p-4 rounded-2xl ${hasSubstitution
                         ? "bg-muted/30 border border-dashed border-muted-foreground/30"
                         : ingredient.available
-                        ? "bg-card"
-                        : "bg-destructive/5 border-2 border-destructive/20"
-                    }`}
+                          ? "bg-white"
+                          : "bg-destructive/5 border-2 border-destructive/20"
+                      }`}
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {!ingredient.available && !hasSubstitution && (
@@ -518,19 +515,17 @@ export default function RecipeDetailScreen() {
                           <AlertCircle className="h-5 w-5 text-destructive" />
                         </motion.div>
                       )}
-                      <span 
-                        className={`font-medium ${
-                          hasSubstitution ? "line-through text-muted-foreground" : ""
-                        }`}
+                      <span
+                        className={`font-medium ${hasSubstitution ? "line-through text-muted-foreground" : ""
+                          }`}
                       >
                         {ingredient.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span 
-                        className={`text-sm ${
-                          hasSubstitution ? "line-through text-muted-foreground" : "text-muted-foreground"
-                        }`}
+                      <span
+                        className={`text-sm ${hasSubstitution ? "line-through text-muted-foreground" : "text-muted-foreground"
+                          }`}
                       >
                         {Math.round(ingredient.amount * servingMultiplier * 10) / 10}{" "}
                         {ingredient.unit}
@@ -550,7 +545,7 @@ export default function RecipeDetailScreen() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Substituted Ingredient Card - Show if substitution exists */}
                   {hasSubstitution && (
                     <motion.div
@@ -569,7 +564,7 @@ export default function RecipeDetailScreen() {
                                 Diganti dengan:
                               </span>
                             </div>
-                            
+
                             {/* New ingredient */}
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-green-900 dark:text-green-100">
@@ -583,7 +578,7 @@ export default function RecipeDetailScreen() {
                                 {ingredient.unit}
                               </span>
                             </div>
-                            
+
                             {/* Ratio and note */}
                             <div className="mt-2 space-y-1">
                               <div className="flex items-center gap-2">
@@ -598,7 +593,7 @@ export default function RecipeDetailScreen() {
                               )}
                             </div>
                           </div>
-                          
+
                           {/* Remove substitution button */}
                           <motion.button
                             whileHover={{ scale: 1.1, rotate: 90 }}
@@ -613,7 +608,7 @@ export default function RecipeDetailScreen() {
                       </div>
                     </motion.div>
                   )}
-                  
+
                   {/* Substitute Dropdown - Only show for unavailable ingredients without substitution */}
                   {!ingredient.available && !hasSubstitution && (
                     <div className="pl-4">
@@ -647,14 +642,14 @@ export default function RecipeDetailScreen() {
             {recipe.steps.map((step, index) => {
               const stepSubstitutions = getStepSubstitutions(step);
               const hasSubstitutions = stepSubstitutions.length > 0;
-              
+
               return (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-card rounded-3xl overflow-hidden shadow-lg"
+                  className="bg-white rounded-3xl overflow-hidden shadow-lg"
                 >
                   {/* Step Header with Number */}
                   <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary/10 to-accent/10">
@@ -694,8 +689,8 @@ export default function RecipeDetailScreen() {
                             🔄 Bahan pengganti untuk langkah ini:
                           </p>
                           {stepSubstitutions.map((sub, subIdx) => (
-                            <div 
-                              key={subIdx} 
+                            <div
+                              key={subIdx}
                               className="text-xs bg-green-600/10 rounded-lg px-2 py-1.5 border border-green-600/20"
                             >
                               <div className="flex items-center gap-1.5">
@@ -810,11 +805,10 @@ export default function RecipeDetailScreen() {
                       className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                          msg.type === 'user'
+                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${msg.type === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-accent/20 text-foreground border border-accent/30'
-                        }`}
+                          }`}
                       >
                         {msg.type === 'ai' && (
                           <div className="flex items-center gap-1.5 mb-1">
@@ -828,7 +822,7 @@ export default function RecipeDetailScreen() {
                   ))}
                 </div>
               )}
-              
+
               {/* Input Field */}
               <input
                 type="text"
@@ -857,7 +851,7 @@ export default function RecipeDetailScreen() {
         </motion.div>
 
         {/* Rating */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg">
+        <div className="bg-white rounded-3xl p-6 shadow-lg">
           <h3 className="font-medium mb-3">Beri Rating</h3>
           <div className="flex gap-2 mb-3">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -872,16 +866,15 @@ export default function RecipeDetailScreen() {
                 disabled={isRatingSaved}
               >
                 <Star
-                  className={`h-8 w-8 transition-colors ${
-                    star <= (hoveredStar || rating) 
-                      ? "fill-yellow-400 text-yellow-400" 
+                  className={`h-8 w-8 transition-colors ${star <= (hoveredStar || rating)
+                      ? "fill-yellow-400 text-yellow-400"
                       : "fill-none text-muted-foreground"
-                  }`}
+                    }`}
                 />
               </motion.button>
             ))}
           </div>
-          
+
           {rating > 0 && !isRatingSaved && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -931,7 +924,7 @@ export default function RecipeDetailScreen() {
               )}
             </motion.div>
           )}
-          
+
           {isRatingSaved && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -950,15 +943,15 @@ export default function RecipeDetailScreen() {
       </div>
 
       {/* Fixed Bottom Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-6">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border p-6">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0">
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               size="lg"
               className="w-full rounded-2xl"
               onClick={() => navigate(`/cooking/${recipe.id}`, {
-                state: { 
-                  ingredientSubstitutions 
+                state: {
+                  ingredientSubstitutions
                 }
               })}
             >

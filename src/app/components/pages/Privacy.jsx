@@ -30,7 +30,7 @@ export default function PrivacyScreen() {
 
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4">{/* Changed from -mt-4 to mt-4 */}
-        <div className="bg-card rounded-3xl shadow-lg p-6 space-y-6">
+        <div className="bg-white rounded-3xl shadow-lg p-6 space-y-6">
           <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-2xl">
             <Shield className="h-6 w-6 text-primary" />
             <p className="text-sm">

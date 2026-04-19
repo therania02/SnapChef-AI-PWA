@@ -147,20 +147,18 @@ export default function ShoppingListScreen() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`bg-card rounded-2xl p-4 shadow-sm ${
-                  item.checked ? "opacity-50" : ""
-                }`}
+                className={`bg-white rounded-2xl p-4 shadow-sm ${item.checked ? "opacity-50" : ""
+                  }`}
               >
                 <div className="flex items-start gap-4">
                   {/* Checkbox */}
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => toggleItem(item.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-colors ${
-                      item.checked
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-colors ${item.checked
                         ? "bg-primary border-primary"
                         : "border-muted-foreground"
-                    }`}
+                      }`}
                   >
                     {item.checked && <Check className="h-4 w-4 text-primary-foreground" />}
                   </motion.button>
@@ -168,9 +166,8 @@ export default function ShoppingListScreen() {
                   {/* Item Info */}
                   <div className="flex-1">
                     <h3
-                      className={`font-medium ${
-                        item.checked ? "line-through" : ""
-                      }`}
+                      className={`font-medium ${item.checked ? "line-through" : ""
+                        }`}
                     >
                       {item.name}
                     </h3>

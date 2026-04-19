@@ -33,7 +33,7 @@ export function ConfirmDialog({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-2xl"
+              className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl"
             >
               {/* Icon */}
               {variant === "warning" && (

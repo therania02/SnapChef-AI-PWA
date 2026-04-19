@@ -18,7 +18,7 @@ export default function CookingModeScreen() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [hasTimerStarted, setHasTimerStarted] = useState(false);
-  
+
   // Get ingredient substitutions from navigation state
   const ingredientSubstitutions = location.state?.ingredientSubstitutions || {};
 
@@ -29,10 +29,10 @@ export default function CookingModeScreen() {
   // Function to check if current step uses substituted ingredients
   const getStepSubstitutions = (step) => {
     const substitutionsInStep = [];
-    
+
     Object.keys(ingredientSubstitutions).forEach(originalIngredient => {
       const substitution = ingredientSubstitutions[originalIngredient];
-      
+
       // Check in step instruction
       if (step.instruction.toLowerCase().includes(originalIngredient.toLowerCase())) {
         substitutionsInStep.push({
@@ -42,7 +42,7 @@ export default function CookingModeScreen() {
           note: substitution.substitute.note
         });
       }
-      
+
       // Check in step ingredients
       if (step.ingredients) {
         step.ingredients.forEach(ing => {
@@ -60,7 +60,7 @@ export default function CookingModeScreen() {
         });
       }
     });
-    
+
     return substitutionsInStep;
   };
 
@@ -213,8 +213,8 @@ export default function CookingModeScreen() {
                         🔄 Gunakan bahan pengganti untuk langkah ini:
                       </p>
                       {stepSubstitutions.map((sub, subIdx) => (
-                        <div 
-                          key={subIdx} 
+                        <div
+                          key={subIdx}
                           className="bg-green-600/10 rounded-2xl px-3 py-2 border border-green-600/20"
                         >
                           <div className="flex items-center gap-2 mb-1">
@@ -248,11 +248,10 @@ export default function CookingModeScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className={`rounded-3xl p-6 border-2 ${
-                  stepTimer === 0 
-                    ? 'bg-muted/20 border-muted/30' 
+                className={`rounded-3xl p-6 border-2 ${stepTimer === 0
+                    ? 'bg-muted/20 border-muted/30'
                     : 'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -260,7 +259,7 @@ export default function CookingModeScreen() {
                     <span className="font-medium">Timer Memasak</span>
                   </div>
                 </div>
-                
+
                 {/* Timer Display */}
                 <div className="text-center mb-4">
                   <motion.div
@@ -268,28 +267,27 @@ export default function CookingModeScreen() {
                       scale: isTimerRunning && timeRemaining <= 10 && timeRemaining > 0 ? [1, 1.1, 1] : 1,
                     }}
                     transition={{ duration: 1, repeat: isTimerRunning && timeRemaining <= 10 ? Infinity : 0 }}
-                    className={`text-6xl font-bold ${
-                      stepTimer === 0
+                    className={`text-6xl font-bold ${stepTimer === 0
                         ? 'text-muted-foreground'
-                        : timeRemaining === 0 
-                        ? 'text-primary' 
-                        : timeRemaining <= 10 
-                        ? 'text-accent' 
-                        : 'text-foreground'
-                    }`}
+                        : timeRemaining === 0
+                          ? 'text-primary'
+                          : timeRemaining <= 10
+                            ? 'text-accent'
+                            : 'text-foreground'
+                      }`}
                   >
                     {formatTime(timeRemaining)}
                   </motion.div>
                   <p className="text-sm text-muted-foreground mt-2">
                     {stepTimer === 0
                       ? "Tidak ada timer untuk langkah ini"
-                      : timeRemaining === 0 
-                      ? "Waktu habis! ✅" 
-                      : isTimerRunning 
-                      ? "Timer berjalan..." 
-                      : hasTimerStarted
-                      ? "Timer dijeda"
-                      : "Siap memulai"}
+                      : timeRemaining === 0
+                        ? "Waktu habis! ✅"
+                        : isTimerRunning
+                          ? "Timer berjalan..."
+                          : hasTimerStarted
+                            ? "Timer dijeda"
+                            : "Siap memulai"}
                   </p>
                 </div>
 
@@ -368,7 +366,7 @@ export default function CookingModeScreen() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="bg-card rounded-3xl p-6 shadow-lg"
+                className="bg-white rounded-3xl p-6 shadow-lg"
               >
                 <p className="text-lg leading-relaxed">
                   {currentStepData.instruction}
@@ -414,7 +412,7 @@ export default function CookingModeScreen() {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="bg-card border-t border-border px-6 py-6">
+      <div className="bg-white border-t border-border px-6 py-6">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex gap-3">
             <Button
@@ -450,13 +448,12 @@ export default function CookingModeScreen() {
               <button
                 key={index}
                 onClick={() => setCurrentStep(index)}
-                className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm transition-all ${
-                  index === currentStep
+                className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm transition-all ${index === currentStep
                     ? "border-primary bg-primary text-primary-foreground"
                     : completedSteps.includes(index)
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-background"
-                }`}
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background"
+                  }`}
               >
                 {completedSteps.includes(index) ? (
                   <Check className="h-4 w-4" />
@@ -486,7 +483,7 @@ export default function CookingModeScreen() {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-40 right-6 w-64 bg-card rounded-3xl shadow-2xl p-4 border border-border z-50"
+            className="fixed bottom-40 right-6 w-64 bg-white rounded-3xl shadow-2xl p-4 border border-border z-50"
           >
             <h3 className="font-medium mb-2">AI Sous-Chef 🧑‍🍳</h3>
             <p className="text-sm text-muted-foreground mb-3">

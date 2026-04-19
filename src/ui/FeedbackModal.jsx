@@ -20,7 +20,7 @@ export function FeedbackModal({ isOpen, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!category) {
       toast.error("Pilih kategori feedback");
       return;
@@ -33,7 +33,7 @@ export function FeedbackModal({ isOpen, onClose }) {
 
     // Simulate sending feedback
     toast.success("Terima kasih atas feedback Anda! 🎉");
-    
+
     // Reset form
     setRating(0);
     setFeedback("");
@@ -61,11 +61,11 @@ export function FeedbackModal({ isOpen, onClose }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-card rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+              className="bg-white rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between rounded-t-[32px] sm:rounded-t-[32px]">
+              <div className="sticky top-0 bg-white border-b border-border p-6 flex items-center justify-between rounded-t-[32px] sm:rounded-t-[32px]">
                 <h2 className="text-xl font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
                   Kirim Feedback
                 </h2>
@@ -97,11 +97,10 @@ export function FeedbackModal({ isOpen, onClose }) {
                         className="p-1"
                       >
                         <Star
-                          className={`h-8 w-8 transition-colors ${
-                            star <= (hoveredRating || rating)
+                          className={`h-8 w-8 transition-colors ${star <= (hoveredRating || rating)
                               ? "fill-yellow-400 text-yellow-400"
                               : "text-gray-300"
-                          }`}
+                            }`}
                         />
                       </motion.button>
                     ))}
@@ -120,11 +119,10 @@ export function FeedbackModal({ isOpen, onClose }) {
                         type="button"
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setCategory(cat.id)}
-                        className={`p-3 rounded-2xl border-2 transition-all ${
-                          category === cat.id
+                        className={`p-3 rounded-2xl border-2 transition-all ${category === cat.id
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-border hover:border-primary/50"
-                        }`}
+                          }`}
                       >
                         <span className="text-sm font-medium">{cat.label}</span>
                       </motion.button>

@@ -123,7 +123,7 @@ export default function HelpCenterScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4 space-y-6">{/* Changed from -mt-4 to mt-4 */}
         {/* Quick Links */}
-        <div className="bg-card rounded-3xl shadow-lg p-6 space-y-3">
+        <div className="bg-white rounded-3xl shadow-lg p-6 space-y-3">
           <h3 className="font-medium mb-4">Kategori Bantuan</h3>
           <div className="grid grid-cols-2 gap-3">
             {categories.map((category) => {
@@ -151,7 +151,7 @@ export default function HelpCenterScreen() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-card rounded-3xl shadow-lg overflow-hidden"
+              className="bg-white rounded-3xl shadow-lg overflow-hidden"
             >
               <motion.button
                 whileTap={{ scale: 0.98 }}
@@ -193,7 +193,7 @@ export default function HelpCenterScreen() {
         </div>
 
         {filteredFAQ.length === 0 && (
-          <div className="bg-card rounded-3xl shadow-lg p-12 text-center">
+          <div className="bg-white rounded-3xl shadow-lg p-12 text-center">
             <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground">Tidak ada hasil ditemukan</p>
             <p className="text-sm text-muted-foreground mt-2">

@@ -222,7 +222,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                   </button>
                 )}
                 {step === "method" && <div className="w-10" />}
-                
+
                 <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-family-display)' }}>
                   {step === "method" && "Pilih Metode Pembayaran"}
                   {step === "process" && "Detail Pembayaran"}
@@ -279,7 +279,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                             handleMethodSelect(method);
                             setStep("process");
                           }}
-                          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
+                          className="w-full bg-white border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
                         >
                           <div className="text-3xl">{method.icon}</div>
                           <div className="flex-1">
@@ -309,7 +309,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                             handleMethodSelect(method);
                             setStep("process");
                           }}
-                          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
+                          className="w-full bg-white border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
                         >
                           <div className="text-3xl">{method.icon}</div>
                           <div className="flex-1">
@@ -339,7 +339,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                             handleMethodSelect(method);
                             setStep("process");
                           }}
-                          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
+                          className="w-full bg-white border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
                         >
                           <div className="text-3xl">{method.icon}</div>
                           <div className="flex-1">
@@ -423,7 +423,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                   {/* Bank Transfer Form */}
                   {selectedMethod.type === "bank" && (
                     <div className="space-y-4">
-                      <div className="bg-card border-2 border-dashed border-primary/30 rounded-2xl p-6 text-center space-y-3">
+                      <div className="bg-white border-2 border-dashed border-primary/30 rounded-2xl p-6 text-center space-y-3">
                         <p className="text-sm text-muted-foreground">
                           Nomor Virtual Account
                         </p>

@@ -3,30 +3,45 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "../../../ui/button";
-import { mockIngredients, mockRecipes } from "../../lib/data";
+import { useLocation } from "react-router-dom";
 
 export default function ScanResultScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const data = location.state || null;
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [showIngredients, setShowIngredients] = useState(false);
   const [showRecipes, setShowRecipes] = useState(false);
+  const [ingredients, setIngredients] = useState([]);
+  const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    // Simulate AI analysis
-    const timer1 = setTimeout(() => {
-      setIsAnalyzing(false);
-      setShowIngredients(true);
-    }, 2000);
+    if (data) {
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setIngredients(data.ingredients_detected || []);
+        setShowIngredients(true);
+      }, 1500);
 
-    const timer2 = setTimeout(() => {
-      setShowRecipes(true);
-    }, 3000);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
+      setTimeout(() => {
+        setRecipes(
+          (data.recipes || []).map((r, i) => ({
+            id: i,
+            title: r.title,
+            ingredients: r.ingredients,
+            steps: r.steps,
+            calories: r.nutrition?.calories || 0,
+            protein: r.nutrition?.protein || 0,
+            carbs: r.nutrition?.carbs || 0,
+            prepTime: 30,
+            image: "https://source.unsplash.com/400x300/?food",
+            type: "AI Recipe"
+          }))
+        );
+        setShowRecipes(true);
+      }, 2500);
+    }
+  }, [data]);
 
   return (
     <div className="min-h-screen bg-background pb-6">
@@ -51,7 +66,7 @@ export default function ScanResultScreen() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-card rounded-3xl p-8 shadow-xl"
+            className="bg-white rounded-3xl p-8 shadow-xl"
           >
             <div className="flex flex-col items-center justify-center space-y-4">
               {/* Cooking Animation */}
@@ -98,14 +113,14 @@ export default function ScanResultScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-card rounded-3xl p-6 shadow-lg space-y-4"
+            className="bg-white rounded-3xl p-6 shadow-lg space-y-4"
           >
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               <h2 className="font-medium">Bahan Terdeteksi</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              {mockIngredients.map((ingredient, index) => (
+              {ingredients.map((ingredient, index) => (
                 <motion.div
                   key={ingredient}
                   initial={{ opacity: 0, scale: 0 }}
@@ -131,7 +146,7 @@ export default function ScanResultScreen() {
               3 Pilihan Resep Untukmu
             </motion.h2>
 
-            {mockRecipes.map((recipe, index) => (
+            {recipes.map((recipe, index) => (
               <motion.div
                 key={recipe.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -139,7 +154,7 @@ export default function ScanResultScreen() {
                 transition={{ delay: index * 0.2 }}
                 whileHover={{ scale: 1.02 }}
                 onClick={() => navigate(`/recipe/${recipe.id}`)}
-                className="bg-card rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                className="bg-white rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
               >
                 <div className="relative h-48">
                   <img

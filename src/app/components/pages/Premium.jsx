@@ -41,13 +41,13 @@ export default function PremiumScreen() {
   const handlePaymentSuccess = () => {
     // Upgrade user to premium
     upgradeToPremium();
-    
+
     // Show success toast
     toast.success("🎉 Selamat! Anda sekarang Premium!", {
       duration: 3000,
       description: "Fitur premium telah aktif di akun Anda",
     });
-    
+
     // Navigate to account after short delay
     setTimeout(() => {
       navigate("/account", { replace: true });
@@ -97,7 +97,7 @@ export default function PremiumScreen() {
             <p className="text-white/90 text-lg">
               Nikmati pengalaman memasak tanpa batas dengan AI yang lebih pintar
             </p>
-            
+
             {/* Current Status Indicator */}
             {user?.isPremium && (
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3">
@@ -119,7 +119,7 @@ export default function PremiumScreen() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-3xl p-8 shadow-2xl border-2 border-[#D4AF37]/20 mt-6"
+          className="bg-white rounded-3xl p-8 shadow-2xl border-2 border-[#D4AF37]/20 mt-6"
         >
           <div className="text-center mb-6">
             <div className="flex items-baseline justify-center gap-2">
@@ -173,11 +173,10 @@ export default function PremiumScreen() {
               size="lg"
               onClick={handleUpgrade}
               disabled={user?.isPremium}
-              className={`w-full rounded-2xl shadow-lg ${
-                user?.isPremium 
+              className={`w-full rounded-2xl shadow-lg ${user?.isPremium
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-white"
-              }`}
+                }`}
             >
               <Crown className="h-5 w-5 mr-2" />
               {user?.isPremium ? "Sudah Premium ✓" : "Upgrade Sekarang"}
@@ -186,7 +185,7 @@ export default function PremiumScreen() {
         </motion.div>
 
         {/* Payment Methods */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg">
+        <div className="bg-white rounded-3xl p-6 shadow-lg">
           <h3 className="font-medium mb-4 text-center">Metode Pembayaran</h3>
           <div className="flex justify-center items-center gap-3 flex-wrap">
             <PaymentBadge label="GoPay" onClick={handleUpgrade} />
@@ -204,7 +203,7 @@ export default function PremiumScreen() {
         </div>
 
         {/* Free vs Premium Comparison */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg">
+        <div className="bg-white rounded-3xl p-6 shadow-lg">
           <h3 className="font-medium mb-4 text-center">Perbandingan Paket</h3>
           <div className="space-y-3">
             <ComparisonRow

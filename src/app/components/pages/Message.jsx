@@ -66,7 +66,7 @@ export default function MessageScreen() {
 
       {/* Stories/Online Contacts */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-4">
-        <div className="bg-card rounded-3xl p-4 shadow-lg mb-4">
+        <div className="bg-white rounded-3xl p-4 shadow-lg mb-4">
           <div className="flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {mockContacts.map((contact) => (
               <motion.div
@@ -106,7 +106,7 @@ export default function MessageScreen() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(`/messages/${chat.id}`)}
-            className="bg-card rounded-2xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-all flex gap-4 items-center"
+            className="bg-white rounded-2xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-all flex gap-4 items-center"
           >
             <div className="relative flex-shrink-0">
               <div className="w-14 h-14 rounded-full overflow-hidden">

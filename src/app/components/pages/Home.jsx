@@ -21,6 +21,29 @@ import { useCookingPosts } from "../../lib/cooking-post-context.jsx";
 import { UploadCookingPostModal } from "../../../ui/UploadCookingPostModal.jsx";
 import { CookingPostCard } from "../../../ui/CookingPostCard.jsx";
 import { toast } from "sonner";
+import { useRef } from "react";
+import { analyzeAndGenerateRecipes } from "../../lib/geminiVision";
+
+const resizeImage = (base64, maxWidth = 512) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = `data:image/jpeg;base64,${base64}`;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const scale = maxWidth / img.width;
+
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const resizedBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+      resolve(resizedBase64);
+    };
+  });
+};
 
 export default function HomeScreen() {
   const navigate = useNavigate();
@@ -44,30 +67,80 @@ export default function HomeScreen() {
   const [mainTab, setMainTab] = useState("gallery"); // "gallery" or "scan"
   const [galleryTab, setGalleryTab] = useState("public"); // "public", "friends", or "my"
 
-  const handleScan = () => {
-    if (!user?.isPremium && scansToday >= maxScans) {
-      toast.error("Limit scan harian tercapai! Upgrade ke Premium untuk scan unlimited.", {
-        duration: 4000,
-        action: {
-          label: "Upgrade",
-          onClick: () => navigate("/premium"),
-        },
+  const fileInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [loadingScan, setLoadingScan] = useState(false);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
       });
-      return;
+
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 300);
+
+      setCameraOn(true);
+      
+    } catch (err) {
+      console.error("Camera error:", err);
+
+      if (err.name === "NotAllowedError") {
+        toast.error("Izin kamera ditolak");
+      } else if (err.name === "NotFoundError") {
+        toast.error("Kamera tidak ditemukan");
+      } else if (err.name === "NotReadableError") {
+        toast.error("Kamera sedang digunakan aplikasi lain");
+      } else {
+        toast.error("Tidak bisa akses kamera");
+      }
     }
-    
-    // Increment scan count for free users
-    if (!user?.isPremium) {
-      setScansToday(prev => prev + 1);
-    }
-    
-    navigate("/scan-result");
   };
 
-  const handleUpload = () => {
+  const takePhoto = () => {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    return canvas.toDataURL("image/jpeg").split(",")[1];
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      setLoadingScan(true);
+
+      const image = takePhoto();
+      const stream = videoRef.current.srcObject;
+      stream.getTracks().forEach(track => track.stop());
+      setCameraOn(false);
+      const resized = await resizeImage(image);
+      const result = await analyzeAndGenerateRecipes(resized);
+
+      navigate("/scan-result", {
+        state: result,
+      });
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal ambil foto");
+    } finally {
+      setLoadingScan(false);
+    }
+  };
+
+  const handleScan = async () => {
     if (!user?.isPremium && scansToday >= maxScans) {
-      toast.error("Limit scan harian tercapai! Upgrade ke Premium untuk scan unlimited.", {
-        duration: 4000,
+      toast.error("Limit scan harian tercapai!", {
         action: {
           label: "Upgrade",
           onClick: () => navigate("/premium"),
@@ -75,13 +148,72 @@ export default function HomeScreen() {
       });
       return;
     }
-    
-    // Increment scan count for free users
-    if (!user?.isPremium) {
-      setScansToday(prev => prev + 1);
+
+    try {
+      setLoadingScan(true);
+
+      await startCamera();
+
+      // kasih delay kecil biar kamera siap
+      setTimeout(async () => {
+        const image = takePhoto();
+
+        const resized = await resizeImage(image);
+        const result = await analyzeAndGenerateRecipes(resized);
+
+        if (!user?.isPremium) {
+          setScansToday(prev => prev + 1);
+        }
+
+        navigate("/scan-result", {
+          state: result, // kirim ke halaman result
+        });
+
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal scan gambar");
+    } finally {
+      setLoadingScan(false);
     }
-    
-    navigate("/scan-result");
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("File harus berupa gambar");
+      return;
+    }
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      try {
+        setLoadingScan(true);
+
+        const base64 = reader.result.split(",")[1];
+        const resized = await resizeImage(base64);
+        const result = await analyzeAndGenerateRecipes(resized);
+
+        if (!user?.isPremium) {
+          setScansToday(prev => prev + 1);
+        }
+
+        navigate("/scan-result", {
+          state: result,
+        });
+
+      } catch (err) {
+        console.error("UPLOAD ERROR:", err);
+        toast.error(err.message || "Gagal proses gambar");
+      } finally {
+        setLoadingScan(false);
+      }
+    };
+
+    reader.readAsDataURL(file);
+    e.target.value = null;
   };
 
   const handlePostSubmit = (postData) => {
@@ -152,7 +284,7 @@ export default function HomeScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-8 rounded-b-3xl">
+      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-8 rounded-b-3xl text-white">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex justify-between items-start">
             <div>
@@ -187,7 +319,7 @@ export default function HomeScreen() {
           </div>
 
           {/* Daily Scan Limit */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 space-y-2">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 space-y-2 text-white">
             <div className="flex justify-between items-center">
               <span className="text-sm opacity-90">Pencarian hari ini</span>
               {user?.isPremium ? (
@@ -221,7 +353,7 @@ export default function HomeScreen() {
           </div>
         </div>
       </div>
-
+      
       {/* Main Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-8 space-y-6">
         {/* Scan Button */}
@@ -235,14 +367,14 @@ export default function HomeScreen() {
           transition={{ duration: 2, repeat: Infinity }}
           className="relative"
         >
-          <div className="bg-card rounded-3xl p-8 shadow-xl text-center space-y-4">
+          <div className="bg-white rounded-3xl p-8 shadow-xl text-center space-y-4">
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
               className="inline-block"
             >
               <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto">
-                <Sparkles className="h-10 w-10 text-primary-foreground" />
+                <Sparkles className="h-10 w-10 text-white" />
               </div>
             </motion.div>
 
@@ -255,32 +387,44 @@ export default function HomeScreen() {
               </p>
             </div>
 
-            <div className="flex gap-3">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex-1"
-              >
-                <Button
-                  size="lg"
-                  onClick={handleScan}
-                  className="w-full rounded-2xl"
-                >
-                  <Camera className="h-5 w-5 mr-2" />
-                  Ambil Foto
-                </Button>
-              </motion.div>
+            <div className="space-y-4">
+              {/* PREVIEW KAMERA */}
+              {cameraOn && (
+                <div className="bg-black rounded-2xl overflow-hidden">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full h-64 object-cover"
+                    muted
+                  />
+                </div>
+              )}
 
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={handleUpload}
-                  className="rounded-2xl"
-                >
-                  <Upload className="h-5 w-5" />
+              {/* TOMBOL */}
+              <div className="flex gap-3">
+
+                {/* BUKA KAMERA */}
+                <Button onClick={startCamera} className="flex-1">
+                  Buka Kamera
                 </Button>
-              </motion.div>
+
+                {/* JEPRET FOTO */}
+                {cameraOn && (
+                  <Button onClick={handleTakePhoto} className="flex-1">
+                    📸 Jepret
+                  </Button>
+                )}
+
+                {/* UPLOAD */}
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current.click()}
+                >
+                  Upload
+                </Button>
+
+              </div>
             </div>
           </div>
         </motion.div>
@@ -298,22 +442,20 @@ export default function HomeScreen() {
             >
               <button
                 onClick={() => setMainTab("gallery")}
-                className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                  mainTab === "gallery"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "gallery"
+                  ? "bg-white text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 <ImagePlus className="h-4 w-4" />
                 Galeri Masakan
               </button>
               <button
                 onClick={() => setMainTab("scan")}
-                className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                  mainTab === "scan"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "scan"
+                  ? "bg-white text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 <History className="h-4 w-4" />
                 Riwayat
@@ -323,14 +465,12 @@ export default function HomeScreen() {
             {/* Swipe Indicator */}
             <div className="flex justify-center gap-2 mt-2">
               <div
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  mainTab === "gallery" ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
-                }`}
+                className={`h-1 rounded-full transition-all duration-300 ${mainTab === "gallery" ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
+                  }`}
               />
               <div
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  mainTab === "scan" ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
-                }`}
+                className={`h-1 rounded-full transition-all duration-300 ${mainTab === "scan" ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
+                  }`}
               />
             </div>
           </div>
@@ -367,7 +507,7 @@ export default function HomeScreen() {
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ scale: 1.02 }}
                       onClick={() => navigate("/scan-result")}
-                      className="bg-card rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow"
+                      className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow"
                     >
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img
@@ -403,8 +543,8 @@ export default function HomeScreen() {
                     {galleryTab === "public"
                       ? `${getPublicPosts().length} masakan publik`
                       : galleryTab === "friends"
-                      ? `${getFriendsPosts().length} masakan dari teman`
-                      : `${myPosts.length} masakan Anda`}
+                        ? `${getFriendsPosts().length} masakan dari teman`
+                        : `${myPosts.length} masakan Anda`}
                   </h3>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -418,34 +558,31 @@ export default function HomeScreen() {
                 </div>
 
                 {/* Gallery Sub-tabs */}
-                <div className="flex gap-2 p-1 bg-card border border-border rounded-xl">
+                <div className="flex gap-2 p-1 bg-white border border-border rounded-xl">
                   <button
                     onClick={() => setGalleryTab("public")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
-                      galleryTab === "public"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "public"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                      }`}
                   >
                     Publik
                   </button>
                   <button
                     onClick={() => setGalleryTab("friends")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
-                      galleryTab === "friends"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "friends"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                      }`}
                   >
                     Teman
                   </button>
                   <button
                     onClick={() => setGalleryTab("my")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
-                      galleryTab === "my"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "my"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                      }`}
                   >
                     Saya ({myPosts.length})
                   </button>
@@ -542,6 +679,15 @@ export default function HomeScreen() {
 
       {/* Bottom Navigation */}
       <BottomNav />
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        onChange={handleUpload}
+        hidden
+      />
+
+      <canvas ref={canvasRef} className="hidden" />
     </motion.div>
   );
 }

@@ -5,7 +5,7 @@ import { Button } from "./button";
 
 export function WeeklyDigestModal({ isOpen, onClose }) {
   const weekRange = "24 Mar - 30 Mar 2026";
-  
+
   const stats = {
     scans: { value: 12, change: +3, percentage: 33 },
     recipes: { value: 24, change: +8, percentage: 50 },
@@ -47,7 +47,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-card rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+              className="bg-white rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -186,9 +186,8 @@ function StatCard({
       <div className="flex items-end justify-between">
         <p className="text-2xl font-medium text-primary">{value}</p>
         <div
-          className={`flex items-center gap-1 text-xs font-medium ${
-            isPositive ? "text-green-600" : "text-red-600"
-          }`}
+          className={`flex items-center gap-1 text-xs font-medium ${isPositive ? "text-green-600" : "text-red-600"
+            }`}
         >
           <TrendingUp
             className={`h-3 w-3 ${!isPositive && "rotate-180"}`}

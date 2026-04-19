@@ -21,7 +21,7 @@ export function IngredientSubstituteDropdown({
 
   const handleSelectSubstitute = (substitute) => {
     setSelectedSubstitute(substitute.name);
-    
+
     toast.success(`Bahan pengganti dipilih!`, {
       description: `${ingredientName} → ${substitute.name} (${substitute.ratio})`,
       duration: 3000,
@@ -44,7 +44,7 @@ export function IngredientSubstituteDropdown({
 
     const [original, substitute] = parts.map(parseFloat);
     const newAmount = (amount * substitute) / original;
-    
+
     return `${Math.round(newAmount * 10) / 10} ${unit}`;
   };
 
@@ -72,7 +72,7 @@ export function IngredientSubstituteDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 right-0 mt-2 z-20 bg-card border border-border rounded-2xl shadow-xl overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-2 z-20 bg-white border border-border rounded-2xl shadow-xl overflow-hidden"
           >
             <div className="p-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-500/20">
               <div className="flex items-center gap-2">
@@ -93,11 +93,10 @@ export function IngredientSubstituteDropdown({
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => handleSelectSubstitute(substitute)}
-                  className={`w-full text-left p-3 border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors ${
-                    selectedSubstitute === substitute.name
+                  className={`w-full text-left p-3 border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors ${selectedSubstitute === substitute.name
                       ? "bg-primary/5 border-l-4 border-l-primary"
                       : ""
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 space-y-1">
@@ -107,7 +106,7 @@ export function IngredientSubstituteDropdown({
                           <Check className="h-3.5 w-3.5 text-primary" />
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full font-medium">
                           Rasio {substitute.ratio}

@@ -68,7 +68,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-2xl overflow-hidden shadow-sm"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm"
     >
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
@@ -149,9 +149,8 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
             className="flex items-center gap-2 text-sm"
           >
             <Heart
-              className={`h-5 w-5 ${
-                liked ? "fill-red-500 text-red-500" : ""
-              }`}
+              className={`h-5 w-5 ${liked ? "fill-red-500 text-red-500" : ""
+                }`}
             />
             <span className={liked ? "text-red-500" : ""}>{likesCount}</span>
           </motion.button>

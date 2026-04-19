@@ -162,8 +162,8 @@ export default function ChatDetailScreen() {
               {chat.isGroup
                 ? `${chat.participants.length} anggota`
                 : chat.isOnline
-                ? "Online"
-                : "Offline"}
+                  ? "Online"
+                  : "Offline"}
             </p>
           </div>
         </div>
@@ -237,11 +237,10 @@ export default function ChatDetailScreen() {
                 <div className="relative group">
                   <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className={`rounded-2xl px-4 py-2 max-w-[280px] ${
-                      isMe
+                    className={`rounded-2xl px-4 py-2 max-w-[280px] ${isMe
                         ? "bg-primary text-primary-foreground"
-                        : "bg-card border border-border"
-                    }`}
+                        : "bg-white border border-border"
+                      }`}
                   >
                     {message.image && (
                       <div className="rounded-xl overflow-hidden mb-2">
@@ -264,11 +263,10 @@ export default function ChatDetailScreen() {
                             onClick={() =>
                               handleReaction(message.id, reaction.emoji)
                             }
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
-                              reaction.userIds.includes("me")
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${reaction.userIds.includes("me")
                                 ? "bg-primary/20 border border-primary"
                                 : "bg-muted"
-                            }`}
+                              }`}
                           >
                             <span>{reaction.emoji}</span>
                             <span className="text-xs">
@@ -288,9 +286,8 @@ export default function ChatDetailScreen() {
                         showEmojiPicker === message.id ? null : message.id
                       )
                     }
-                    className={`absolute -bottom-2 ${
-                      isMe ? "left-2" : "right-2"
-                    } p-1 bg-card border border-border rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg`}
+                    className={`absolute -bottom-2 ${isMe ? "left-2" : "right-2"
+                      } p-1 bg-white border border-border rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg`}
                   >
                     <Smile className="h-4 w-4" />
                   </motion.button>
@@ -302,9 +299,8 @@ export default function ChatDetailScreen() {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        className={`absolute -bottom-12 ${
-                          isMe ? "left-0" : "right-0"
-                        } bg-card border border-border rounded-2xl p-2 shadow-xl flex gap-1 z-10`}
+                        className={`absolute -bottom-12 ${isMe ? "left-0" : "right-0"
+                          } bg-white border border-border rounded-2xl p-2 shadow-xl flex gap-1 z-10`}
                       >
                         {EMOJI_REACTIONS.map((emoji) => (
                           <motion.button
@@ -322,9 +318,8 @@ export default function ChatDetailScreen() {
                   </AnimatePresence>
 
                   <span
-                    className={`text-xs text-muted-foreground mt-1 block ${
-                      isMe ? "text-right" : "text-left"
-                    }`}
+                    className={`text-xs text-muted-foreground mt-1 block ${isMe ? "text-right" : "text-left"
+                      }`}
                   >
                     {message.timestamp}
                   </span>
@@ -337,7 +332,7 @@ export default function ChatDetailScreen() {
       </div>
 
       {/* Input Area - Fixed at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-30">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border p-4 z-30">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 flex gap-2 items-end">
           {/* Image Upload */}
           <input
@@ -372,11 +367,10 @@ export default function ChatDetailScreen() {
             whileTap={{ scale: 0.9 }}
             onClick={handleSendMessage}
             disabled={!messageText.trim()}
-            className={`p-3 rounded-2xl transition-all ${
-              messageText.trim()
+            className={`p-3 rounded-2xl transition-all ${messageText.trim()
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
+              }`}
           >
             <Send className="h-5 w-5" />
           </motion.button>
@@ -599,9 +593,8 @@ function SettingItem({ icon, label, onClick, danger }) {
     <motion.button
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition-colors ${
-        danger ? "text-destructive" : ""
-      }`}
+      className={`w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition-colors ${danger ? "text-destructive" : ""
+        }`}
     >
       {icon}
       <span>{label}</span>

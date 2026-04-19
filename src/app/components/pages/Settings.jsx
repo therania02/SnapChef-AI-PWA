@@ -86,14 +86,14 @@ export default function SettingsScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4 space-y-6">{/* Removed -mt-4 to avoid overlap */}
         {/* Notifications */}
-        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <Bell className="h-5 w-5 text-primary" />
               <h3 className="font-medium">Notifikasi</h3>
             </div>
           </div>
-          
+
           <SettingItem
             label="Rekomendasi Resep"
             description="Terima saran resep harian"
@@ -106,7 +106,7 @@ export default function SettingsScreen() {
               />
             }
           />
-          
+
           <SettingItem
             label="Pengingat Belanja"
             description="Notifikasi daftar belanja"
@@ -119,7 +119,7 @@ export default function SettingsScreen() {
               />
             }
           />
-          
+
           <SettingItem
             label="Ringkasan Mingguan"
             description="Statistik mingguan Anda"
@@ -130,7 +130,7 @@ export default function SettingsScreen() {
               />
             }
           />
-          
+
           <SettingItem
             label="Promosi & Tips"
             description="Penawaran dan tips memasak"
@@ -147,14 +147,14 @@ export default function SettingsScreen() {
         </div>
 
         {/* App Preferences */}
-        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <Globe className="h-5 w-5 text-primary" />
               <h3 className="font-medium">Preferensi Aplikasi</h3>
             </div>
           </div>
-          
+
           <SettingItem
             label="Bahasa"
             description="Pilih bahasa aplikasi"
@@ -169,7 +169,7 @@ export default function SettingsScreen() {
               </select>
             }
           />
-          
+
           <SettingItem
             label="Auto-save Resep"
             description="Simpan otomatis resep yang dilihat"
@@ -184,28 +184,28 @@ export default function SettingsScreen() {
         </div>
 
         {/* Data & Privacy */}
-        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-primary" />
               <h3 className="font-medium">Data & Privasi</h3>
             </div>
           </div>
-          
+
           <SettingButton
             icon={<Download className="h-5 w-5" />}
             label="Ekspor Data"
             description="Unduh semua data Anda"
             onClick={handleExportData}
           />
-          
+
           <SettingButton
             icon={<Upload className="h-5 w-5" />}
             label="Backup Data"
             description="Simpan data ke cloud"
             onClick={() => toast.info("Fitur backup akan segera hadir")}
           />
-          
+
           <SettingButton
             icon={<Trash2 className="h-5 w-5" />}
             label="Hapus Cache"
@@ -218,28 +218,28 @@ export default function SettingsScreen() {
         </div>
 
         {/* Support */}
-        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <HelpCircle className="h-5 w-5 text-primary" />
               <h3 className="font-medium">Bantuan & Dukungan</h3>
             </div>
           </div>
-          
+
           <SettingButton
             icon={<HelpCircle className="h-5 w-5" />}
             label="Pusat Bantuan"
             description="FAQ dan panduan"
             onClick={() => navigate("/help-center")}
           />
-          
+
           <SettingButton
             icon={<FileText className="h-5 w-5" />}
             label="Syarat & Ketentuan"
             description="Baca syarat penggunaan"
             onClick={() => navigate("/terms")}
           />
-          
+
           <SettingButton
             icon={<Shield className="h-5 w-5" />}
             label="Kebijakan Privasi"
@@ -290,9 +290,8 @@ export default function SettingsScreen() {
 function SettingItem({ label, description, action, last }) {
   return (
     <div
-      className={`flex items-center justify-between p-4 ${
-        !last ? "border-b border-border" : ""
-      }`}
+      className={`flex items-center justify-between p-4 ${!last ? "border-b border-border" : ""
+        }`}
     >
       <div className="flex-1">
         <p className="font-medium">{label}</p>
@@ -308,9 +307,8 @@ function SettingButton({ icon, label, description, onClick, last }) {
     <motion.button
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left ${
-        !last ? "border-b border-border" : ""
-      }`}
+      className={`w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left ${!last ? "border-b border-border" : ""
+        }`}
     >
       <div className="text-muted-foreground">{icon}</div>
       <div className="flex-1">

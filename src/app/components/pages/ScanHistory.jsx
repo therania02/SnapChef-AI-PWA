@@ -142,7 +142,7 @@ export default function ScanHistoryScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4 space-y-4">{/* Changed from -mt-4 to mt-4 */}
         {/* Stats */}
-        <div className="bg-card rounded-3xl shadow-lg p-6">
+        <div className="bg-white rounded-3xl shadow-lg p-6">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-medium text-primary">{history.length}</div>
@@ -172,7 +172,7 @@ export default function ScanHistoryScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="w-full bg-card rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                className="w-full bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
               >
                 <div className="flex gap-4 p-4">
                   {/* Thumbnail - Clickable */}
@@ -237,7 +237,7 @@ export default function ScanHistoryScreen() {
               </motion.div>
             ))
           ) : (
-            <div className="bg-card rounded-3xl shadow-lg p-12 text-center">
+            <div className="bg-white rounded-3xl shadow-lg p-12 text-center">
               <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
               <p className="text-muted-foreground">Tidak ada riwayat ditemukan</p>
             </div>

@@ -17,7 +17,7 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border z-40">
       <div className="max-w-md mx-auto px-6 py-4">
         <div className="flex justify-around items-center">
           {navItems.map((item) => (
@@ -40,9 +40,8 @@ function NavButton({ icon, label, active, onClick }) {
     <motion.button
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 ${
-        active ? "text-primary" : "text-muted-foreground"
-      }`}
+      className={`flex flex-col items-center gap-1 ${active ? "text-primary" : "text-muted-foreground"
+        }`}
     >
       {icon}
       <span className="text-xs">{label}</span>

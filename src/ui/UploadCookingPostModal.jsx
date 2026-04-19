@@ -86,7 +86,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-card rounded-3xl z-50 overflow-hidden flex flex-col"
+            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-white rounded-3xl z-50 overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b">
@@ -183,19 +183,17 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
                         onClick={() => setPrivacy(option.value)}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-                          privacy === option.value
+                        className={`w-full p-4 rounded-xl border-2 transition-all text-left ${privacy === option.value
                             ? "border-primary bg-primary/5"
                             : "border-muted hover:border-muted-foreground/30"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-start gap-3">
                           <div
-                            className={`p-2 rounded-lg ${
-                              privacy === option.value
+                            className={`p-2 rounded-lg ${privacy === option.value
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted"
-                            }`}
+                              }`}
                           >
                             <Icon className="h-5 w-5" />
                           </div>

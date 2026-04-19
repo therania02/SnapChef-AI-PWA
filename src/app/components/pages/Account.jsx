@@ -145,7 +145,7 @@ export default function AccountScreen() {
                   <Input
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
-                    className="bg-card border-border text-foreground rounded-2xl"
+                    className="bg-white border-border text-foreground rounded-2xl"
                     placeholder="Nama Anda"
                   />
                   <div className="flex gap-2">
@@ -198,7 +198,7 @@ export default function AccountScreen() {
           </div>
 
           {/* Plan Badge */}
-          <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border shadow-sm">
+          <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-border shadow-sm">
             <div>
               <div className="text-sm text-muted-foreground">Paket Saat Ini</div>
               <div className="font-medium flex items-center gap-2 text-foreground">
@@ -231,7 +231,7 @@ export default function AccountScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-8 space-y-6">
         {/* Stats Card */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg border border-border">
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-border">
           <h3 className="font-medium mb-4">Statistik Anda</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -250,7 +250,7 @@ export default function AccountScreen() {
         </div>
 
         {/* Preferences */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg space-y-4 border border-border">
+        <div className="bg-white rounded-3xl p-6 shadow-lg space-y-4 border border-border">
           <h3 className="font-medium">Preferensi Diet</h3>
           <div className="flex flex-wrap gap-2">
             {selectedPrefLabels.map((pref) => (
@@ -271,7 +271,7 @@ export default function AccountScreen() {
         </div>
 
         {/* Settings */}
-        <div className="bg-card rounded-3xl shadow-lg overflow-hidden border border-border">
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-border">
           <MenuItem
             icon={<ChefHat className="h-5 w-5" />}
             label="Riwayat Scan"

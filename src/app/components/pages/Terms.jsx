@@ -30,7 +30,7 @@ export default function TermsScreen() {
 
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4">{/* Changed from -mt-4 to mt-4 */}
-        <div className="bg-card rounded-3xl shadow-lg p-6 space-y-6">
+        <div className="bg-white rounded-3xl shadow-lg p-6 space-y-6">
           <Section
             title="1. Penerimaan Ketentuan"
             content="Dengan mengakses dan menggunakan aplikasi SnapChef AI, Anda menyetujui untuk terikat dengan Syarat dan Ketentuan ini. Jika Anda tidak setuju dengan bagian mana pun dari ketentuan ini, Anda tidak boleh menggunakan layanan kami."

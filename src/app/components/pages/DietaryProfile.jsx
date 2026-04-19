@@ -10,7 +10,7 @@ import { toast } from "sonner";
 // Helper function to auto-detect emoji based on keywords
 const detectEmoji = (text) => {
   const lowerText = text.toLowerCase();
-  
+
   // Negation/Restriction keywords
   if (lowerText.includes("tanpa") || lowerText.includes("tidak") || lowerText.includes("no") || lowerText.includes("bebas")) {
     // Specific restrictions
@@ -23,7 +23,7 @@ const detectEmoji = (text) => {
     if (lowerText.includes("kacang") || lowerText.includes("nut")) return "🚫🥜";
     return "🚫";
   }
-  
+
   // Low/Reduced keywords
   if (lowerText.includes("rendah") || lowerText.includes("low") || lowerText.includes("kurang")) {
     if (lowerText.includes("garam") || lowerText.includes("salt") || lowerText.includes("sodium")) return "⬇️🧂";
@@ -33,7 +33,7 @@ const detectEmoji = (text) => {
     if (lowerText.includes("karbo") || lowerText.includes("carb")) return "⬇️🍞";
     return "⬇️";
   }
-  
+
   // High/Increased keywords
   if (lowerText.includes("tinggi") || lowerText.includes("high") || lowerText.includes("banyak")) {
     if (lowerText.includes("protein")) return "⬆️💪";
@@ -43,7 +43,7 @@ const detectEmoji = (text) => {
     if (lowerText.includes("zat besi") || lowerText.includes("iron")) return "⬆️🩸";
     return "⬆️";
   }
-  
+
   // Specific ingredients/characteristics
   if (lowerText.includes("organik") || lowerText.includes("organic")) return "🌿";
   if (lowerText.includes("vegan")) return "🌱";
@@ -63,7 +63,7 @@ const detectEmoji = (text) => {
   if (lowerText.includes("diabetes") || lowerText.includes("diabetic")) return "💉";
   if (lowerText.includes("jantung") || lowerText.includes("heart")) return "❤️";
   if (lowerText.includes("diet") || lowerText.includes("diet")) return "📊";
-  
+
   // Default sparkle for custom preferences
   return "✨";
 };
@@ -94,7 +94,7 @@ export default function DietaryProfileScreen() {
 
   const handleContinue = () => {
     toast.success("Preferensi berhasil disimpan");
-    
+
     // Check if we came from account screen (editing preferences)
     // Otherwise, this is first-time setup after login/register - go to home
     if (location.state?.from === 'account') {
@@ -136,11 +136,10 @@ export default function DietaryProfileScreen() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => togglePreference(pref.id)}
-                className={`relative p-6 rounded-3xl border-2 transition-all ${
-                  isSelected
+                className={`relative p-6 rounded-3xl border-2 transition-all ${isSelected
                     ? "border-primary bg-primary/5"
-                    : "border-border bg-card hover:border-primary/50"
-                }`}
+                    : "border-border bg-white hover:border-primary/50"
+                  }`}
               >
                 {/* Check Icon */}
                 {isSelected && (
@@ -175,7 +174,7 @@ export default function DietaryProfileScreen() {
               Punya preferensi lain? Tambahkan di sini
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -187,7 +186,7 @@ export default function DietaryProfileScreen() {
                 }
               }}
               placeholder="Contoh: Tanpa MSG, Rendah Garam"
-              className="flex-1 px-4 py-3 bg-card border-2 border-border rounded-2xl text-sm focus:outline-none focus:border-primary transition-colors"
+              className="flex-1 px-4 py-3 bg-white border-2 border-border rounded-2xl text-sm focus:outline-none focus:border-primary transition-colors"
             />
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -199,7 +198,7 @@ export default function DietaryProfileScreen() {
               <Plus className="h-5 w-5" />
             </motion.button>
           </div>
-          
+
           {customPreferences.length > 0 && (
             <div className="space-y-2">
               {customPreferences.map((pref, index) => (
