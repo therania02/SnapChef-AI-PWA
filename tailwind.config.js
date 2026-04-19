@@ -6,10 +6,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        border: "var(--border)",
-        ring: "var(--ring)",
         background: "var(--background)",
         foreground: "var(--foreground)",
+        primary: "var(--primary)",
+        secondary: "var(--secondary)",
+        muted: "var(--muted)",
+        accent: "var(--accent)",
+        border: "var(--border)",
+        ring: "var(--ring)",
       },
     },
   },
