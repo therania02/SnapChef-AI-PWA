@@ -420,8 +420,8 @@ function ContactInfoModal({ isOpen, onClose, chat, messages }) {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="bg-primary text-primary-foreground p-6 flex items-center justify-between">
-            <h2 className="text-xl font-medium">Info Kontak</h2>
+          <div className="bg-primary text-white p-6 flex items-center justify-between">
+            <h2 className="text-xl font-medium text-white">Info Kontak</h2>
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onClose}
