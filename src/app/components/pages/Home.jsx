@@ -402,7 +402,7 @@ export default function HomeScreen() {
               )}
 
               {/* TOMBOL */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 text-white">
 
                 {/* BUKA KAMERA */}
                 <Button onClick={startCamera} className="flex-1">
