@@ -105,7 +105,7 @@ export default function ShoppingListScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl">
+      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl text-white">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl flex-1" style={{ fontFamily: 'var(--font-family-display)' }}>
@@ -156,8 +156,8 @@ export default function ShoppingListScreen() {
                     whileTap={{ scale: 0.9 }}
                     onClick={() => toggleItem(item.id)}
                     className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-colors ${item.checked
-                        ? "bg-primary border-primary"
-                        : "border-muted-foreground"
+                      ? "bg-primary border-primary"
+                      : "border-muted-foreground"
                       }`}
                   >
                     {item.checked && <Check className="h-4 w-4 text-primary-foreground" />}
@@ -219,15 +219,15 @@ export default function ShoppingListScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-200 dark:border-orange-900 rounded-3xl p-4"
+            className="bg-yellow-50 dark:bg-orange-100/20 border-2 border-yellow-200 dark:border-orange-200 rounded-3xl p-4"
           >
             <div className="flex gap-3">
               <div className="text-3xl">🛍️</div>
               <div className="flex-1">
-                <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-1">
+                <h4 className="font-medium text-red-900 dark:text-brown-100 mb-1">
                   Belanja Mudah di Shopee
                 </h4>
-                <p className="text-sm text-orange-700 dark:text-orange-300">
+                <p className="text-sm light:text-blue-700 dark:text-red-600">
                   Klik tombol "Beli" untuk langsung mencari produk di aplikasi Shopee. Gratis ongkir untuk pembelian tertentu!
                 </p>
               </div>

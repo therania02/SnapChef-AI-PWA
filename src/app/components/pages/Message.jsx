@@ -41,7 +41,7 @@ export default function MessageScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl">
+      <div className="bg-gradient-to-br from-primary to-primary/80 text-white px-6 pt-12 pb-6 rounded-b-3xl">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <h1
             className="text-2xl"
@@ -52,13 +52,13 @@ export default function MessageScreen() {
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary-foreground/60" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary-foreground/80" />
             <input
               type="text"
               placeholder="Cari pesan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-sm rounded-2xl text-primary-foreground placeholder:text-primary-foreground/60 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+              className="w-full pl-12 pr-4 py-3 bg-white/10 rounded-2xl text-primary-foreground placeholder:text-white/70 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
             />
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function MessageScreen() {
       {/* Stories/Online Contacts */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-4">
         <div className="bg-white rounded-3xl p-4 shadow-lg mb-4">
-          <div className="flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">
             {mockContacts.map((contact) => (
               <motion.div
                 key={contact.id}

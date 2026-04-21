@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -45,7 +46,31 @@ const resizeImage = (base64, maxWidth = 512) => {
   });
 };
 
+// Fungsi untuk mencoba ulang request ke Gemini jika server sedang sibuk (503)
+const fetchWithRetry = async (image, retries = 3, delay = 2000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await analyzeAndGenerateRecipes(image);
+    } catch (err) {
+      const isOverloaded = err?.message?.includes("503") || err?.message?.includes("high demand");
+
+      if (isOverloaded && i < retries - 1) {
+        console.warn(`Server sibuk, mencoba ulang dalam ${delay / 1000} detik... (Percobaan ${i + 1}/${retries})`);
+        // Tunggu beberapa saat sebelum mencoba lagi
+        await new Promise(res => setTimeout(res, delay));
+      } else {
+        // Jika bukan error 503 atau jatah percobaan sudah habis, lempar errornya
+        throw err;
+      }
+    }
+  }
+};
+
 export default function HomeScreen() {
+  const [scanHistory, setScanHistory] = useState(() => {
+    const saved = localStorage.getItem("scanHistory");
+    return saved ? JSON.parse(saved) : [];
+  });
   const navigate = useNavigate();
   const { user } = useUser();
   const { t } = useLanguage();
@@ -57,12 +82,41 @@ export default function HomeScreen() {
     deletePost,
     updatePostPrivacy,
   } = useCookingPosts();
-  
+
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const lastDate = localStorage.getItem("lastScanDate");
+
+    if (lastDate !== today) {
+      localStorage.setItem("lastScanDate", today);
+      localStorage.setItem("scansToday", "0");
+      setScansToday(0); // penting supaya UI ikut update
+    }
+  }, []);
+
   // Daily scan logic - free users limited to 3 per day
-  const [scansToday, setScansToday] = useState(2); // Demo: already used 2
+  const [scansToday, setScansToday] = useState(() => {
+    const saved = localStorage.getItem("scansToday");
+    return saved ? parseInt(saved) : 0;
+  });
   const maxScans = user?.isPremium ? Infinity : 3;
   const scansLeft = user?.isPremium ? Infinity : Math.max(0, maxScans - scansToday);
-  
+
+  const canScan = () => {
+    if (user?.isPremium) return true;
+    return scansToday < maxScans;
+  };
+
+  const incrementScan = () => {
+    if (!user?.isPremium) {
+      setScansToday((prev) => {
+        const updated = prev + 1;
+        localStorage.setItem("scansToday", updated);
+        return updated;
+      });
+    }
+  };
+
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [mainTab, setMainTab] = useState("gallery"); // "gallery" or "scan"
   const [galleryTab, setGalleryTab] = useState("public"); // "public", "friends", or "my"
@@ -73,8 +127,17 @@ export default function HomeScreen() {
   const [cameraOn, setCameraOn] = useState(false);
   const [loadingScan, setLoadingScan] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      const stream = videoRef.current?.srcObject;
+      stream?.getTracks().forEach(track => track.stop());
+    };
+  }, []);
+
   const startCamera = async () => {
     try {
+      const oldStream = videoRef.current?.srcObject;
+      oldStream?.getTracks().forEach(track => track.stop());
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
       });
@@ -86,7 +149,7 @@ export default function HomeScreen() {
       }, 300);
 
       setCameraOn(true);
-      
+
     } catch (err) {
       console.error("Camera error:", err);
 
@@ -116,23 +179,52 @@ export default function HomeScreen() {
   };
 
   const handleTakePhoto = async () => {
+    if (!canScan()) {
+      toast.error("Limit scan harian tercapai!", {
+        action: { label: "Upgrade", onClick: () => navigate("/premium") },
+      });
+      return;
+    }
+
+    if (!videoRef.current || videoRef.current.videoWidth === 0) {
+      toast.error("Kamera belum siap");
+      return;
+    }
+
     try {
       setLoadingScan(true);
-
       const image = takePhoto();
       const stream = videoRef.current.srcObject;
-      stream.getTracks().forEach(track => track.stop());
+      stream?.getTracks().forEach(track => track.stop());
       setCameraOn(false);
-      const resized = await resizeImage(image);
-      const result = await analyzeAndGenerateRecipes(resized);
 
-      navigate("/scan-result", {
-        state: result,
+      const resized = await resizeImage(image);
+      const result = await fetchWithRetry(resized);
+
+      const newScan = {
+        id: Date.now(),
+        image: `data:image/jpeg;base64,${resized}`,
+        date: new Date().toISOString(),
+        ingredients: result.ingredients || [],
+        recipesGenerated: result.recipes?.length || 0,
+      };
+
+      setScanHistory((prev) => {
+        const updated = [newScan, ...prev].slice(0, 20);
+        localStorage.setItem("scanHistory", JSON.stringify(updated));
+        return updated;
       });
+
+      incrementScan();
+      navigate("/scan-result", { state: result });
 
     } catch (err) {
       console.error(err);
-      toast.error("Gagal ambil foto");
+      if (err?.message?.includes("503") || err?.message?.includes("high demand")) {
+        toast.error("Server AI sedang sangat sibuk. Mohon tunggu beberapa menit dan coba lagi.");
+      } else {
+        toast.error(err.message || "Gagal memproses gambar masakan");
+      }
     } finally {
       setLoadingScan(false);
     }
@@ -141,44 +233,58 @@ export default function HomeScreen() {
   const handleScan = async () => {
     if (!user?.isPremium && scansToday >= maxScans) {
       toast.error("Limit scan harian tercapai!", {
-        action: {
-          label: "Upgrade",
-          onClick: () => navigate("/premium"),
-        },
+        action: { label: "Upgrade", onClick: () => navigate("/premium") },
       });
       return;
     }
 
     try {
       setLoadingScan(true);
-
       await startCamera();
 
-      // kasih delay kecil biar kamera siap
       setTimeout(async () => {
         const image = takePhoto();
-
         const resized = await resizeImage(image);
-        const result = await analyzeAndGenerateRecipes(resized);
+        const result = await fetchWithRetry(resized);
 
-        if (!user?.isPremium) {
-          setScansToday(prev => prev + 1);
-        }
+        const newScan = {
+          id: Date.now(),
+          image: `data:image/jpeg;base64,${resized}`,
+          date: new Date().toISOString(),
+          ingredients: result.ingredients || [],
+          recipesGenerated: result.recipes?.length || 0,
+        };
 
-        navigate("/scan-result", {
-          state: result, // kirim ke halaman result
+        setScanHistory((prev) => {
+          const updated = [newScan, ...prev].slice(0, 20);
+          localStorage.setItem("scanHistory", JSON.stringify(updated));
+          return updated;
         });
 
+        incrementScan();
+        navigate("/scan-result", { state: result });
       }, 1500);
+
     } catch (err) {
       console.error(err);
-      toast.error("Gagal scan gambar");
+      if (err?.message?.includes("503") || err?.message?.includes("high demand")) {
+        toast.error("Server AI sedang sangat sibuk. Mohon tunggu beberapa menit dan coba lagi.");
+      } else {
+        toast.error(err.message || "Gagal memproses gambar masakan");
+      }
     } finally {
       setLoadingScan(false);
     }
   };
 
   const handleUpload = async (e) => {
+    if (!canScan()) {
+      toast.error("Limit scan harian tercapai!", {
+        action: { label: "Upgrade", onClick: () => navigate("/premium") },
+      });
+      return;
+    }
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -186,27 +292,39 @@ export default function HomeScreen() {
       toast.error("File harus berupa gambar");
       return;
     }
-    const reader = new FileReader();
 
+    const reader = new FileReader();
     reader.onloadend = async () => {
       try {
         setLoadingScan(true);
-
         const base64 = reader.result.split(",")[1];
         const resized = await resizeImage(base64);
-        const result = await analyzeAndGenerateRecipes(resized);
+        const result = await fetchWithRetry(resized);
 
-        if (!user?.isPremium) {
-          setScansToday(prev => prev + 1);
-        }
+        const newScan = {
+          id: Date.now(),
+          image: `data:image/jpeg;base64,${resized}`,
+          date: new Date().toISOString(),
+          ingredients: result.ingredients || [],
+          recipesGenerated: result.recipes?.length || 0,
+        };
 
-        navigate("/scan-result", {
-          state: result,
+        setScanHistory((prev) => {
+          const updated = [newScan, ...prev].slice(0, 20);
+          localStorage.setItem("scanHistory", JSON.stringify(updated));
+          return updated;
         });
+
+        incrementScan();
+        navigate("/scan-result", { state: result });
 
       } catch (err) {
         console.error("UPLOAD ERROR:", err);
-        toast.error(err.message || "Gagal proses gambar");
+        if (err?.message?.includes("503") || err?.message?.includes("high demand")) {
+          toast.error("Server AI sedang sangat sibuk. Mohon tunggu beberapa menit dan coba lagi.");
+        } else {
+          toast.error(err.message || "Gagal proses gambar");
+        }
       } finally {
         setLoadingScan(false);
       }
@@ -234,8 +352,8 @@ export default function HomeScreen() {
       newPrivacy === "public"
         ? "Publik"
         : newPrivacy === "friends"
-        ? "Teman"
-        : "Privat";
+          ? "Teman"
+          : "Privat";
     toast.success(`Privacy diubah ke ${privacyLabel}`);
   };
 
@@ -353,7 +471,7 @@ export default function HomeScreen() {
           </div>
         </div>
       </div>
-      
+
       {/* Main Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-8 space-y-6">
         {/* Scan Button */}
@@ -461,7 +579,7 @@ export default function HomeScreen() {
                 Riwayat
               </button>
             </motion.div>
-            
+
             {/* Swipe Indicator */}
             <div className="flex justify-center gap-2 mt-2">
               <div
@@ -488,7 +606,7 @@ export default function HomeScreen() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="font-medium text-sm text-muted-foreground">
-                    {mockScanHistory.length} hasil terakhir
+                    {scanHistory.length} hasil terakhir
                   </h3>
                   <button
                     onClick={() => navigate("/home")}
@@ -499,7 +617,12 @@ export default function HomeScreen() {
                 </div>
 
                 <div className="space-y-3">
-                  {mockScanHistory.map((scan, index) => (
+                  {scanHistory.length === 0 && (
+                    <p className="text-center text-sm text-muted-foreground">
+                      Belum ada riwayat scan
+                    </p>
+                  )}
+                  {scanHistory.map((scan, index) => (
                     <motion.div
                       key={scan.id}
                       initial={{ opacity: 0, y: 20 }}

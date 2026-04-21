@@ -128,7 +128,7 @@ export default function AccountScreen() {
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-6">
           {/* Profile */}
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-secondary dark:bg-secondary/50 border border-border flex items-center justify-center">
+            <div className="w-20 h-20 rounded-full bg-secondary dark:bg-secondary/50 border border-border flex items-center justify-center text-white">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -165,7 +165,7 @@ export default function AccountScreen() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-white">
                     <h1 className="text-2xl text-foreground font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
                       {user?.name || "Guest"}
                     </h1>

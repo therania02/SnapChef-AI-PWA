@@ -238,8 +238,8 @@ export default function ChatDetailScreen() {
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     className={`rounded-2xl px-4 py-2 max-w-[280px] ${isMe
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white border border-border"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-white border border-border"
                       }`}
                   >
                     {message.image && (
@@ -264,8 +264,8 @@ export default function ChatDetailScreen() {
                               handleReaction(message.id, reaction.emoji)
                             }
                             className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${reaction.userIds.includes("me")
-                                ? "bg-primary/20 border border-primary"
-                                : "bg-muted"
+                              ? "bg-primary/20 border border-primary"
+                              : "bg-muted"
                               }`}
                           >
                             <span>{reaction.emoji}</span>
@@ -368,8 +368,8 @@ export default function ChatDetailScreen() {
             onClick={handleSendMessage}
             disabled={!messageText.trim()}
             className={`p-3 rounded-2xl transition-all ${messageText.trim()
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
+              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
               }`}
           >
             <Send className="h-5 w-5" />
