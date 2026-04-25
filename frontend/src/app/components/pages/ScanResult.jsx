@@ -158,9 +158,12 @@ export default function ScanResultScreen() {
               >
                 <div className="relative h-48">
                   <img
-                    src={recipe.image}
+                    src={`https://source.unsplash.com/featured/?${encodeURIComponent(recipe.title)}`}
                     alt={recipe.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500";
+                    }}
                   />
                   <div className="absolute top-4 left-4">
                     <div className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-lg">
