@@ -23,7 +23,8 @@ const Register = () => {
       await register(email, password, name);
       navigate("/home");
     } catch (err) {
-      setError("Gagal daftar");
+      setError(err.message || "Gagal terhubung ke server");
+      console.error("Detail Error:", err);
     } finally {
       setLoading(false);
     }

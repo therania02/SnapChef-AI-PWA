@@ -1,46 +1,109 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Clock, Flame } from "lucide-react";
+import { Heart, Clock, Flame, Loader2 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { BottomNav } from "../../../ui/BottomNav.jsx";
-import { mockRecipes } from "../../lib/data.js";
 import { useFavorites } from "../../lib/favorites-context";
 import { usePreferences } from "../../lib/preferences-context.jsx";
+import { getSavedRecipes } from "../../../api/gemini";
+
+// --- FUNGSI DETEKTIF KATEGORI (MULTI-TAGS) ---
+// Fungsi ini mengumpulkan semua preferensi dan tipe masakan ke dalam sebuah array
+const determineRecipeTags = (title = "") => {
+  const t = title.toLowerCase();
+  const tags = ["HALAL"]; // Kita asumsikan default resep AI buatanmu selalu Halal
+
+  // Deteksi Cara Memasak & Jenis
+  if (t.includes("sup") || t.includes("soto") || t.includes("kuah") || t.includes("kaldu") || t.includes("sayur asem")) tags.push("SUP");
+  if (t.includes("tumis") || t.includes("oseng") || t.includes("ca ") || t.includes("capcay")) tags.push("TUMISAN");
+  if (t.includes("goreng") || t.includes("krispi") || t.includes("crispy")) tags.push("GORENG");
+  if (t.includes("bakar") || t.includes("panggang") || t.includes("oven")) tags.push("PANGGANG");
+
+  // Deteksi Bahan Utama / Diet
+  if (t.includes("salad") || t.includes("pecel") || t.includes("karedok") || t.includes("gado") || t.includes("sayuran") || t.includes("kembang kol") || t.includes("tahu") || t.includes("tempe")) tags.push("VEGETARIAN");
+  if (t.includes("nasi") || t.includes("mie") || t.includes("bihun") || t.includes("kwetiau") || t.includes("pasta") || t.includes("kentang")) tags.push("KARBO");
+  if (t.includes("ayam") || t.includes("sapi") || t.includes("ikan") || t.includes("udang") || t.includes("cumi") || t.includes("daging")) tags.push("TINGGI PROTEIN");
+
+  // Mengembalikan array tag unik (mencegah duplikat)
+  return [...new Set(tags)];
+};
 
 export default function CookbookScreen() {
   const navigate = useNavigate();
+
   const { favorites } = useFavorites();
   const { selectedPreferences } = usePreferences();
   const [filter, setFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("all"); // "all", "favorites", "newest"
+  const [sortBy, setSortBy] = useState("all");
 
-  // Filter recipes based on selected preferences
+  const [dbRecipes, setDbRecipes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getSavedRecipes();
+
+        const formattedData = data.map(recipe => {
+          // Dapatkan semua tag untuk resep ini
+          const detectedTags = determineRecipeTags(recipe.title);
+
+          return {
+            id: recipe.id,
+            title: recipe.title,
+            ingredients: recipe.ingredients,
+            instructions: recipe.instructions,
+            image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
+            tags: detectedTags, // Menyimpan seluruh tag ke dalam array
+            calories: recipe.calories || 0,
+            protein: recipe.protein || 0,
+            carbs: recipe.carbs || 0,
+            prepTime: recipe.prepTime || 0,
+            servings: 2,
+
+            createdAt: recipe.createdAt || new Date(),
+            isHalal: detectedTags.includes("HALAL"),
+            isVegetarian: detectedTags.includes("VEGETARIAN")
+          };
+        });
+
+        setDbRecipes(formattedData);
+      } catch (error) {
+        console.error("Gagal memuat resep dari database:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRecipes();
+  }, []);
+
   const getFilteredRecipes = () => {
-    let filtered = mockRecipes;
+    let filtered = dbRecipes;
 
-    // Filter by dietary preferences
+    // Filter berdasarkan preferensi akun user
     if (!selectedPreferences.includes("no-preference") && selectedPreferences.length > 0) {
       filtered = filtered.filter((recipe) => {
-        // Check if recipe matches any selected preference
         return selectedPreferences.some((pref) => {
           if (pref === "halal") return recipe.isHalal;
           if (pref === "vegetarian") return recipe.isVegetarian;
           if (pref === "vegan") return recipe.isVegan;
-          if (recipe.tags && recipe.tags.includes(pref)) return true;
+          if (recipe.tags && recipe.tags.includes(pref.toUpperCase())) return true;
           return false;
         });
       });
     }
 
-    // Filter by type (halal, vegetarian, etc.)
+    // Filter dari tombol Chip di atas layar
     if (filter === "halal") filtered = filtered.filter((r) => r.isHalal);
     if (filter === "vegetarian") filtered = filtered.filter((r) => r.isVegetarian);
-    if (filter === "vegan") filtered = filtered.filter((r) => r.isVegan);
+    if (filter === "vegan") filtered = filtered.filter((r) => r.tags.includes("VEGAN"));
 
-    // Sort by favorites or newest
+    // Sorting
     if (sortBy === "favorites") {
-      filtered = filtered.filter((r) => favorites.includes(r.id));
+      filtered = filtered.filter((r) => favorites.some(favId => String(favId) === String(r.id)));
     } else if (sortBy === "newest") {
       filtered = [...filtered].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -52,23 +115,13 @@ export default function CookbookScreen() {
 
   const filteredRecipes = getFilteredRecipes();
 
-  // Swipe handling
   const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset, velocity) => {
-    return Math.abs(offset) * velocity;
-  };
+  const swipePower = (offset, velocity) => Math.abs(offset) * velocity;
 
   const handleDragEnd = (e, { offset, velocity }) => {
     const swipe = swipePower(offset.x, velocity.x);
-
-    // Swipe right to go back to home
-    if (swipe > swipeConfidenceThreshold) {
-      navigate("/home");
-    }
-    // Swipe left to go to shopping list
-    else if (swipe < -swipeConfidenceThreshold) {
-      navigate("/shopping-list");
-    }
+    if (swipe > swipeConfidenceThreshold) navigate("/home");
+    else if (swipe < -swipeConfidenceThreshold) navigate("/shopping-list");
   };
 
   return (
@@ -89,59 +142,29 @@ export default function CookbookScreen() {
             <Heart className="h-6 w-6 fill-current" />
           </div>
 
-          {/* Filter Chips */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <FilterChip
-              label="Semua"
-              active={filter === "all"}
-              onClick={() => setFilter("all")}
-            />
-            <FilterChip
-              label="Halal"
-              active={filter === "halal"}
-              onClick={() => setFilter("halal")}
-            />
-            <FilterChip
-              label="Vegetarian"
-              active={filter === "vegetarian"}
-              onClick={() => setFilter("vegetarian")}
-            />
-            <FilterChip
-              label="Vegan"
-              active={filter === "vegan"}
-              onClick={() => setFilter("vegan")}
-            />
+          <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+            <FilterChip label="Semua" active={filter === "all"} onClick={() => setFilter("all")} />
+            <FilterChip label="Halal" active={filter === "halal"} onClick={() => setFilter("halal")} />
+            <FilterChip label="Vegetarian" active={filter === "vegetarian"} onClick={() => setFilter("vegetarian")} />
+            <FilterChip label="Vegan" active={filter === "vegan"} onClick={() => setFilter("vegan")} />
           </div>
 
-          {/* Sort Chips */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <SortChip
-              label="Semua"
-              active={sortBy === "all"}
-              onClick={() => setSortBy("all")}
-            />
-            <SortChip
-              label="Favorit"
-              active={sortBy === "favorites"}
-              onClick={() => setSortBy("favorites")}
-            />
-            <SortChip
-              label="Terbaru"
-              active={sortBy === "newest"}
-              onClick={() => setSortBy("newest")}
-            />
+          <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+            <SortChip label="Semua" active={sortBy === "all"} onClick={() => setSortBy("all")} />
+            <SortChip label="Favorit" active={sortBy === "favorites"} onClick={() => setSortBy("favorites")} />
+            <SortChip label="Terbaru" active={sortBy === "newest"} onClick={() => setSortBy("newest")} />
           </div>
         </div>
       </div>
 
       {/* Recipe Grid */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-4 space-y-4">
-        {filteredRecipes.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12 space-y-4"
-          >
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          </div>
+        ) : filteredRecipes.length === 0 ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 space-y-4">
             <div className="text-6xl">📖</div>
             <div>
               <h3 className="font-medium mb-2">Cookbook Masih Kosong</h3>
@@ -154,79 +177,96 @@ export default function CookbookScreen() {
             </div>
           </motion.div>
         ) : (
-          filteredRecipes.map((recipe, index) => (
-            <motion.div
-              key={recipe.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => navigate(`/recipe/${recipe.id}`)}
-              className="bg-white rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-            >
-              <div className="flex gap-4">
-                <div className="w-32 h-32 flex-shrink-0">
-                  <img
-                    src={recipe.image}
-                    alt={recipe.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 p-4 flex flex-col justify-between">
-                  <div>
-                    <div className="text-xs text-primary mb-1">{recipe.type}</div>
-                    <h3 className="font-medium line-clamp-2">{recipe.title}</h3>
+          filteredRecipes.map((recipe, index) => {
+            const isRecipeLoved = favorites.some(favId => String(favId) === String(recipe.id));
+
+            return (
+              <motion.div
+                key={recipe.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => navigate(`/recipe/${recipe.id}`, { state: { recipeData: recipe } })}
+                className="bg-white rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow border border-gray-100"
+              >
+                <div className="flex gap-4">
+                  <div className="w-32 h-32 flex-shrink-0 relative">
+                    <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span>{recipe.calories} kal</span>
-                    <span>{recipe.prepTime} min</span>
-                    <span>{recipe.servings} porsi</span>
+                  <div className="flex-1 p-4 flex flex-col justify-between">
+                    <div>
+                      {/* TAMPILAN MULTI-BADGE & LOGO HATI */}
+                      <div className="flex justify-between items-start mb-2">
+                        {/* Area penampung badge yang bisa membungkus ke baris baru */}
+                        <div className="flex flex-wrap gap-1 flex-1 pr-2">
+                          {recipe.tags && recipe.tags.map((tag, i) => (
+                            <span
+                              key={i}
+                              className="text-[9px] font-bold px-1.5 py-0.5 bg-[#5E87A6]/10 text-[#5E87A6] rounded-md uppercase tracking-wider"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Logo Hati (Jika di-love) */}
+                        {isRecipeLoved && (
+                          <Heart className="h-5 w-5 fill-red-500 text-red-500 drop-shadow-sm flex-shrink-0" />
+                        )}
+                      </div>
+
+                      <h3 className="font-medium line-clamp-2 leading-snug text-gray-800 mt-1">{recipe.title}</h3>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-center mt-3 pt-3 border-t border-gray-100">
+                      <div>
+                        <div className="text-sm font-bold text-primary">{recipe.calories}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Kalori</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-primary">{recipe.protein}g</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Protein</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-primary">{recipe.carbs}g</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Karbo</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-primary">{recipe.prepTime}m</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Waktu</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))
+              </motion.div>
+            );
+          })
         )}
       </div>
 
-      {/* Bottom Navigation */}
       <BottomNav />
     </motion.div>
   );
 }
 
-function FilterChip({
-  label,
-  active,
-  onClick,
-}) {
+function FilterChip({ label, active, onClick }) {
   return (
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${active
-        ? "bg-white text-primary"
-        : "bg-white/10 text-primary-foreground hover:bg-white/20"
-        }`}
+      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${active ? "bg-white text-primary shadow-sm" : "bg-white/10 text-primary-foreground hover:bg-white/20"}`}
     >
       {label}
     </motion.button>
   );
 }
 
-function SortChip({
-  label,
-  active,
-  onClick,
-}) {
+function SortChip({ label, active, onClick }) {
   return (
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${active
-        ? "bg-white text-primary"
-        : "bg-white/10 text-primary-foreground hover:bg-white/20"
-        }`}
+      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${active ? "bg-white text-primary shadow-sm" : "bg-white/10 text-primary-foreground hover:bg-white/20"}`}
     >
       {label}
     </motion.button>

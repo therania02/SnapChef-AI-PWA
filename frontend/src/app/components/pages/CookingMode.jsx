@@ -11,7 +11,15 @@ export default function CookingModeScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const recipe = mockRecipes.find((r) => r.id === id) || mockRecipes[0];
+
+  // --- LOGIKA PENYELAMAT DATA AI ---
+  // Menangkap data resep riil yang dikirim dari tombol "Mulai Memasak"
+  const incomingRecipe = location.state?.recipeData;
+
+  // Gunakan resep AI JIKA ADA. Kalau tidak ada, baru pakai data dummy.
+  const recipe = incomingRecipe || mockRecipes.find((r) => String(r.id) === String(id)) || mockRecipes[0];
+  // ---------------------------------
+
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [showChat, setShowChat] = useState(false);
@@ -139,7 +147,7 @@ export default function CookingModeScreen() {
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => navigate(`/recipe/${recipe.id}`)}
+              onClick={() => navigate(-1)} // Memperbaiki tombol back agar kembali ke Detail Resep
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
             >
               <ArrowLeft className="h-6 w-6" />
@@ -249,8 +257,8 @@ export default function CookingModeScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
                 className={`rounded-3xl p-6 border-2 ${stepTimer === 0
-                    ? 'bg-muted/20 border-muted/30'
-                    : 'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20'
+                  ? 'bg-muted/20 border-muted/30'
+                  : 'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20'
                   }`}
               >
                 <div className="flex items-center justify-between mb-4">
@@ -268,12 +276,12 @@ export default function CookingModeScreen() {
                     }}
                     transition={{ duration: 1, repeat: isTimerRunning && timeRemaining <= 10 ? Infinity : 0 }}
                     className={`text-6xl font-bold ${stepTimer === 0
-                        ? 'text-muted-foreground'
-                        : timeRemaining === 0
-                          ? 'text-primary'
-                          : timeRemaining <= 10
-                            ? 'text-accent'
-                            : 'text-foreground'
+                      ? 'text-muted-foreground'
+                      : timeRemaining === 0
+                        ? 'text-primary'
+                        : timeRemaining <= 10
+                          ? 'text-accent'
+                          : 'text-foreground'
                       }`}
                   >
                     {formatTime(timeRemaining)}
@@ -449,10 +457,10 @@ export default function CookingModeScreen() {
                 key={index}
                 onClick={() => setCurrentStep(index)}
                 className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm transition-all ${index === currentStep
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : completedSteps.includes(index)
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-background"
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : completedSteps.includes(index)
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-background"
                   }`}
               >
                 {completedSteps.includes(index) ? (
