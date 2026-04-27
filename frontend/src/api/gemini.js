@@ -43,11 +43,14 @@ export const saveSelectedRecipe = async (recipeData) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                title: recipeData.title,
-                ingredients: recipeData.ingredients,
-                // AI memberikan label "steps", sedangkan database MySQL kamu kolomnya "instructions"
-                instructions: recipeData.steps,
-                userId: userId
+            title: recipeData.title,
+            ingredients: recipeData.ingredients,
+            instructions: recipeData.steps,
+            calories: recipeData.calories,
+            protein: recipeData.protein,
+            carbs: recipeData.carbs,
+            prepTime: recipeData.prepTime,
+            userId: userId
             })
         });
 

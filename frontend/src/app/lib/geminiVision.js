@@ -15,39 +15,42 @@ export const analyzeAndGenerateRecipes = async (imageBase64) => {
     2. Berdasarkan bahan tersebut, buatkan 3 rekomendasi resep.
 
     SETIAP resep HARUS memiliki:
-    - nama resep
-    - daftar bahan
-    - langkah memasak
-    - estimasi nutrisi:
-    - calories (kkal)
-    - protein (gram)
-    - carbs (gram)
+    - title (string)
+    - ingredients (array of string)
+    - steps (array of string)
+    - nutrition (object number)
 
-    FORMAT WAJIB JSON:
+    FORMAT WAJIB JSON VALID (TIDAK BOLEH STRING, TIDAK BOLEH TEKS TAMBAHAN):
 
     {
-    "ingredients_detected": ["bahan1", "bahan2"],
-    "recipes": [
+      "ingredients_detected": ["bahan1", "bahan2"],
+      "recipes": [
         {
-        "title": "Nama Resep",
-        "ingredients": [
+          "title": "Nama Resep",
+          "ingredients": [
             "2 siung bawang putih",
             "1 butir telur"
-        ],
-        "steps": [
+          ],
+          "steps": [
             "Langkah 1",
             "Langkah 2"
-        ],
-        "nutrition": {
-            "calories": 250,
-            "protein": 12,
-            "carbs": 20
+          ],
+          "nutrition": {
+            "calories": 200,
+            "protein": 10,
+            "carbs": 30
+          }
         }
-        }
-    ]
+      ]
     }
 
-    Jangan beri penjelasan tambahan, hanya JSON valid.
+    ATURAN:
+    - calories, protein, carbs HARUS ANGKA (bukan string, bukan '200 kcal')
+    - Jangan gunakan kata selain JSON
+    - Jangan gunakan markdown
+    - Jangan gunakan penjelasan apapun
+
+    Kembalikan HANYA JSON.
     `;
 
   try {
