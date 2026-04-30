@@ -1,63 +1,145 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const db = require('../models/index.cjs');
-const { User } = db;
-
+const { User, Sequelize } = db;
+const { Op } = Sequelize;
 import bcrypt from 'bcryptjs';
 
-// Fungsi Register (Async/Await - Indikator 3)
-export const register = async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
+// Import BaseController untuk Inheritance
+import BaseController from './BaseController.js';
 
-        // Hash password agar aman (Sangat disarankan untuk standar profesional)
-        const hashedPassword = await bcrypt.hash(password, 10);
+// AuthController mewarisi BaseController
+class AuthController extends BaseController {
 
-        // Membuat data baru di database (Inheritance dari Sequelize Model - Indikator 2)
-        const newUser = await User.create({
-            name,
-            email,
-            password: hashedPassword, // Simpan password yang sudah di-hash
-            role: 'user'
-        });
+    // Gunakan arrow function (=>) agar konteks 'this' tetap mengikat ke class ini
+    register = async (req, res) => {
+        try {
+            const { name, email, password } = req.body;
 
-        res.status(201).json({
-            message: "Registrasi Berhasil!",
-            user: newUser
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
 
-// Fungsi Login
-export const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+            // Membuat data baru di database
+            const newUser = await User.create({
+                name,
+                email,
+                password: hashedPassword,
+                role: 'user'
+            });
 
-        // Cari user berdasarkan email
-        const user = await User.findOne({ where: { email } });
-
-        if (!user) {
-            return res.status(401).json({ message: "Email tidak terdaftar" });
+            // Menggunakan method dari class induk (BaseController)
+            return this.sendSuccess(res, 201, "Registrasi Berhasil!", newUser);
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
         }
+    };
 
-        // Bandingkan password input dengan password di database
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+    login = async (req, res) => {
+        try {
+            const { email, password } = req.body;
 
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: "Password salah" });
-        }
+            // Cari user berdasarkan email
+            const user = await User.findOne({ where: { email } });
 
-        res.status(200).json({
-            message: "Login Berhasil!",
-            user: {
+            if (!user) {
+                return this.sendError(res, 401, "Email tidak terdaftar");
+            }
+
+            // Bandingkan password
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+
+            if (!isPasswordValid) {
+                return this.sendError(res, 401, "Password salah");
+            }
+
+            const userData = {
                 id: user.id,
                 name: user.name,
                 email: user.email
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+            };
+
+            // Menggunakan method dari class induk
+            return this.sendSuccess(res, 200, "Login Berhasil!", { user: userData });
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    // R - Read All (Dengan Filter & Pagination)
+    getAll = async (req, res) => {
+        try {
+            const search = req.query.q || '';
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const offset = (page - 1) * limit;
+
+            const users = await User.findAndCountAll({
+                where: {
+                    name: { [Op.like]: `%${search}%` }
+                },
+                // PENTING: Jangan tampilkan password di response JSON!
+                attributes: { exclude: ['password'] },
+                limit: limit,
+                offset: offset
+            });
+
+            return this.sendSuccess(res, 200, "Berhasil mengambil data pengguna", {
+                totalData: users.count,
+                totalPages: Math.ceil(users.count / limit),
+                currentPage: page,
+                data: users.rows
+            });
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    // R - Read One by ID
+    getById = async (req, res) => {
+        try {
+            const user = await User.findByPk(req.params.id, {
+                attributes: { exclude: ['password'] }
+            });
+            if (!user) return this.sendError(res, 404, "Pengguna tidak ditemukan");
+
+            return this.sendSuccess(res, 200, "Berhasil", user);
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    // U - Update
+    update = async (req, res) => {
+        try {
+            const user = await User.findByPk(req.params.id);
+            if (!user) return this.sendError(res, 404, "Pengguna tidak ditemukan");
+
+            // Hanya update nama (jangan update email/password lewat sini untuk keamanan)
+            const { name, role } = req.body;
+            await user.update({ name, role });
+
+            // Hapus password dari objek sebelum dikembalikan ke client
+            const updatedUser = user.toJSON();
+            delete updatedUser.password;
+
+            return this.sendSuccess(res, 200, "Pengguna berhasil diupdate", updatedUser);
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    // D - Delete
+    delete = async (req, res) => {
+        try {
+            const user = await User.findByPk(req.params.id);
+            if (!user) return this.sendError(res, 404, "Pengguna tidak ditemukan");
+
+            await user.destroy();
+            return this.sendSuccess(res, 200, "Pengguna berhasil dihapus");
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+}
+// Export instance dari class
+export default new AuthController();

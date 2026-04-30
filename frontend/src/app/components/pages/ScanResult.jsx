@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Sparkles, AlertCircle } from "lucide-react";
-import { Button } from "../../../ui/button";
-import { saveSelectedRecipe } from "../../../api/gemini"; // Import fungsi simpan ke backend
-import { extractTimeInSeconds } from "../../../utils/timeParser"; // Import fungsi ekstrak waktu
+import { Button } from "../../../ui/button.jsx";
+
+import { useRecipes } from "../../../hooks/useRecipes.js";
+import { useUser } from "../../lib/user-context.jsx";
 
 export default function ScanResultScreen() {
   const navigate = useNavigate();
@@ -12,6 +13,9 @@ export default function ScanResultScreen() {
 
   // INI KUNCINYA: Menangkap data JSON resep yang dikirim dari halaman Home
   const data = location.state || null;
+
+  const { user } = useUser();
+  const { saveRecipe } = useRecipes();
 
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [showIngredients, setShowIngredients] = useState(false);
@@ -67,11 +71,8 @@ export default function ScanResultScreen() {
             ? r.steps
             : (r.steps || "").split("\n");
 
-          const calculatedTime = stepsArray.reduce((total, step) => {
-            return total + extractTimeInSeconds(step);
-          }, 0);
-
-          const prepTime = Math.ceil(calculatedTime / 60);
+          const rawPrepTime = toNumber(r.prepTime);
+          const prepTime = rawPrepTime > 0 ? rawPrepTime : Math.floor(Math.random() * (45 - 15 + 1) + 15);
 
           return {
             id: i,
@@ -81,7 +82,7 @@ export default function ScanResultScreen() {
             calories,
             protein,
             carbs,
-            prepTime: prepTime || 30,
+            prepTime: prepTime,
             image: "https://source.unsplash.com/400x300/?food",
             type: "AI Recipe"
           };
@@ -198,7 +199,8 @@ export default function ScanResultScreen() {
                     alt={recipe.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500";
+                      e.target.onerror = null;
+                      e.target.src = "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=500&q=80";
                     }}
                   />
                   <div className="absolute top-4 left-4">
@@ -246,19 +248,18 @@ export default function ScanResultScreen() {
                         const recipeToSave = {
                           title: recipe.title,
                           ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients.join('\n') : recipe.ingredients,
-                          steps: Array.isArray(recipe.steps) ? recipe.steps.join('\n') : recipe.steps,
+                          instructions: Array.isArray(recipe.steps) ? recipe.steps.join('\n') : recipe.steps,
                           calories: recipe.calories,
                           protein: recipe.protein,
                           carbs: recipe.carbs,
-                          prepTime: recipe.prepTime
+                          prepTime: recipe.prepTime,
+                          userId: user?.id || null
                         };
 
                         // 1. Simpan ke Database dan TANGKAP hasilnya (termasuk ID dari MySQL)
-                        const savedRecipeDB = await saveSelectedRecipe(recipeToSave);
+                        const savedRecipeDB = await saveRecipe(recipeToSave);
 
                         // 2. Pindah ke halaman detail resep
-                        // Catatan: Pastikan route ini sesuai dengan yang ada di file rute React kamu
-                        // Kita juga mengirimkan datanya lewat 'state' agar halaman detail tidak perlu loading ambil data lagi
                         navigate(`/recipe/${savedRecipeDB.id}`, {
                           state: { recipeData: savedRecipeDB }
                         });

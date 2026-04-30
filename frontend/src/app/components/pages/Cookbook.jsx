@@ -1,39 +1,41 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Clock, Flame, Loader2 } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { BottomNav } from "../../../ui/BottomNav.jsx";
-import { useFavorites } from "../../lib/favorites-context";
+import { useFavorites } from "../../lib/favorites-context.jsx";
 import { usePreferences } from "../../lib/preferences-context.jsx";
-import { getSavedRecipes } from "../../../api/gemini";
 
-// --- FUNGSI DETEKTIF KATEGORI (MULTI-TAGS) ---
-// Fungsi ini mengumpulkan semua preferensi dan tipe masakan ke dalam sebuah array
+// IMPORT CUSTOM HOOKS BACKEND NODE.JS[cite: 13]
+import { useRecipes } from "../../../hooks/useRecipes.js";
+import { useUser } from "../../lib/user-context.jsx";
+
 const determineRecipeTags = (title = "") => {
   const t = title.toLowerCase();
-  const tags = ["HALAL"]; // Kita asumsikan default resep AI buatanmu selalu Halal
+  const tags = ["HALAL"];
 
-  // Deteksi Cara Memasak & Jenis
   if (t.includes("sup") || t.includes("soto") || t.includes("kuah") || t.includes("kaldu") || t.includes("sayur asem")) tags.push("SUP");
   if (t.includes("tumis") || t.includes("oseng") || t.includes("ca ") || t.includes("capcay")) tags.push("TUMISAN");
   if (t.includes("goreng") || t.includes("krispi") || t.includes("crispy")) tags.push("GORENG");
   if (t.includes("bakar") || t.includes("panggang") || t.includes("oven")) tags.push("PANGGANG");
 
-  // Deteksi Bahan Utama / Diet
   if (t.includes("salad") || t.includes("pecel") || t.includes("karedok") || t.includes("gado") || t.includes("sayuran") || t.includes("kembang kol") || t.includes("tahu") || t.includes("tempe")) tags.push("VEGETARIAN");
   if (t.includes("nasi") || t.includes("mie") || t.includes("bihun") || t.includes("kwetiau") || t.includes("pasta") || t.includes("kentang")) tags.push("KARBO");
   if (t.includes("ayam") || t.includes("sapi") || t.includes("ikan") || t.includes("udang") || t.includes("cumi") || t.includes("daging")) tags.push("TINGGI PROTEIN");
 
-  // Mengembalikan array tag unik (mencegah duplikat)
   return [...new Set(tags)];
 };
 
 export default function CookbookScreen() {
   const navigate = useNavigate();
-
+  const { user } = useUser();
   const { favorites } = useFavorites();
   const { selectedPreferences } = usePreferences();
+
+  // Panggil fungsi getRecipes dari hook backend
+  const { getRecipes } = useRecipes();
+
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("all");
 
@@ -44,10 +46,11 @@ export default function CookbookScreen() {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        const data = await getSavedRecipes();
+        // Memanggil API Node.js dengan argument: page=1, limit=50, search='', userId
+        const response = await getRecipes(1, 50, '', user?.id);
+        const data = response?.data || [];
 
         const formattedData = data.map(recipe => {
-          // Dapatkan semua tag untuk resep ini
           const detectedTags = determineRecipeTags(recipe.title);
 
           return {
@@ -56,13 +59,12 @@ export default function CookbookScreen() {
             ingredients: recipe.ingredients,
             instructions: recipe.instructions,
             image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
-            tags: detectedTags, // Menyimpan seluruh tag ke dalam array
+            tags: detectedTags,
             calories: recipe.calories || 0,
             protein: recipe.protein || 0,
             carbs: recipe.carbs || 0,
             prepTime: recipe.prepTime || 0,
             servings: 2,
-
             createdAt: recipe.createdAt || new Date(),
             isHalal: detectedTags.includes("HALAL"),
             isVegetarian: detectedTags.includes("VEGETARIAN")
@@ -71,19 +73,18 @@ export default function CookbookScreen() {
 
         setDbRecipes(formattedData);
       } catch (error) {
-        console.error("Gagal memuat resep dari database:", error);
+        console.error("Gagal memuat resep dari database MySQL:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRecipes();
-  }, []);
+  }, [user]);
 
   const getFilteredRecipes = () => {
     let filtered = dbRecipes;
 
-    // Filter berdasarkan preferensi akun user
     if (!selectedPreferences.includes("no-preference") && selectedPreferences.length > 0) {
       filtered = filtered.filter((recipe) => {
         return selectedPreferences.some((pref) => {
@@ -96,12 +97,10 @@ export default function CookbookScreen() {
       });
     }
 
-    // Filter dari tombol Chip di atas layar
     if (filter === "halal") filtered = filtered.filter((r) => r.isHalal);
     if (filter === "vegetarian") filtered = filtered.filter((r) => r.isVegetarian);
     if (filter === "vegan") filtered = filtered.filter((r) => r.tags.includes("VEGAN"));
 
-    // Sorting
     if (sortBy === "favorites") {
       filtered = filtered.filter((r) => favorites.some(favId => String(favId) === String(r.id)));
     } else if (sortBy === "newest") {
@@ -196,9 +195,7 @@ export default function CookbookScreen() {
                   </div>
                   <div className="flex-1 p-4 flex flex-col justify-between">
                     <div>
-                      {/* TAMPILAN MULTI-BADGE & LOGO HATI */}
                       <div className="flex justify-between items-start mb-2">
-                        {/* Area penampung badge yang bisa membungkus ke baris baru */}
                         <div className="flex flex-wrap gap-1 flex-1 pr-2">
                           {recipe.tags && recipe.tags.map((tag, i) => (
                             <span
@@ -210,7 +207,6 @@ export default function CookbookScreen() {
                           ))}
                         </div>
 
-                        {/* Logo Hati (Jika di-love) */}
                         {isRecipeLoved && (
                           <Heart className="h-5 w-5 fill-red-500 text-red-500 drop-shadow-sm flex-shrink-0" />
                         )}

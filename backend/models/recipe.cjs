@@ -15,7 +15,11 @@ module.exports = (sequelize, DataTypes) => {
     protein: DataTypes.INTEGER,
     carbs: DataTypes.INTEGER,
     prepTime: DataTypes.INTEGER,
-    userId: DataTypes.INTEGER
+    userId: DataTypes.INTEGER,
+    rating: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    }
   }, {
     sequelize,
     modelName: 'Recipe',

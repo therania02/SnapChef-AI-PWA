@@ -13,9 +13,10 @@ const Toaster = (props) => {
       position="top-center"
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
+          background: "rgb(var(--card))",
+          color: "rgb(var(--foreground))",
+          border: "1px solid rgb(var(--border))",
+          wordBreak: "break-word",
         }
       }
       {...props}

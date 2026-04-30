@@ -1,8 +1,14 @@
 import express from 'express';
 const router = express.Router();
-import * as authController from '../controllers/authController.js'; // Pakai .js
+
+import authController from '../controllers/authController.js';
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 
-export default router; // Gunakan export default
+router.get('/users', authController.getAll);           // READ ALL
+router.get('/users/:id', authController.getById);      // READ ONE
+router.put('/users/:id', authController.update);       // UPDATE
+router.delete('/users/:id', authController.delete);    // DELETE
+
+export default router;

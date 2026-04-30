@@ -2,25 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
-  ArrowLeft,
-  Heart,
-  Share2,
-  Plus,
-  Minus,
-  ShoppingBag,
-  AlertCircle,
-  Flame,
-  MessageCircle,
-  Star,
-  Timer,
-  Clock,
-  Lightbulb,
-  Send,
-  Crown,
-  Lock,
-  X,
-  RotateCcw,
-  ArrowRight,
+  ArrowLeft, Heart, Share2, Plus, Minus, AlertCircle, Flame, MessageCircle, Star, ArrowRight, X, Crown, Lock
 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { Badge } from "../../../ui/badge.jsx";
@@ -29,6 +11,7 @@ import { mockRecipes } from "../../lib/data";
 import { useFavorites } from "../../lib/favorites-context";
 import { useUser } from "../../lib/user-context.jsx";
 import { IngredientSubstituteDropdown } from "../../../ui/IngredientSubstituteDropdown.jsx";
+import { useRecipes } from "../../../hooks/useRecipes.js"; // Pastikan ini di-import
 
 // --- FUNGSI PARSER CERDAS UNTUK BAHAN ---
 const parseIngredientLine = (line) => {
@@ -79,38 +62,15 @@ const parseIngredientLine = (line) => {
   };
 };
 
-// --- FUNGSI DETEKTIF WAKTU ---
-const extractTimeInSeconds = (text) => {
-  const lowerText = text.toLowerCase();
-
-  const minMatch = lowerText.match(/(\d+)\s*(?:menit|mnt)/i);
-  const secMatch = lowerText.match(/(\d+)\s*(?:detik|dtk)/i);
-  const hourMatch = lowerText.match(/(\d+)\s*(?:jam)/i);
-
-  let totalSeconds = 0;
-  if (hourMatch) totalSeconds += parseInt(hourMatch[1]) * 3600;
-  if (minMatch) totalSeconds += parseInt(minMatch[1]) * 60;
-  if (secMatch) totalSeconds += parseInt(secMatch[1]);
-
-  if (totalSeconds > 0) return totalSeconds;
-
-  if (lowerText.includes('marinasi') || lowerText.includes('diamkan')) return 15 * 60;
-  if (lowerText.includes('rebus') || lowerText.includes('ungkep') || lowerText.includes('panggang') || lowerText.includes('oven')) return 10 * 60;
-  if (lowerText.includes('tumis') || lowerText.includes('goreng') || lowerText.includes('didihkan')) return 3 * 60;
-  if (lowerText.includes('potong') || lowerText.includes('iris') || lowerText.includes('haluskan') || lowerText.includes('kupas')) return 2 * 60;
-  if (lowerText.includes('aduk') || lowerText.includes('campur') || lowerText.includes('masukkan') || lowerText.includes('tuang')) return 60;
-  if (lowerText.includes('sajikan') || lowerText.includes('angkat') || lowerText.includes('taburi') || lowerText.includes('hias')) return 30;
-
-  return 60;
-};
-
 export default function RecipeDetailScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 👇 PINDAHKAN KETIGA HOOK INI KE SINI 👇
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useUser();
+  const { rateRecipe } = useRecipes();
 
   const incomingRecipe = location.state?.recipeData;
 
@@ -131,7 +91,6 @@ export default function RecipeDetailScreen() {
       const cleanInstruction = step.replace(/^\d+[\.\)]\s*/, '').trim();
       return {
         instruction: cleanInstruction,
-        timer: extractTimeInSeconds(cleanInstruction),
         image: null
       };
     })
@@ -139,9 +98,7 @@ export default function RecipeDetailScreen() {
 
   const recipe = formattedAIRecipe || mockRecipes.find((r) => String(r.id) === String(id)) || mockRecipes[0];
 
-  // --- LOGIKA TOTAL WAKTU DINAMIS DARI HASIL PENJUMLAHAN LANGKAH ---
-  const totalStepTimeSeconds = (recipe.steps || []).reduce((acc, step) => acc + (step.timer || 0), 0);
-  const displayPrepTime = totalStepTimeSeconds > 0 ? Math.ceil(totalStepTimeSeconds / 60) : (recipe.prepTime || 30);
+  const displayPrepTime = recipe.prepTime || 30;
 
   const [servings, setServings] = useState(recipe.servings || 1);
   const [showTweaker, setShowTweaker] = useState(false);
@@ -154,38 +111,6 @@ export default function RecipeDetailScreen() {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [ingredientSubstitutions, setIngredientSubstitutions] = useState({});
-
-  // --- STATE UNTUK TIMER INTERAKTIF ---
-  const [runningStep, setRunningStep] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    let interval;
-    if (runningStep !== null && !isPaused && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            toast.success("Waktu habis! Silakan lanjut ke langkah berikutnya 🍳");
-            setRunningStep(null);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [runningStep, isPaused, timeLeft]);
-
-  const handleStartTimer = (stepIndex, seconds) => {
-    if (runningStep !== null && runningStep !== stepIndex) {
-      toast.error("Selesaikan atau pause timer yang sedang berjalan dulu!");
-      return;
-    }
-    setRunningStep(stepIndex);
-    setTimeLeft(seconds);
-    setIsPaused(false);
-  };
 
   const calculateSubstituteAmount = (ratio, originalAmount) => {
     const parts = ratio.split(":");
@@ -204,36 +129,6 @@ export default function RecipeDetailScreen() {
     toast.success(`Batal mengganti ${ingredientName}`, {
       description: "Kembali ke bahan asli"
     });
-  };
-
-  const getStepSubstitutions = (step) => {
-    const substitutionsInStep = [];
-    Object.keys(ingredientSubstitutions).forEach(originalIngredient => {
-      const substitution = ingredientSubstitutions[originalIngredient];
-      if (step.instruction.toLowerCase().includes(originalIngredient.toLowerCase())) {
-        substitutionsInStep.push({
-          original: originalIngredient,
-          substitute: substitution.substitute.name,
-          ratio: substitution.substitute.ratio,
-          note: substitution.substitute.note
-        });
-      }
-      if (step.ingredients) {
-        step.ingredients.forEach(ing => {
-          if (ing.toLowerCase().includes(originalIngredient.toLowerCase())) {
-            if (!substitutionsInStep.find(s => s.original === originalIngredient)) {
-              substitutionsInStep.push({
-                original: originalIngredient,
-                substitute: substitution.substitute.name,
-                ratio: substitution.substitute.ratio,
-                note: substitution.substitute.note
-              });
-            }
-          }
-        });
-      }
-    });
-    return substitutionsInStep;
   };
 
   const { scrollY } = useScroll();
@@ -299,10 +194,16 @@ export default function RecipeDetailScreen() {
 
   const handleSaveRating = () => setShowRatingConfirm(true);
 
-  const confirmSaveRating = () => {
-    setIsRatingSaved(true);
-    setShowRatingConfirm(false);
-    toast.success(`Rating ${rating} bintang berhasil disimpan!`);
+  const confirmSaveRating = async () => {
+    try {
+      await rateRecipe(recipe.id, rating);
+
+      setIsRatingSaved(true);
+      setShowRatingConfirm(false);
+      toast.success(`Rating ${rating} bintang berhasil disimpan ke database!`);
+    } catch (error) {
+      toast.error("Gagal menyimpan rating ke database: " + error.message);
+    }
   };
 
   const cancelSaveRating = () => setShowRatingConfirm(false);
@@ -325,14 +226,6 @@ export default function RecipeDetailScreen() {
         setChatMessages(prev => [...prev, aiMessage]);
       }, 1000);
     }
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    if (mins > 0 && secs > 0) return `${mins} mnt ${secs} dtk`;
-    if (mins > 0) return `${mins} mnt`;
-    return `${secs} dtk`;
   };
 
   return (
@@ -382,7 +275,7 @@ export default function RecipeDetailScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 space-y-6 mt-6">
 
-        {/* Nutrition Info (TOTAL WAKTU SEKARANG DINAMIS) */}
+        {/* Nutrition Info */}
         <div className="bg-white rounded-3xl p-6 shadow-lg">
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
@@ -571,94 +464,23 @@ export default function RecipeDetailScreen() {
           </div>
         </div>
 
-        {/* Steps */}
+        {/* Steps (Tanpa Timer) */}
         <div className="space-y-4">
           <h2 className="text-xl font-medium">Cara Memasak</h2>
           <div className="space-y-4">
             {(recipe.steps || []).map((step, index) => {
-              const stepSubstitutions = getStepSubstitutions(step);
-              const hasSubstitutions = stepSubstitutions.length > 0;
-
-              // Cek apakah timer di langkah ini sedang berjalan
-              const isThisTimerRunning = runningStep === index;
-
               return (
                 <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="bg-white rounded-3xl overflow-hidden shadow-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gradient-to-r from-primary/10 to-accent/10">
-
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg flex-shrink-0">
                         {index + 1}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium">Langkah {index + 1}</p>
-
-                        {/* Waktu akan menyala merah jika berjalan! */}
-                        <div className={`flex items-center gap-1 text-xs mt-1 transition-colors ${isThisTimerRunning && !isPaused ? 'text-red-500 font-bold animate-pulse' : 'text-muted-foreground'}`}>
-                          <Clock className="h-3 w-3" />
-                          <span>{isThisTimerRunning ? formatTime(timeLeft) : formatTime(step.timer)}</span>
-                        </div>
                       </div>
                     </div>
-
-                    {/* TOMBOL TIMER INTERAKTIF */}
-                    <div className="flex items-center gap-2 mt-2 sm:mt-0 justify-end">
-                      {isThisTimerRunning ? (
-                        <>
-                          {isPaused ? (
-                            <Button size="sm" variant="default" className="rounded-full h-8 px-4 text-xs font-semibold shadow-sm" onClick={() => setIsPaused(false)}>
-                              Lanjut
-                            </Button>
-                          ) : (
-                            <Button size="sm" className="bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full h-8 px-4 text-xs font-semibold shadow-sm transition-colors" onClick={() => setIsPaused(true)}>
-                              Pause
-                            </Button>
-                          )}
-                          <Button size="sm" variant="outline" className="rounded-full h-8 px-3 text-xs bg-white shadow-sm" onClick={() => { setTimeLeft(step.timer); setIsPaused(false); }}>
-                            <RotateCcw className="h-3 w-3 mr-1" /> Restart
-                          </Button>
-                          <Button size="sm" variant="ghost" className="rounded-full h-8 w-8 p-0 text-red-500 hover:bg-red-50" onClick={() => setRunningStep(null)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full h-8 px-4 text-xs shadow-sm bg-white"
-                          onClick={() => handleStartTimer(index, step.timer)}
-                          disabled={runningStep !== null} // MENGUNCI JIKA ADA TIMER LAIN YANG BERJALAN
-                        >
-                          <Timer className="h-3 w-3 mr-1.5" />
-                          Mulai Timer
-                        </Button>
-                      )}
-                    </div>
-
                   </div>
-
-                  {hasSubstitutions && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-y-2 border-green-500/20 p-3">
-                      <div className="flex items-start gap-2">
-                        <RotateCcw className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 space-y-1">
-                          <p className="text-xs font-medium text-green-700 dark:text-green-400">🔄 Bahan pengganti untuk langkah ini:</p>
-                          {stepSubstitutions.map((sub, subIdx) => (
-                            <div key={subIdx} className="text-xs bg-green-600/10 rounded-lg px-2 py-1.5 border border-green-600/20">
-                              <div className="flex items-center gap-1.5">
-                                <span className="line-through text-muted-foreground">{sub.original}</span>
-                                <ArrowRight className="h-3 w-3 text-green-600" />
-                                <span className="font-medium text-green-900 dark:text-green-100">{sub.substitute}</span>
-                                <span className="text-green-600 text-[10px] font-medium ml-auto">({sub.ratio})</span>
-                              </div>
-                              {sub.note && <p className="text-[10px] text-muted-foreground italic mt-1">💡 {sub.note}</p>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
                   <div className="p-4 space-y-3">
                     <p className="text-sm leading-relaxed">{step.instruction}</p>
                   </div>
