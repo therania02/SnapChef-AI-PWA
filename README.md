@@ -128,16 +128,9 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 - GET /api/recipes
 - GET /api/recipes?page=1&limit=10&q=nasi&userId=1
 - GET /api/recipes/:id
-- POST /api/recipes/scan
 - POST /api/recipes/save
 - PUT /api/recipes/:id/rating
 - DELETE /api/recipes/:id
-
-### Body POST /api/recipes/scan
-{
-  "imageBase64": "data:image/jpeg;base64,...",
-  "preferences": "makanan sehat"
-}
 
 ### Body POST /api/recipes/save
 {
