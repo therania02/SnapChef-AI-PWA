@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Trash2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useCookingPosts } from "../app/lib/cooking-post-context";
+import { useCookingPosts } from "../app/lib/cookingPostContext";
 import { toast } from "sonner";
 
 export function CommentsModal({ isOpen, onClose, post }) {
@@ -31,12 +31,12 @@ export function CommentsModal({ isOpen, onClose, post }) {
     addComment(post.id, commentText.trim());
     setCommentText("");
     toast.success("Komentar berhasil ditambahkan!");
-    
+
     // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
-    
+
     // Scroll to bottom after adding comment
     setTimeout(scrollToBottom, 100);
   };

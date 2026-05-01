@@ -6,7 +6,7 @@ const { Op } = Sequelize;
 import bcrypt from 'bcryptjs';
 
 // Import BaseController untuk Inheritance
-import BaseController from './BaseController.js';
+import BaseController from './baseController.js';
 
 // AuthController mewarisi BaseController
 class AuthController extends BaseController {
