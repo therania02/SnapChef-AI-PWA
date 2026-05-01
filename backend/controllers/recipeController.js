@@ -169,6 +169,22 @@ class RecipeController extends BaseController {
         }
     };
 
+    getRecipeById = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const recipe = await Recipe.findByPk(id);
+
+            if (!recipe) {
+                return this.sendError(res, 404, "Resep tidak ditemukan");
+            }
+
+            return this.sendSuccess(res, 200, "Berhasil mengambil detail resep", recipe);
+        } catch (error) {
+            console.error("Get Recipe By ID Error:", error);
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
     // Simpan Rating Resep
     rateRecipe = async (req, res) => {
         try {
