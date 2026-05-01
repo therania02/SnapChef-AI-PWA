@@ -70,12 +70,12 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 1. Buat file .env di masing-masing folder frontend dan backend
 
 - ISI file .env frontend:
-VITE_GEMINI_API_KEY=
+VITE_GEMINI_API_KEY=AIzaSyDodDNtRQ3NvG4QM_WwD4mCTDldPDFQSwI
 VITE_JWT_SECRET=rahasia_snapchef_2026
 VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc  
 
 - ISI file .env backend:
-GEMINI_API_KEY=
+GEMINI_API_KEY=AIzaSyDodDNtRQ3NvG4QM_WwD4mCTDldPDFQSwI
 JWT_SECRET=rahasia_snapchef_2026
 VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc  
 
@@ -141,7 +141,7 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 
 ### Body POST /api/recipes/save
 {
-  "title": "Nasi Goreng Spesial",
+  "title": "Ayam Goreng Spesial",
   "ingredients": "2 piring nasi\n1 telur\n2 siung bawang putih\nKecap secukupnya",
   "instructions": "1. Tumis bawang putih\n2. Masukkan telur\n3. Tambahkan nasi dan kecap\n4. Aduk rata",
   "calories": 400,
@@ -205,7 +205,7 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 
 ### Body PUT /api/ingredients/:id
 {
-  "name": "Bawang Merah Update",
+  "name": "Bawang Goreng Update",
   "amount": 15,
   "unit": "butir"
 }
