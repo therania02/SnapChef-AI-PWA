@@ -158,24 +158,24 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 ## RESOURCE 2: AUTH & USERS
 
 ### AUTH
-- POST /api/register
-- POST /api/login
+- POST /api/auth/register
+- POST /api/auth/login
 
 ### USERS
-- GET /api/users
-- GET /api/users?page=1&limit=10&q=dosen
-- GET /api/users/:id
-- PUT /api/users/:id
-- DELETE /api/users/:id
+- GET /api/auth/users
+- GET /api/auth/users?page=1&limit=10&q=dosen
+- GET /api/auth/users/:id
+- PUT /api/auth/users/:id
+- DELETE /api/auth/users/:id
 
-### Body POST /api/register
+### Body POST /api/auth/register
 {
   "name": "User Baru",
   "email": "userbaru@email.com",
   "password": "password123"
 }
 
-### Body POST /api/login
+### Body POST /api/auth/login
 {
   "email": "dosen@mikroskil.ac.id",
   "password": "password123"
@@ -198,9 +198,9 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 
 ### Body POST /api/ingredients
 {
-  "name": "Bawang Merah",
+  "name": "Bawang Goreng",
   "amount": 10,
-  "unit": "butir"
+  "unit": "bungkus"
 }
 
 ### Body PUT /api/ingredients/:id
@@ -242,7 +242,7 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 
 ### Body POST /api/posts
 {
-  "recipeName": "Mie Goreng",
+  "recipeName": "Ayam Goreng",
   "description": "Menu cepat saji favorit!",
   "image": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500",
   "privacy": "public"
