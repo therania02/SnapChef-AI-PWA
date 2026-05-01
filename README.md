@@ -9,6 +9,26 @@
 
 ---
 
+## 👥 Pembagian Tugas Tim
+Demi kelancaran dan efisiensi pengembangan proyek UTS ini, kami telah membagi tugas operasional dan teknis sebagai berikut:
+
+*   **Carita Angel Samudra Tjoatja**
+    *   Merancang dan membangun arsitektur Backend (Node.js, Express, Sequelize, MySQL) beserta sistem *routing*-nya.
+    *   Mengembangkan antarmuka Frontend secara keseluruhan (React Vite, Tailwind CSS).
+    *   Mengintegrasikan Google Gemini API (Vision & Generative AI) untuk fitur pendeteksi bahan dan pembuat resep.
+*   **Therania**
+    *   Mengimplementasikan sistem Autentikasi keamanan (JWT) dan Context API (*State Management*).
+    *   Mengonfigurasi aplikasi menjadi Progressive Web App (PWA) agar fungsionalitas instalasi berjalan baik.
+    *   Membangun dan memastikan operasi CRUD berjalan persisten pada 5 *resource* utama.
+*   **Steven Lienardi:**
+    *   Melakukan standarisasi dan *refactoring* penamaan seluruh file dan komponen ke dalam format *camelCase* agar sesuai dengan *best practice*.
+    *   Membantu pengecekan dan sinkronisasi struktur *folder*.
+*   **Sastrawan:**
+    *   Bertanggung jawab penuh dalam tahap pascaproduksi, termasuk memotong, merapikan, dan mengedit video demo presentasi UTS.
+    *   Membantu merapikan aset visual dan dokumentasi *readme*.
+
+---
+
 SnapChef AI adalah platform **Progressive Web App (PWA)** inovatif yang menggabungkan *Computer Vision* dan *Generative AI* untuk mentransformasi cara kita mengelola dapur. Aplikasi ini memungkinkan pengguna untuk memfoto bahan makanan sisa dan mengubahnya menjadi resep lezat secara instan.
 
 ⚠️ Catatan: Aplikasi ini saat ini dioptimalkan dan hanya dapat berjalan dengan baik pada browser Google Chrome.
@@ -156,7 +176,7 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 
 ### USERS
 - GET /api/auth/users
-- GET /api/auth/users?page=1&limit=10&q=dosen
+- GET /api/auth/users?page=1&limit=10&q=pak
 - GET /api/auth/users/:id
 - PUT /api/auth/users/:id
 - DELETE /api/auth/users/:id
