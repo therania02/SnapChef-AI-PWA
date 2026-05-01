@@ -13,13 +13,13 @@ import {
 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { Progress } from "../../../ui/progress.jsx";
-import { BottomNav } from "../../../ui/BottomNav.jsx";
-import { useUser } from "../../lib/user-context.jsx";
-import { useLanguage } from "../../lib/language-context";
+import { BottomNav } from "../../../ui/bottomNav.jsx";
+import { useUser } from "../../lib/userContext.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
 import { useCookingPosts } from "../../lib/cookingPostContext.jsx";
-import { usePreferences } from "../../lib/preferences-context.jsx";
-import { UploadCookingPostModal } from "../../../ui/UploadCookingPostModal.jsx";
-import { CookingPostCard } from "../../../ui/CookingPostCard.jsx";
+import { usePreferences } from "../../lib/preferencesContext.jsx";
+import { UploadCookingPostModal } from "../../../ui/uploadCookingPostModal.jsx";
+import { CookingPostCard } from "../../../ui/cookingPostCard.jsx";
 import { toast } from "sonner";
 
 // IMPORT CUSTOM HOOKS BACKEND NODE.JS

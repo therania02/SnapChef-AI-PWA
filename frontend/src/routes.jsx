@@ -1,25 +1,25 @@
 import { createBrowserRouter } from "react-router-dom";
-import Root from "./app/components/Root";
-import OnboardingScreen from "./app/components/pages/Onboarding";
-import LoginScreen from "./app/components/pages/Login";
-import RegisterScreen from "./app/components/pages/Register";
-import DietaryProfileScreen from "./app/components/pages/DietaryProfile";
-import HomeScreen from "./app/components/pages/Home";
-import ScanResultScreen from "./app/components/pages/ScanResult";
-import RecipeDetailScreen from "./app/components/pages/RecipeDetail";
-import CookingModeScreen from "./app/components/pages/CookingMode";
-import CookbookScreen from "./app/components/pages/Cookbook";
-import ShoppingListScreen from "./app/components/pages/ShoppingList";
-import MessageScreen from "./app/components/pages/Message";
-import ChatDetailScreen from "./app/components/pages/ChatDetail";
-import AccountScreen from "./app/components/pages/Account";
-import PremiumScreen from "./app/components/pages/Premium";
-import SettingsScreen from "./app/components/pages/Settings";
-import ScanHistoryScreen from "./app/components/pages/ScanHistory";
-import HelpCenterScreen from "./app/components/pages/HelpCenter";
-import TermsScreen from "./app/components/pages/Terms";
-import PrivacyScreen from "./app/components/pages/Privacy";
-import NotFoundScreen from "./app/components/pages/NotFound";
+import Root from "./app/components/root";
+import OnboardingScreen from "./app/components/pages/onboarding";
+import LoginScreen from "./app/components/pages/login";
+import RegisterScreen from "./app/components/pages/register";
+import DietaryProfileScreen from "./app/components/pages/dietaryProfile";
+import HomeScreen from "./app/components/pages/home";
+import ScanResultScreen from "./app/components/pages/scanResult";
+import RecipeDetailScreen from "./app/components/pages/recipeDetail";
+import CookingModeScreen from "./app/components/pages/cookingMode";
+import CookbookScreen from "./app/components/pages/cookbook";
+import ShoppingListScreen from "./app/components/pages/shoppingList";
+import MessageScreen from "./app/components/pages/message";
+import ChatDetailScreen from "./app/components/pages/chatDetail";
+import AccountScreen from "./app/components/pages/account";
+import PremiumScreen from "./app/components/pages/premium";
+import SettingsScreen from "./app/components/pages/settings";
+import ScanHistoryScreen from "./app/components/pages/scanHistory";
+import HelpCenterScreen from "./app/components/pages/helpCenter";
+import TermsScreen from "./app/components/pages/terms";
+import PrivacyScreen from "./app/components/pages/privacy";
+import NotFoundScreen from "./app/components/pages/notFound";
 
 export const router = createBrowserRouter([
   {

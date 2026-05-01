@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BookOpen, ShoppingCart, User, Sparkles, MessageCircle } from "lucide-react";
-import { useLanguage } from "../app/lib/language-context";
+import { useLanguage } from "../app/lib/languageContext";
 
 export function BottomNav() {
   const navigate = useNavigate();

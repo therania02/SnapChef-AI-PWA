@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search, Users } from "lucide-react";
-import { BottomNav } from "../../../ui/BottomNav";
+import { BottomNav } from "../../../ui/bottomNav";
 import { mockContacts, mockChats } from "../../lib/data";
 
 export default function MessageScreen() {

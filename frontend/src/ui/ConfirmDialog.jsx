@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "./button";
 
 
 export function ConfirmDialog({

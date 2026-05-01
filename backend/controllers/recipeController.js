@@ -8,7 +8,7 @@ const { Recipe, Sequelize } = db;
 const { Op } = Sequelize;
 
 // Import BaseController untuk Inheritance
-import BaseController from './baseController.js';
+import BaseController from './basecontroller.js';
 
 // Inisialisasi Gemini menggunakan API Key dari file .env
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

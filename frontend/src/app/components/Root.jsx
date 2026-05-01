@@ -1,11 +1,11 @@
 import { Outlet } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "../../ui/sonner";
-import { UserProvider } from "../lib/user-context";
-import { PreferencesProvider } from "../lib/preferences-context";
-import { LanguageProvider } from "../lib/language-context";
+import { UserProvider } from "../lib/userContext";
+import { PreferencesProvider } from "../lib/preferencesContext";
+import { LanguageProvider } from "../lib/languageContext";
 import { CookingPostsProvider } from "../lib/cookingPostContext";
-import { FavoritesProvider } from "../lib/favorites-context";
+import { FavoritesProvider } from "../lib/favoritesContext";
 
 export default function Root() {
   return (

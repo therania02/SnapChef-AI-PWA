@@ -19,12 +19,12 @@ import { Switch } from "../../../ui/switch.jsx";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { dietaryPreferences } from "../../lib/data.js";
-import { useUser } from "../../lib/user-context.jsx";
-import { usePreferences } from "../../lib/preferences-context.jsx";
+import { useUser } from "../../lib/userContext.jsx";
+import { usePreferences } from "../../lib/preferencesContext.jsx";
 import { Input } from "../../../ui/input.jsx";
-import { ConfirmDialog } from "../../../ui/ConfirmDialog.jsx";
-import { FeedbackModal } from "../../../ui/FeedbackModal.jsx";
-import { BottomNav } from "../../../ui/BottomNav.jsx";
+import { ConfirmDialog } from "../../../ui/confirmDialog.jsx";
+import { FeedbackModal } from "../../../ui/feedbackModal.jsx";
+import { BottomNav } from "../../../ui/bottomNav.jsx";
 
 export default function AccountScreen() {
   const navigate = useNavigate();

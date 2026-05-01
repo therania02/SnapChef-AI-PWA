@@ -3,8 +3,8 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronLeft, ChevronRight, Check, MessageCircle, Timer, Play, Pause, RotateCcw as RotateCcwIcon, Clock, ShoppingBag, Lightbulb, ArrowRight } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
-import { Progress } from "../../../ui/progress";
-import { mockRecipes } from "../../lib/data";
+import { Progress } from "../../../ui/progress.jsx";
+import { mockRecipes } from "../../lib/data.js";
 import { toast } from "sonner";
 
 export default function CookingModeScreen() {

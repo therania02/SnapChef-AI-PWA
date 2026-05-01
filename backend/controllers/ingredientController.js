@@ -4,7 +4,7 @@ const db = require('../models/index.cjs');
 const { Ingredient, Sequelize } = db;
 const { Op } = Sequelize;
 
-import BaseController from './baseController.js';
+import BaseController from './basecontroller.js';
 
 class IngredientController extends BaseController {
     // C - Create

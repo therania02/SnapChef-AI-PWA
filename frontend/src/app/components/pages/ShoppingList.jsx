@@ -8,9 +8,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "../../../ui/button";
-import { BottomNav } from "../../../ui/BottomNav";
+import { BottomNav } from "../../../ui/bottomNav";
 import { toast } from "sonner";
-import { useLanguage } from "../../lib/language-context";
+import { useLanguage } from "../../lib/languageContext";
 
 export default function ShoppingListScreen() {
   const navigate = useNavigate();

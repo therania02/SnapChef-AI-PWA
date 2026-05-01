@@ -5,7 +5,7 @@ import { ArrowLeft, Sparkles, AlertCircle } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 
 import { useRecipes } from "../../../hooks/useRecipes.js";
-import { useUser } from "../../lib/user-context.jsx";
+import { useUser } from "../../lib/userContext.jsx";
 
 export default function ScanResultScreen() {
   const navigate = useNavigate();

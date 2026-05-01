@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, Plus, X } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
-import { dietaryPreferences } from "../../lib/data";
-import { usePreferences } from "../../lib/preferences-context.jsx";
+import { dietaryPreferences } from "../../lib/data.js";
+import { usePreferences } from "../../lib/preferencesContext.jsx";
 import { toast } from "sonner";
 
 // Helper function to auto-detect emoji based on keywords

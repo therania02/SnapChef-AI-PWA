@@ -3,7 +3,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { motion } from "framer-motion";
-import { useUser } from "../../lib/user-context.jsx";
+import { useUser } from "../../lib/userContext.jsx";
 
 const Login = () => {
   const [email, setEmail] = useState("");

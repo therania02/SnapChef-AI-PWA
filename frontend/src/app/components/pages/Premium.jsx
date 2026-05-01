@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { toast } from "sonner";
-import { useUser } from "../../lib/user-context.jsx";
-import { PaymentModal } from "../../../ui/PaymentModal.jsx";
+import { useUser } from "../../lib/userContext.jsx";
+import { PaymentModal } from "../../../ui/paymentModal.jsx";
 
 export default function PremiumScreen() {
   const navigate = useNavigate();

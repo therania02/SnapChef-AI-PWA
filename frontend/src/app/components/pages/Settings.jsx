@@ -16,9 +16,9 @@ import {
 import { Switch } from "../../../ui/switch.jsx";
 import { Button } from "../../../ui/button.jsx";
 import { toast } from "sonner";
-import { useUser } from "../../lib/user-context.jsx";
-import { useLanguage } from "../../lib/language-context";
-import { WeeklyDigestModal } from "../../../ui/WeeklyDigestModal.jsx";
+import { useUser } from "../../lib/userContext.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
+import { WeeklyDigestModal } from "../../../ui/weeklyDigestModal.jsx";
 
 export default function SettingsScreen() {
   const navigate = useNavigate();

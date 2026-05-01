@@ -6,8 +6,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
-import { CommentsModal } from "./CommentsModal";
+} from "./dropdownMenu";
+import { CommentsModal } from "./commentsModal";
 
 export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePrivacy }) {
   const [liked, setLiked] = useState(false);

@@ -1,7 +1,7 @@
 # 🍳 SnapChef AI - Smart Cooking Assistant & Food Waste Solution
 
-Nama Tim: Four-Leaf Clovers
-Anggota Tim:
+### Nama Tim: Four-Leaf Clovers
+### Anggota Tim:
 1. 241111021 - Sastrawan
 2. 241112087 - Carita Angel Samudra Tjoatja
 3. 241112584 - Therania
@@ -62,7 +62,7 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 
 ### 1. Setup Database MySQL
 1. Buat database baru di MySQL dengan nama `snapchef_db`.
-2. Ubah password untuk bagian development sesuai dengan password MySQL (root) di file backend/config/config.js
+2. Ubah password untuk bagian development sesuai dengan password MySQL (root) di file backend/config/config.json
 
 ### 2. Setup Environment Variables
 1. Buat file .env di masing-masing folder frontend dan backend
@@ -82,7 +82,7 @@ VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc
 2. Install dependencies: `npm install`
 3. Jalankan migrasi tabel: `npx sequelize-cli db:migrate`
 4. Jalankan seeder data awal: `npx sequelize-cli db:seed:all`
-5. Jalankan server: `npm run dev` atau `node app.js`
+5. Jalankan server: `node app.js`
    Server akan berjalan di `http://localhost:3000`
 
 ### 4. Setup Frontend React

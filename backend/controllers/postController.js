@@ -4,7 +4,7 @@ const db = require('../models/index.cjs');
 const { Post, Sequelize } = db;
 const { Op } = Sequelize;
 
-import BaseController from './baseController.js';
+import BaseController from './basecontroller.js';
 
 class PostController extends BaseController {
     create = async (req, res) => {

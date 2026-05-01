@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Info, Lightbulb, Check } from "lucide-react";
-import { getSubstitutes, hasSubstitutes } from "../app/lib/ingredient-substitues";
+import { getSubstitutes, hasSubstitutes } from "../app/lib/ingredientSubstitues";
 import { toast } from "sonner";
 
 

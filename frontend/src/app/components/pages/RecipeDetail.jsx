@@ -7,10 +7,10 @@ import {
 import { Button } from "../../../ui/button.jsx";
 import { Badge } from "../../../ui/badge.jsx";
 import { toast } from "sonner";
-import { mockRecipes } from "../../lib/data";
-import { useFavorites } from "../../lib/favorites-context";
-import { useUser } from "../../lib/user-context.jsx";
-import { IngredientSubstituteDropdown } from "../../../ui/IngredientSubstituteDropdown.jsx";
+import { mockRecipes } from "../../lib/data.js";
+import { useFavorites } from "../../lib/favoritesContext.jsx";
+import { useUser } from "../../lib/userContext.jsx";
+import { IngredientSubstituteDropdown } from "../../../ui/ingredientSubstituteDropdown.jsx";
 import { useRecipes } from "../../../hooks/useRecipes.js"; // Pastikan ini di-import
 
 // --- FUNGSI PARSER CERDAS UNTUK BAHAN ---

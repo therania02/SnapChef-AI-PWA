@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, Loader2, Trash2 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
-import { BottomNav } from "../../../ui/BottomNav.jsx";
-import { useFavorites } from "../../lib/favorites-context.jsx";
-import { usePreferences } from "../../lib/preferences-context.jsx";
+import { BottomNav } from "../../../ui/bottomNav.jsx";
+import { useFavorites } from "../../lib/favoritesContext.jsx";
+import { usePreferences } from "../../lib/preferencesContext.jsx";
 import { toast } from "sonner";
 
 // IMPORT CUSTOM HOOKS BACKEND NODE.JS
 import { useRecipes } from "../../../hooks/useRecipes.js";
-import { useUser } from "../../lib/user-context.jsx";
+import { useUser } from "../../lib/userContext.jsx";
 
 const determineRecipeTags = (title = "") => {
   const t = title.toLowerCase();
