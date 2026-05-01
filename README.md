@@ -1,5 +1,14 @@
 # 🍳 SnapChef AI - Smart Cooking Assistant & Food Waste Solution
 
+Nama Tim: Four-Leaf Clovers
+Anggota Tim:
+1. 241111021 - Sastrawan
+2. 241112087 - Carita Angel Samudra Tjoatja
+3. 241112584 - Therania
+4. 241112659 - Steven Lienardi
+
+---
+
 SnapChef AI adalah platform **Progressive Web App (PWA)** inovatif yang menggabungkan *Computer Vision* dan *Generative AI* untuk mentransformasi cara kita mengelola dapur. Aplikasi ini memungkinkan pengguna untuk memfoto bahan makanan sisa dan mengubahnya menjadi resep lezat secara instan.
 
 ## 💡 1. Ide Project
@@ -19,9 +28,13 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 - **Context API** → State management global (User, Preferences, Favorites).
 
 ### 🔐 Backend & Database
-- **Firebase Authentication** → Sistem login (Email & Google SSO).
-- **Firebase Firestore** → Database real-time untuk menyimpan data pengguna, resep, dan aktivitas.
-- **Firebase Storage** → Penyimpanan gambar hasil upload/scanning.
+- **Node.js (Express)** → Backend server & REST API.
+- **MySQL** → Database utama untuk menyimpan data pengguna, resep, dan aktivitas.
+- **Sequelize ORM** → Manajemen database dan query yang terstruktur.
+
+### 🔐 Authentication System
+- **JWT (JSON Web Token)** → Login & session management yang aman.
+- **Password Hashing (bcrypt)** → Keamanan password pengguna.
 
 ### 🤖 Artificial Intelligence
 - **Google Gemini API (Vision Model)** → Deteksi bahan makanan dari gambar.
@@ -45,7 +58,195 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 
 ---
 
-## 🚀 3. Daftar Detail Fitur 
+## ⚙️ 3. Setup Guide
+
+### 1. Setup Database MySQL
+1. Buat database baru di MySQL dengan nama `snapchef_db`.
+2. Ubah password untuk bagian development sesuai dengan password MySQL (root) di file backend/config/config.js
+
+### 2. Setup Environment Variables
+1. Buat file .env di masing-masing folder frontend dan backend
+
+- ISI file .env frontend:
+VITE_GEMINI_API_KEY=
+VITE_JWT_SECRET=rahasia_snapchef_2026
+VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc  
+
+- ISI file .env backend:
+GEMINI_API_KEY=AIzaSyAMUqZrststpYrtbSRDI9csfBehAUYEaRk
+JWT_SECRET=rahasia_snapchef_2026
+VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc  
+
+### 3. Setup Backend Node.js
+1. Masuk ke folder `backend`: `cd backend`
+2. Install dependencies: `npm install`
+3. Jalankan migrasi tabel: `npx sequelize-cli db:migrate`
+4. Jalankan seeder data awal: `npx sequelize-cli db:seed:all`
+5. Jalankan server: `npm run dev` atau `node app.js`
+   Server akan berjalan di `http://localhost:3000`
+
+### 4. Setup Frontend React
+1. Buka terminal baru dan masuk ke folder `frontend`: `cd frontend`
+2. Install dependencies: `npm install`
+3. Jalankan aplikasi: `npm run dev`
+   Aplikasi akan berjalan di `http://localhost:5173`
+
+---
+
+## Akun Uji Coba (Test Account)
+Gunakan kredensial berikut untuk menguji aplikasi:
+- Email: dosen@mikroskil.ac.id
+- Password: password123
+
+---
+
+## API Endpoints
+
+### Global Query Params (Semua GET List)
+Gunakan query berikut untuk semua endpoint list:
+
+- `page` → nomor halaman (default: 1)
+- `limit` → jumlah data per halaman (default: 10)
+- `q` → keyword pencarian (optional)
+
+Contoh: GET /api/recipes?page=1&limit=5&q=ayam
+
+## RESOURCE 1: RECIPES
+
+- GET /api/recipes
+- GET /api/recipes?page=1&limit=10&q=nasi&userId=1
+- GET /api/recipes/:id
+- POST /api/recipes/scan
+- POST /api/recipes/save
+- PUT /api/recipes/:id/rating
+- DELETE /api/recipes/:id
+
+### Body POST /api/recipes/scan
+{
+  "imageBase64": "data:image/jpeg;base64,...",
+  "preferences": "makanan sehat"
+}
+
+### Body POST /api/recipes/save
+{
+  "title": "Nasi Goreng Spesial",
+  "ingredients": "2 piring nasi\n1 telur\n2 siung bawang putih\nKecap secukupnya",
+  "instructions": "1. Tumis bawang putih\n2. Masukkan telur\n3. Tambahkan nasi dan kecap\n4. Aduk rata",
+  "calories": 400,
+  "protein": 12,
+  "carbs": 50,
+  "prepTime": 20
+}
+
+### Body PUT /api/recipes/:id/rating
+{
+  "rating": 5
+}
+
+## RESOURCE 2: AUTH & USERS
+
+### AUTH
+- POST /api/register
+- POST /api/login
+
+### USERS
+- GET /api/users
+- GET /api/users?page=1&limit=10&q=dosen
+- GET /api/users/:id
+- PUT /api/users/:id
+- DELETE /api/users/:id
+
+### Body POST /api/register
+{
+  "name": "User Baru",
+  "email": "userbaru@email.com",
+  "password": "password123"
+}
+
+### Body POST /api/login
+{
+  "email": "dosen@mikroskil.ac.id",
+  "password": "password123"
+}
+
+### Body PUT /api/users/:id
+{
+  "name": "Nama Update",
+  "role": "user"
+}
+
+## RESOURCE 3: INGREDIENTS
+
+- GET /api/ingredients
+- GET /api/ingredients?page=1&limit=10&q=telur
+- GET /api/ingredients/:id
+- POST /api/ingredients
+- PUT /api/ingredients/:id
+- DELETE /api/ingredients/:id
+
+### Body POST /api/ingredients
+{
+  "name": "Bawang Merah",
+  "amount": 10,
+  "unit": "butir"
+}
+
+### Body PUT /api/ingredients/:id
+{
+  "name": "Bawang Merah Update",
+  "amount": 15,
+  "unit": "butir"
+}
+
+## RESOURCE 4: COMMENTS
+
+- GET /api/comments
+- GET /api/comments?page=1&limit=10
+- GET /api/comments?postId=1
+- GET /api/comments/:id
+- POST /api/comments
+- PUT /api/comments/:id
+- DELETE /api/comments/:id
+
+### Body POST /api/comments
+{
+  "text": "Resepnya simpel dan enak!",
+  "postId": 1
+}
+
+### Body PUT /api/comments/:id
+{
+  "text": "Komentar sudah diupdate menjadi lebih bagus"
+}
+
+## RESOURCE 5: POSTS
+
+- GET /api/posts
+- GET /api/posts?page=1&limit=10&q=nasi
+- GET /api/posts/:id 
+- POST /api/posts
+- PUT /api/posts/:id
+- DELETE /api/posts/:id
+
+### Body POST /api/posts
+{
+  "recipeName": "Mie Goreng",
+  "description": "Menu cepat saji favorit!",
+  "image": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500",
+  "privacy": "public"
+}
+
+### Body PUT /api/posts/:id
+{
+  "recipeName": "Mie Goreng Special Update",
+  "description": "Deskripsi postingan sudah diperbarui",
+  "image": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500",
+  "privacy": "private"
+}
+
+---
+
+## 🚀 4. Daftar Detail Fitur 
 
 ### 🔐 A. Authentication & Smart Profile
 1. **SSO Google Login:** Login instan menggunakan akun Google.
@@ -121,7 +322,7 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
 
 ---
 
-## 📅 4. Timeline Pengembangan (Fast-Track Sprint)
+## 📅 5. Timeline Pengembangan (Fast-Track Sprint)
 
 | Sprint | Durasi | Fokus Utama | Status |
 | :--- | :--- | :--- | :--- |
@@ -143,7 +344,7 @@ Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Den
     - Setup Project (React Vite + Tailwind CSS).
     - Setup folder structure (Modular Architecture).
     - Finalisasi UI/UX Design di Figma.
-    - Integrasi Firebase Auth (Email & Google Login).
+    - Implementasi JWT Authentication System.
 - **Deliverables:**
     - Struktur folder siap pakai & User bisa Login/Register.
 
