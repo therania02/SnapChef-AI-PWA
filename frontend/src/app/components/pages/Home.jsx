@@ -22,7 +22,7 @@ import { UploadCookingPostModal } from "../../../ui/UploadCookingPostModal.jsx";
 import { CookingPostCard } from "../../../ui/CookingPostCard.jsx";
 import { toast } from "sonner";
 
-// IMPORT CUSTOM HOOKS BACKEND NODE.JS[cite: 14]
+// IMPORT CUSTOM HOOKS BACKEND NODE.JS
 import { useRecipes } from "../../../hooks/useRecipes.js";
 
 const resizeImage = (base64, maxWidth = 512) => {
@@ -55,7 +55,6 @@ export default function HomeScreen() {
   const { user } = useUser();
   const { t } = useLanguage();
 
-  // Panggil fungsi scanFood dari hook backend
   const { scanFood } = useRecipes();
   const { selectedPreferences, customPreferences } = usePreferences();
 
@@ -161,7 +160,6 @@ export default function HomeScreen() {
     return canvas.toDataURL("image/jpeg").split(",")[1];
   };
 
-  // Fungsi terpusat untuk upload gambar ke Backend Node.js
   const processImageToBackend = async (base64Image) => {
     try {
       setLoadingScan(true);
@@ -170,7 +168,6 @@ export default function HomeScreen() {
       const customPrefTexts = customPreferences.map(p => typeof p === 'string' ? p : p.text);
       const allPreferences = [...selectedPreferences, ...customPrefTexts].join(", ");
 
-      // Hit ke API Backend (Node.js) kita
       const resultData = await scanFood(`data:image/jpeg;base64,${resized}`, allPreferences, user?.id);
 
       const newScan = {
@@ -308,7 +305,8 @@ export default function HomeScreen() {
               <h2 className="text-sm opacity-90">{getGreeting()}!</h2>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl" style={{ fontFamily: 'var(--font-family-display)' }}>
-                  {user?.name || "Guest"}
+                  {/* 👇 PENGECEKAN NAMA: user.name atau user.nama 👇 */}
+                  {user?.name || user?.nama || "Guest"}
                 </h1>
                 {user?.isPremium && (
                   <motion.div animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}>

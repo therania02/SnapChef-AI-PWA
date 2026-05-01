@@ -14,7 +14,7 @@ const slides = [
   {
     title: "Dapatkan Resep Instan",
     description:
-      "Dapatkan 3 pilihan resep praktis, lengkap dengan kalori & nutrisi.",
+      "Dapatkan beberapa pilihan resep praktis, lengkap dengan kalori & nutrisi.",
     image:
       "https://images.unsplash.com/photo-1710389205434-1ecc531d364d",
     highlight: "Sup • Tumis • Goreng",
@@ -108,11 +108,10 @@ export default function OnboardingScreen() {
             {slides.map((_, i) => (
               <div
                 key={i}
-                className={`h-2 rounded-full ${
-                  i === currentSlide
-                    ? "w-6 bg-[#5E87A6]"
-                    : "w-2 bg-gray-300"
-                }`}
+                className={`h-2 rounded-full ${i === currentSlide
+                  ? "w-6 bg-[#5E87A6]"
+                  : "w-2 bg-gray-300"
+                  }`}
               />
             ))}
           </div>

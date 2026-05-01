@@ -86,5 +86,15 @@ export const useRecipes = () => {
         }
     };
 
-    return { scanFood, saveRecipe, getRecipes, rateRecipe, loading, error };
+    const removeRecipe = async (id) => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/recipes/${id}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error("Gagal menghapus resep");
+            return true;
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    return { scanFood, saveRecipe, getRecipes, rateRecipe, removeRecipe, loading, error };
 };

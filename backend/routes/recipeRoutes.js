@@ -7,5 +7,6 @@ router.post('/scan', recipeController.scanFood);
 router.post('/save', recipeController.saveRecipe);
 router.get('/', recipeController.getRecipes);
 router.put('/:id/rating', recipeController.rateRecipe);
+router.delete('/:id', recipeController.deleteRecipe);
 
 export default router;

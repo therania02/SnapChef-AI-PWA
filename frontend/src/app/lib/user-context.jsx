@@ -1,31 +1,43 @@
 import React, { createContext, useContext, useState } from "react";
 
-
-
 const UserContext = createContext(null);
 
 export function UserProvider({ children }) {
-  const [user, setUserState] = useState(null);
+  // 1. Baca data dari localStorage saat aplikasi pertama kali dimuat
+  const [user, setUserState] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem("user");
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (error) {
+      return null;
+    }
+  });
 
+  // 2. Update state DAN simpan ke localStorage setiap ada perubahan
   const setUser = (newUser) => {
     if (newUser) {
-      setUserState({
+      const updatedUser = {
         ...newUser,
         isPremium: newUser.isPremium || false,
         nameChangeCount: newUser.nameChangeCount || 0,
-      });
+      };
+      setUserState(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser)); // Simpan ke memori browser
     } else {
       setUserState(null);
+      localStorage.removeItem("user"); // Hapus memori saat logout
     }
   };
 
   const updateUserName = (name) => {
     if (user) {
-      setUserState({
+      const updated = {
         ...user,
         name,
         nameChangeCount: (user.nameChangeCount || 0) + 1,
-      });
+      };
+      setUserState(updated);
+      localStorage.setItem("user", JSON.stringify(updated));
     }
   };
 
@@ -39,7 +51,9 @@ export function UserProvider({ children }) {
 
   const upgradeToPremium = () => {
     if (user) {
-      setUserState({ ...user, isPremium: true });
+      const updated = { ...user, isPremium: true };
+      setUserState(updated);
+      localStorage.setItem("user", JSON.stringify(updated));
     }
   };
 

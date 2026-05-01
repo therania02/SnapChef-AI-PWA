@@ -3,6 +3,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { motion } from "framer-motion";
+import { useUser } from "../../lib/user-context.jsx";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,6 +12,7 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const { login, loginWithGoogle } = useAuth();
+  const { setUser } = useUser();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -19,10 +21,16 @@ const Login = () => {
     setError("");
 
     try {
-      await login(email, password);
+      const responseData = await login(email, password);
+
+      // 👇 INI KUNCI FIX-NYA: Membongkar data bersarang dari Backend 👇
+      // Kita pastikan mengambil objek user yang terdalam (actual user data)
+      const actualUser = responseData?.user || responseData?.data?.user || responseData?.data || responseData;
+
+      setUser(actualUser);
       navigate("/home");
-    } catch {
-      setError("Login gagal");
+    } catch (err) {
+      setError(err.message || "Login gagal");
     } finally {
       setLoading(false);
     }
@@ -35,7 +43,6 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm text-center"
       >
-        {/* LOGO */}
         <motion.div
           animate={{ rotate: [0, -10, 10, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
@@ -53,12 +60,8 @@ const Login = () => {
           Masuk ke akun Anda
         </p>
 
-        {/* CARD */}
         <div className="bg-white rounded-2xl shadow-md p-6 text-left space-y-4">
-
           <form onSubmit={handleLogin} className="space-y-4">
-
-            {/* EMAIL */}
             <div>
               <label className="text-sm text-gray-700">Email</label>
               <div className="relative mt-1">
@@ -72,7 +75,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* PASSWORD */}
             <div>
               <label className="text-sm text-gray-700">Password</label>
               <div className="relative mt-1">
@@ -84,18 +86,15 @@ const Login = () => {
                   required
                 />
               </div>
-
               <div className="text-right mt-1 text-xs text-[#5E87A6] cursor-pointer">
                 Lupa Password?
               </div>
             </div>
 
-            {/* ERROR */}
             {error && (
               <p className="text-red-500 text-sm text-center">{error}</p>
             )}
 
-            {/* BUTTON */}
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
@@ -106,12 +105,10 @@ const Login = () => {
             </motion.button>
           </form>
 
-          {/* DIVIDER */}
           <div className="text-center text-sm text-gray-400">
             — Atau lanjutkan dengan —
           </div>
 
-          {/* GOOGLE */}
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -123,7 +120,6 @@ const Login = () => {
           </motion.button>
         </div>
 
-        {/* REGISTER LINK */}
         <p className="mt-4 text-sm text-gray-600">
           Belum punya akun?{" "}
           <Link to="/register" className="text-[#5E87A6]">

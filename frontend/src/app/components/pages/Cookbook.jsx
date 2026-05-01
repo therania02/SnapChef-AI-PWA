@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart, Loader2, Trash2 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { BottomNav } from "../../../ui/BottomNav.jsx";
 import { useFavorites } from "../../lib/favorites-context.jsx";
 import { usePreferences } from "../../lib/preferences-context.jsx";
+import { toast } from "sonner";
 
-// IMPORT CUSTOM HOOKS BACKEND NODE.JS[cite: 13]
+// IMPORT CUSTOM HOOKS BACKEND NODE.JS
 import { useRecipes } from "../../../hooks/useRecipes.js";
 import { useUser } from "../../lib/user-context.jsx";
 
@@ -33,8 +34,7 @@ export default function CookbookScreen() {
   const { favorites } = useFavorites();
   const { selectedPreferences } = usePreferences();
 
-  // Panggil fungsi getRecipes dari hook backend
-  const { getRecipes } = useRecipes();
+  const { getRecipes, removeRecipe } = useRecipes();
 
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("all");
@@ -42,45 +42,57 @@ export default function CookbookScreen() {
   const [dbRecipes, setDbRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchRecipes = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getRecipes(1, 50, '', user?.id);
+      const data = response?.data || [];
+
+      const formattedData = data.map(recipe => {
+        const detectedTags = determineRecipeTags(recipe.title);
+        return {
+          id: recipe.id,
+          title: recipe.title,
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
+          tags: detectedTags,
+          calories: recipe.calories || 0,
+          protein: recipe.protein || 0,
+          carbs: recipe.carbs || 0,
+          prepTime: recipe.prepTime || 0,
+          servings: 2,
+          createdAt: recipe.createdAt || new Date(),
+          isHalal: detectedTags.includes("HALAL"),
+          isVegetarian: detectedTags.includes("VEGETARIAN")
+        };
+      });
+
+      setDbRecipes(formattedData);
+    } catch (error) {
+      console.error("Gagal memuat resep:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        setIsLoading(true);
-        // Memanggil API Node.js dengan argument: page=1, limit=50, search='', userId
-        const response = await getRecipes(1, 50, '', user?.id);
-        const data = response?.data || [];
-
-        const formattedData = data.map(recipe => {
-          const detectedTags = determineRecipeTags(recipe.title);
-
-          return {
-            id: recipe.id,
-            title: recipe.title,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
-            tags: detectedTags,
-            calories: recipe.calories || 0,
-            protein: recipe.protein || 0,
-            carbs: recipe.carbs || 0,
-            prepTime: recipe.prepTime || 0,
-            servings: 2,
-            createdAt: recipe.createdAt || new Date(),
-            isHalal: detectedTags.includes("HALAL"),
-            isVegetarian: detectedTags.includes("VEGETARIAN")
-          };
-        });
-
-        setDbRecipes(formattedData);
-      } catch (error) {
-        console.error("Gagal memuat resep dari database MySQL:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchRecipes();
   }, [user]);
+
+  const handleDelete = async (e, recipeId) => {
+    e.stopPropagation();
+
+    if (window.confirm("Yakin ingin menghapus resep ini dari Cookbook?")) {
+      try {
+        await removeRecipe(recipeId);
+        toast.success("Resep berhasil dihapus!");
+        fetchRecipes();
+      } catch (err) {
+        toast.error("Gagal menghapus resep.");
+      }
+    }
+  };
 
   const getFilteredRecipes = () => {
     let filtered = dbRecipes;
@@ -189,8 +201,9 @@ export default function CookbookScreen() {
                 onClick={() => navigate(`/recipe/${recipe.id}`, { state: { recipeData: recipe } })}
                 className="bg-white rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow border border-gray-100"
               >
-                <div className="flex gap-4">
-                  <div className="w-32 h-32 flex-shrink-0 relative">
+                {/* 👇 FIX GAMBAR STRETCH: Mengubah struktur flex agar gambar meregang (stretch) otomatis menyesuaikan konten teks */}
+                <div className="flex items-stretch">
+                  <div className="w-[120px] sm:w-[140px] flex-shrink-0">
                     <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 p-4 flex flex-col justify-between">
@@ -207,9 +220,18 @@ export default function CookbookScreen() {
                           ))}
                         </div>
 
-                        {isRecipeLoved && (
-                          <Heart className="h-5 w-5 fill-red-500 text-red-500 drop-shadow-sm flex-shrink-0" />
-                        )}
+                        {/* 👇 FIX POSISI ICON: Menukar urutan posisi Love dan Trash */}
+                        <div className="flex items-center gap-3">
+                          {isRecipeLoved && (
+                            <Heart className="h-5 w-5 fill-red-500 text-red-500 drop-shadow-sm flex-shrink-0" />
+                          )}
+                          <button
+                            onClick={(e) => handleDelete(e, recipe.id)}
+                            className="p-1.5 hover:bg-red-50 rounded-full transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
+                          </button>
+                        </div>
                       </div>
 
                       <h3 className="font-medium line-clamp-2 leading-snug text-gray-800 mt-1">{recipe.title}</h3>

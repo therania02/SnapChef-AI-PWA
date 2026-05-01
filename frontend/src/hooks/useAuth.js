@@ -8,7 +8,7 @@ export const useAuth = () => {
       const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // Indikator 7: Content-Type
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ name, email, password }),
       });
@@ -43,10 +43,14 @@ export const useAuth = () => {
         throw new Error(data.message || "Login gagal");
       }
 
-      // Simpan token/data user di localStorage jika diperlukan
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Ambil objek user secara presisi (tergantung backend-mu, biasanya data.data atau data.user)
+      const userData = data.data || data.user || data;
 
-      return data;
+      // Simpan token/data user di localStorage sebagai cadangan ganda
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Kembalikan userData agar ditangkap oleh Login.jsx
+      return userData;
     } catch (error) {
       console.error("Login Error:", error.message);
       throw error;
@@ -54,11 +58,8 @@ export const useAuth = () => {
   };
 
   // 3. Login dengan Google (Tetap simpan untuk fungsionalitas Figma)
-  // Catatan: Jika ingin full backend, hasil dari Google ini juga harus dikirim ke DB Node.js
   const loginWithGoogle = async () => {
-    // Untuk sementara tetap gunakan Firebase atau arahkan ke route backend khusus Google
     console.log("Fitur Google Login sedang diarahkan...");
-    // Implementasi menyusul sesuai kebutuhan routing backend
   };
 
   return { register, login, loginWithGoogle };

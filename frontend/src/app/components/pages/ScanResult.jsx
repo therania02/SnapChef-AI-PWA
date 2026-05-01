@@ -182,7 +182,7 @@ export default function ScanResultScreen() {
               animate={{ opacity: 1 }}
               className="font-medium text-lg"
             >
-              3 Pilihan Resep Untukmu
+              Beberapa Pilihan Resep Untukmu
             </motion.h2>
 
             {recipes.map((recipe, index) => (

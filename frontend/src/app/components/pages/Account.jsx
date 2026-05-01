@@ -9,10 +9,7 @@ import {
   LogOut,
   ChefHat,
   Settings,
-  BookOpen,
   User,
-  Sparkles,
-  ShoppingCart,
   Edit2,
   Check,
   X,
@@ -34,8 +31,13 @@ export default function AccountScreen() {
   const { theme, setTheme } = useTheme();
   const { user, updateUserName, setUser, canChangeName } = useUser();
   const { selectedPreferences, customPreferences } = usePreferences();
+
+  // Mengambil nama user, entah dari property name atau nama
+  const currentName = user?.name || user?.nama || "Guest";
+  const currentEmail = user?.email || "guest@example.com";
+
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState(user?.name || "");
+  const [editedName, setEditedName] = useState(currentName);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
@@ -46,7 +48,6 @@ export default function AccountScreen() {
   };
 
   const handleEditNameClick = () => {
-    // Check if user can change name
     if (!canChangeName()) {
       toast.error(
         "Anda sudah mengubah nama sekali. Upgrade ke Premium untuk ubah nama tanpa batas!",
@@ -60,7 +61,7 @@ export default function AccountScreen() {
       );
       return;
     }
-    setEditedName(user?.name || "");
+    setEditedName(currentName);
     setIsEditingName(true);
   };
 
@@ -69,11 +70,10 @@ export default function AccountScreen() {
       toast.error("Nama tidak boleh kosong");
       return;
     }
-    if (editedName.trim() === user?.name) {
+    if (editedName.trim() === currentName) {
       setIsEditingName(false);
       return;
     }
-    // Show confirmation dialog
     setShowConfirmDialog(true);
   };
 
@@ -91,16 +91,14 @@ export default function AccountScreen() {
   };
 
   const handleCancelEdit = () => {
-    setEditedName(user?.name || "");
+    setEditedName(currentName);
     setIsEditingName(false);
   };
 
-  // Get selected preference labels
   const selectedPrefLabels = dietaryPreferences
     .filter((pref) => selectedPreferences.includes(pref.id))
     .map((pref) => ({ icon: pref.icon, label: pref.label }));
 
-  // Swipe handling
   const swipeConfidenceThreshold = 10000;
   const swipePower = (offset, velocity) => {
     return Math.abs(offset) * velocity;
@@ -108,8 +106,6 @@ export default function AccountScreen() {
 
   const handleDragEnd = (e, { offset, velocity }) => {
     const swipe = swipePower(offset.x, velocity.x);
-
-    // Swipe right to go back to messages
     if (swipe > swipeConfidenceThreshold) {
       navigate("/messages");
     }
@@ -123,7 +119,7 @@ export default function AccountScreen() {
       dragElastic={0.2}
       onDragEnd={handleDragEnd}
     >
-      {/* Header - Terang Sesuai Tema Aplikasi */}
+      {/* Header */}
       <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-6">
           {/* Profile */}
@@ -132,7 +128,7 @@ export default function AccountScreen() {
               {user?.avatar ? (
                 <img
                   src={user.avatar}
-                  alt={user.name}
+                  alt={currentName}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
@@ -167,7 +163,8 @@ export default function AccountScreen() {
                 <>
                   <div className="flex items-center gap-2 text-white">
                     <h1 className="text-2xl text-foreground font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
-                      {user?.name || "Guest"}
+                      {/* 👇 NAMA USER DIREnder DI SINI 👇 */}
+                      {currentName}
                     </h1>
                     {user?.isPremium && (
                       <motion.div
@@ -191,7 +188,8 @@ export default function AccountScreen() {
                       <Edit2 className="h-4 w-4 text-muted-foreground" />
                     </button>
                   </div>
-                  <p className="text-sm text-muted-foreground">{user?.email || "guest@example.com"}</p>
+                  {/* 👇 EMAIL USER DIREnder DI SINI 👇 */}
+                  <p className="text-sm text-muted-foreground">{currentEmail}</p>
                 </>
               )}
             </div>
@@ -346,7 +344,6 @@ function MenuItem({
   action,
   danger,
 }) {
-  // If there's an action (like a Switch), render as div to avoid button nesting
   if (action) {
     return (
       <div
@@ -362,7 +359,6 @@ function MenuItem({
     );
   }
 
-  // Otherwise, render as button for clickable items
   return (
     <motion.button
       whileTap={{ scale: 0.98 }}
