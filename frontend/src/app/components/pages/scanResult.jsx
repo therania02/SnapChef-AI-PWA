@@ -148,7 +148,7 @@ export default function ScanResultScreen() {
         )}
 
         {/* Detected Ingredients (Desain Aslimu) */}
-        {showIngredients && ingredients.length > 0 && (
+        {showIngredients && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -159,19 +159,28 @@ export default function ScanResultScreen() {
               <Sparkles className="h-5 w-5 text-primary" />
               <h2 className="font-medium">Bahan Terdeteksi</h2>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {ingredients.map((ingredient, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium"
-                >
-                  {ingredient}
-                </motion.div>
-              ))}
-            </div>
+            {ingredients.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {ingredients.map((ingredient, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium"
+                  >
+                    {ingredient}
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              /* Tampilan ketika array kosong agar UI tidak hilang */
+              <div className="py-4 px-2 border-2 border-dashed border-gray-100 rounded-2xl text-center">
+                <p className="text-sm text-muted-foreground italic">
+                  Tidak ada bahan spesifik yang terdeteksi secara otomatis.
+                </p>
+              </div>
+            )}
           </motion.div>
         )}
         {/* Recipe Options (Desain Aslimu) */}

@@ -11,6 +11,8 @@
 
 SnapChef AI adalah platform **Progressive Web App (PWA)** inovatif yang menggabungkan *Computer Vision* dan *Generative AI* untuk mentransformasi cara kita mengelola dapur. Aplikasi ini memungkinkan pengguna untuk memfoto bahan makanan sisa dan mengubahnya menjadi resep lezat secara instan.
 
+⚠️ Catatan: Aplikasi ini saat ini dioptimalkan dan hanya dapat berjalan dengan baik pada browser Google Chrome.
+
 ## 💡 1. Ide Project
 Project ini dikembangkan untuk menjawab tantangan *Food Waste* rumah tangga. Dengan mendeteksi bahan makanan secara real-time, SnapChef AI membantu pengguna:
 1. Mengolah stok bahan yang ada menjadi masakan bernilai tinggi.
@@ -73,7 +75,7 @@ VITE_JWT_SECRET=rahasia_snapchef_2026
 VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc  
 
 - ISI file .env backend:
-GEMINI_API_KEY=AIzaSyAMUqZrststpYrtbSRDI9csfBehAUYEaRk
+GEMINI_API_KEY=
 JWT_SECRET=rahasia_snapchef_2026
 VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc  
 
@@ -85,17 +87,27 @@ VITE_FIREBASE_API_KEY=AIzaSyBlOJpzKE3Ez3loiQul0iR5kK7tNzQmemc
 5. Jalankan server: `node app.js`
    Server akan berjalan di `http://localhost:3000`
 
-### 4. Setup Frontend React
+### 4. Setup Frontend React (Development Mode)
 1. Buka terminal baru dan masuk ke folder `frontend`: `cd frontend`
 2. Install dependencies: `npm install`
 3. Jalankan aplikasi: `npm run dev`
    Aplikasi akan berjalan di `http://localhost:5173`
 
+### 5. Setup & Test PWA (Production Mode)
+Untuk menjalankan fitur Progressive Web App (PWA) secara penuh (memunculkan tombol Install):
+1. Buka terminal di folder `frontend`: `cd frontend`
+2. Jalankan perintah kompresi kode: `npm run build`
+3. Jalankan server preview: `npm run preview`
+   Aplikasi PWA siap diuji pada `http://localhost:4173`. Buka di browser Google Chrome, dan klik tombol **"Install"** di *address bar*.
+
+### ⚠️ Browser Requirement
+Aplikasi ini hanya mendukung Google Chrome untuk memastikan semua fitur seperti Camera API dan PWA berjalan optimal.
+
 ---
 
 ## Akun Uji Coba (Test Account)
 Gunakan kredensial berikut untuk menguji aplikasi:
-- Email: dosen@mikroskil.ac.id
+- Email: gilbert.situmorang@mikroskil.ac.id
 - Password: password123
 
 ---
@@ -322,21 +334,21 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 
 ---
 
-## 📅 5. Timeline Pengembangan (Fast-Track Sprint)
+## 📅 5. Timeline Pengembangan (Maret - Juli 2026)
 
 | Sprint | Durasi | Fokus Utama | Status |
 | :--- | :--- | :--- | :--- |
-| **Sprint 1** | 16 Mar – 22 Mar | Project Setup & Authentication | ✅ Done |
-| **Sprint 2** | 23 Mar – 29 Mar | AI Vision Scanner Core | ✅ Done |
-| **Sprint 3** | 30 Mar – 05 Apr | AI Recipe Engine & Diet Logic | ✅ Done |
-| **Sprint 4** | 06 Apr – 12 Apr | Kitchen Tools & Interactive Cooking | 🔄 In Progress |
-| **Sprint 5** | 13 Apr – 19 Apr | Social Hub & Smart Shopping List | 🕒 Planned |
-| **Sprint 6** | 20 Apr – 26 Apr | Monetization & Premium Features | 🕒 Planned |
-| **Sprint 7** | 27 Apr – 04 Mei | Final Polish & PWA Deployment | 🕒 Planned |
+| **Sprint 1** | 16 Mar – 31 Mar | Project Setup & Authentication | ✅ Done |
+| **Sprint 2** | 01 Apr – 15 Apr | AI Vision Scanner & Recipe Engine | ✅ Done |
+| **Sprint 3** | 16 Apr – 30 Apr | Kitchen Tools & Social Hub (REST API) | ✅ Done |
+| **Sprint 4** | 01 Mei – 15 Mei | Monetization, PWA & Persiapan UTS | ✅ Done |
+| **Sprint 5** | 16 Mei – 31 Mei | Real-time Chat & Live Comments (Socket.io) | 🕒 Planned |
+| **Sprint 6** | 01 Jun – 15 Jun | Push Notification & Advanced API | 🕒 Planned |
+| **Sprint 7** | 16 Jun – 04 Jul | Final Polish, Security & Persiapan UAS | 🕒 Planned |
 
 ---
 
-## 📋 5. Detail Sprint Breakdown
+## 📋 6. Detail Sprint Breakdown
 
 ### 🟢 Sprint 1 — Project Setup & Authentication
 **Goal:** Membangun fondasi aplikasi, desain, dan sistem login.
@@ -345,62 +357,57 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
     - Setup folder structure (Modular Architecture).
     - Finalisasi UI/UX Design di Figma.
     - Implementasi JWT Authentication System.
-- **Deliverables:**
-    - Struktur folder siap pakai & User bisa Login/Register.
+- **Status:** ✅ Selesai (Done)
 
-### 📸 Sprint 2 — AI Vision Scanner
-**Goal:** Implementasi deteksi bahan makanan menggunakan AI.
+### 📸 Sprint 2 — AI Vision Scanner & Recipe Engine
+**Goal:** Implementasi deteksi bahan makanan dan pembuatan resep personal berbasis AI.
 - **Tasks:**
-    - Integrasi API Google Gemini (Vision Model).
+    - Integrasi API Google Gemini (Vision Model & Generative AI).
     - Implementasi Camera & Gallery Upload API.
-    - Logika pemrosesan hasil deteksi bahan.
-- **Deliverables:**
-    - User bisa foto bahan makanan & AI mengenali daftar bahannya.
+    - Integrasi Dietary Profile Filter (Halal/Vegan) dan Prompt Engineering.
+- **Status:** ✅ Selesai (Done)
 
-### 🍳 Sprint 3 — AI Recipe Engine
-**Goal:** Menghasilkan resep otomatis yang personal.
+### 🍳 Sprint 3 — Kitchen Tools & Social Hub (REST)
+**Goal:** Memberikan pengalaman memasak interaktif dan membangun ekosistem komunitas dasar.
 - **Tasks:**
-    - Prompt Engineering untuk Recipe Generator.
-    - Integrasi Dietary Profile Filter (Halal/Vegan).
-    - Pembuatan Recipe Detail Page UI.
-- **Deliverables:**
-    - Hasil resep muncul berdasarkan bahan sisa secara akurat.
-
-### 🤖 Sprint 4 — Kitchen Tools & Interactive (Current)
-**Goal:** Memberikan pengalaman memasak yang interaktif.
-- **Tasks:**
-    - Pembuatan Step-by-Step Cooking Mode UI.
-    - Implementasi Cooking Timer & Portion Scaler.
-    - Integrasi AI Sous-Chef Chatbot.
-- **Deliverables:**
-    - Mode masak layar penuh berfungsi dengan timer aktif.
-
-### 🛒 Sprint 5 — Social Hub & Smart Shopping List
-**Goal:** Membangun ekosistem belanja dan komunitas.
-- **Tasks:**
+    - Pembuatan Step-by-Step Cooking Mode UI & Timer.
     - Pembuatan Cooking Gallery Feed & Post Upload.
-    - Fitur Save to Cookbook & Favorites.
-    - Logika Smart Shopping List & Affiliate Links.
-- **Deliverables:**
-    - User bisa berbagi foto masakan & daftar belanja otomatis muncul.
+    - Logika Smart Shopping List & Fitur Save to Cookbook.
+- **Status:** ✅ Selesai (Done)
 
-### 💎 Sprint 6 — Monetization & Premium Features
-**Goal:** Implementasi sistem bisnis dan akses eksklusif.
+### 💎 Sprint 4 — Monetization, PWA & UTS Finalization
+**Goal:** Implementasi sistem bisnis, PWA instalan, dan stabilisasi untuk evaluasi UTS.
 - **Tasks:**
+    - Konfigurasi PWA (Manifest & Service Worker) dengan custom Icon.
     - Integrasi Midtrans API (Sandbox) untuk upgrade Premium.
     - Logika Daily Scan Limit & Badge Premium.
-    - Implementasi AI Taste Tweaker (Modifikasi rasa resep).
-- **Deliverables:**
-    - Sistem langganan berfungsi & fitur AI Premium terbuka.
+    - Bug Fixing & Rekaman Video Demo UTS.
+- **Status:** ✅ Selesai (Done)
 
-### ⚙️ Sprint 7 — Final Polish & PWA Deployment
-**Goal:** Optimasi performa dan persiapan rilis final (Deadline 4 Mei).
+### 💬 Sprint 5 — Real-time Experience (Persiapan UAS)
+**Goal:** Meningkatkan interaktivitas aplikasi menjadi *real-time* (Target Materi M14).
 - **Tasks:**
-    - Konfigurasi PWA (Manifest & Service Worker).
-    - Implementasi Dark/Light Mode.
-    - Bug Fixing & Deployment ke Netlify/Vercel.
-- **Deliverables:**
-    - Aplikasi PWA Live, stabil, dan dapat diinstal di perangkat.
+    - Setup & Implementasi WebSockets / Socket.io.
+    - Refactor sistem Messaging dan Group Chat menjadi *real-time*.
+    - Live Updates otomatis untuk Komentar dan Like pada Cooking Post tanpa refresh.
+- **Status:** 🕒 Planned
+
+### 🛒 Sprint 6 — Advanced Integrations
+**Goal:** Menambahkan fitur otomatisasi dan integrasi pihak ketiga.
+- **Tasks:**
+    - Integrasi Push Notification untuk pengingat masak atau bahan kadaluarsa.
+    - Integrasi Affiliate Grocery Links ke e-commerce (Shopee).
+    - Implementasi AI Taste Tweaker (Modifikasi rasa resep instan).
+- **Status:** 🕒 Planned
+
+### ⚙️ Sprint 7 — Final Polish & UAS Deployment
+**Goal:** Optimasi performa tingkat akhir dan persiapan rilis final untuk penilaian UAS.
+- **Tasks:**
+    - Security Audit menyeluruh (Validasi Input & Centralized Error Handling).
+    - Implementasi mode tema Gelap/Terang (Dark/Light Mode).
+    - App Performance Optimization & Caching lanjutan.
+    - Final Deployment aplikasi.
+- **Status:** 🕒 Planned
  
 ---
 

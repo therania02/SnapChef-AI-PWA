@@ -48,9 +48,7 @@ const Login = () => {
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
           className="flex justify-center mb-4"
         >
-          <div className="bg-[#5E87A6] p-5 rounded-2xl">
-            <span className="text-white text-2xl">🍳</span>
-          </div>
+          <img src="/pwa-192x192.png" alt="SnapChef Logo" className="w-20 h-20 drop-shadow-md rounded-2xl" />
         </motion.div>
 
         <h1 className="text-2xl font-serif text-gray-800">
