@@ -4,7 +4,7 @@ import { Toaster } from "../../ui/sonner";
 import { UserProvider } from "../lib/user-context";
 import { PreferencesProvider } from "../lib/preferences-context";
 import { LanguageProvider } from "../lib/language-context";
-import { CookingPostsProvider } from "../lib/cooking-post-context";
+import { CookingPostsProvider } from "../lib/cookingPostContext";
 import { FavoritesProvider } from "../lib/favorites-context";
 
 export default function Root() {

@@ -16,7 +16,7 @@ import { Progress } from "../../../ui/progress.jsx";
 import { BottomNav } from "../../../ui/BottomNav.jsx";
 import { useUser } from "../../lib/user-context.jsx";
 import { useLanguage } from "../../lib/language-context";
-import { useCookingPosts } from "../../lib/cooking-post-context.jsx";
+import { useCookingPosts } from "../../lib/cookingPostContext.jsx";
 import { usePreferences } from "../../lib/preferences-context.jsx";
 import { UploadCookingPostModal } from "../../../ui/UploadCookingPostModal.jsx";
 import { CookingPostCard } from "../../../ui/CookingPostCard.jsx";
