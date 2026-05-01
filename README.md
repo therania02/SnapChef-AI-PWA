@@ -190,7 +190,7 @@ Contoh: GET /api/recipes?page=1&limit=5&q=ayam
 
 ### Body POST /api/auth/login
 {
-  "email": "dosen@mikroskil.ac.id",
+  "email": "gilbert.situmorang@mikroskil.ac.id",
   "password": "password123"
 }
 
