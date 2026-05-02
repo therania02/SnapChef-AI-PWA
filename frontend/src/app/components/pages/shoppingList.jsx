@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Pastikan useEffect diimport
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -15,83 +15,128 @@ import { useLanguage } from "../../lib/languageContext";
 export default function ShoppingListScreen() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [items, setItems] = useState([
-    {
-      id: "1",
-      name: "Kaldu Ayam",
-      amount: 500,
-      unit: "ml",
-      checked: false,
-      fromRecipe: "Sup Tomat Telur Hangat",
-    },
-    {
-      id: "2",
-      name: "Saus Tiram",
-      amount: 1,
-      unit: "sdm",
-      checked: false,
-      fromRecipe: "Tumis Telur Tomat ala Resto",
-    },
-    {
-      id: "3",
-      name: "Kecap Manis",
-      amount: 1,
-      unit: "sdt",
-      checked: false,
-      fromRecipe: "Tumis Telur Tomat ala Resto",
-    },
-  ]);
+  const [items, setItems] = useState([]);
+  
+  // Ambil data user dari localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = user.id; // Pastikan ini sesuai dengan key ID di database Anda
 
-  const toggleItem = (id) => {
-    setItems(
-      items.map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
-    );
+  const API_URL = "http://localhost:3000/api/ingredients";
+
+  // --- R: READ (Hanya untuk User yang Login) ---
+  const fetchIngredients = async () => {
+    try {
+      // Kita tambahkan query parameter q atau filter khusus jika API mendukung, 
+      // namun cara paling umum adalah mengirim userId
+      const response = await fetch(`${API_URL}?userId=${userId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        // Filter di frontend jika backend mengembalikan semua (sebagai pengaman tambahan)
+        const myItems = result.data.data.filter(item => item.userId === userId);
+        setItems(myItems);
+      }
+    } catch (error) {
+      toast.error("Gagal memuat daftar belanja");
+    }
   };
 
-  const deleteItem = (id) => {
-    setItems(items.filter((item) => item.id !== id));
-    toast.success("Item dihapus dari daftar belanja");
+  useEffect(() => {
+    if (userId) {
+      fetchIngredients();
+    } else {
+      toast.error("Silahkan login terlebih dahulu");
+      navigate("/login");
+    }
+  }, [userId]);
+
+  // --- U: UPDATE ---
+  const toggleItem = async (id) => {
+    const itemToUpdate = items.find((item) => item.id === id);
+    const newCheckedStatus = !itemToUpdate.checked;
+
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        // Kirim field yang ingin diubah (sesuai database)
+        body: JSON.stringify({ checked: newCheckedStatus }) 
+      });
+      
+      if (response.ok) {
+        setItems(items.map((item) =>
+          item.id === id ? { ...item, checked: newCheckedStatus } : item
+        ));
+      }
+    } catch (error) {
+      toast.error("Gagal memperbarui");
+    }
+  };
+
+  // --- C: CREATE (Cara Mengecek) ---
+  // Jika Anda ingin menambah bahan secara manual (Add)
+  const handleAddItem = async (name, amount, unit) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          amount,
+          unit,
+          userId: userId // Sangat penting mengirim userId agar masuk ke daftar user ini
+        })
+      });
+      if (response.ok) fetchIngredients(); // Refresh daftar
+    } catch (error) {
+      toast.error("Gagal menambah bahan");
+    }
+  };
+
+  // --- D: DELETE (Hapus dari database) ---
+  const deleteItem = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId }) 
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Hapus dari state lokal agar UI langsung terupdate
+        setItems(items.filter((item) => item.id !== id));
+        toast.success("Item dihapus dari daftar belanja");
+      } else {
+        toast.error("Gagal menghapus: " + result.message);
+      }
+    } catch (error) {
+      console.error("Gagal menghapus dari database:", error);
+      toast.error("Kesalahan koneksi ke server");
+    }
   };
 
   const openShopeeApp = (searchQuery = "") => {
-    // Deep link untuk membuka aplikasi Shopee
-    // Format: shopee://search?keyword=query
     const query = encodeURIComponent(searchQuery);
     const deepLink = `shopee://search?keyword=${query}`;
     const webLink = `https://shopee.co.id/search?keyword=${query}`;
 
-    // Coba buka aplikasi Shopee terlebih dahulu
     window.location.href = deepLink;
-
-    // Fallback ke web jika aplikasi tidak terinstall
     setTimeout(() => {
       window.open(webLink, "_blank");
     }, 1500);
 
-    toast.success(`Membuka Shopee untuk: ${searchQuery || "belanja"} 🛍️`, {
-      description: "Jika aplikasi tidak terbuka, akan membuka web browser",
-    });
+    toast.success(`Membuka Shopee untuk: ${searchQuery || "belanja"} 🛍️`);
   };
 
-  // Swipe handling
   const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset, velocity) => {
-    return Math.abs(offset) * velocity;
-  };
+  const swipePower = (offset, velocity) => Math.abs(offset) * velocity;
 
   const handleDragEnd = (e, { offset, velocity }) => {
     const swipe = swipePower(offset.x, velocity.x);
-
-    // Swipe right to go back to cookbook
-    if (swipe > swipeConfidenceThreshold) {
-      navigate("/cookbook");
-    }
-    // Swipe left to go to messages
-    else if (swipe < -swipeConfidenceThreshold) {
-      navigate("/messages");
-    }
+    if (swipe > swipeConfidenceThreshold) navigate("/cookbook");
+    else if (swipe < -swipeConfidenceThreshold) navigate("/messages");
   };
 
   const uncheckedCount = items.filter((item) => !item.checked).length;
@@ -113,7 +158,6 @@ export default function ShoppingListScreen() {
             </h1>
             <ShoppingCart className="h-6 w-6" />
           </div>
-
           <div className="text-sm opacity-90">
             {uncheckedCount} item belum dibeli
           </div>
@@ -147,28 +191,21 @@ export default function ShoppingListScreen() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`bg-white rounded-2xl p-4 shadow-sm ${item.checked ? "opacity-50" : ""
-                  }`}
+                className={`bg-white rounded-2xl p-4 shadow-sm ${item.checked ? "opacity-50" : ""}`}
               >
                 <div className="flex items-start gap-4">
-                  {/* Checkbox */}
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => toggleItem(item.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-colors ${item.checked
-                      ? "bg-primary border-primary"
-                      : "border-muted-foreground"
-                      }`}
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-colors ${
+                      item.checked ? "bg-primary border-primary" : "border-muted-foreground"
+                    }`}
                   >
                     {item.checked && <Check className="h-4 w-4 text-primary-foreground" />}
                   </motion.button>
 
-                  {/* Item Info */}
                   <div className="flex-1">
-                    <h3
-                      className={`font-medium ${item.checked ? "line-through" : ""
-                        }`}
-                    >
+                    <h3 className={`font-medium ${item.checked ? "line-through" : ""}`}>
                       {item.name}
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -177,27 +214,19 @@ export default function ShoppingListScreen() {
                     <p className="text-xs text-primary mt-1">{item.fromRecipe}</p>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2">
                     {!item.checked && (
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        animate={{
-                          x: [0, 3, 0],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          repeatDelay: 3,
-                        }}
+                        animate={{ x: [0, 3, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
                         onClick={() => openShopeeApp(item.name)}
                         className="px-3 py-1 bg-[#EE4D2D] hover:bg-[#D73211] text-white rounded-full text-xs font-medium transition-colors"
                       >
                         Beli
                       </motion.button>
                     )}
-
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
@@ -213,7 +242,7 @@ export default function ShoppingListScreen() {
           </div>
         )}
 
-        {/* Info Card */}
+        {/* Info Card Tetap Ada */}
         {items.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -228,15 +257,13 @@ export default function ShoppingListScreen() {
                   Belanja Mudah di Shopee
                 </h4>
                 <p className="text-sm light:text-blue-700 dark:text-red-600">
-                  Klik tombol "Beli" untuk langsung mencari produk di aplikasi Shopee. Gratis ongkir untuk pembelian tertentu!
+                  Klik tombol "Beli" untuk langsung mencari produk di aplikasi Shopee.
                 </p>
               </div>
             </div>
           </motion.div>
         )}
       </div>
-
-      {/* Bottom Navigation */}
       <BottomNav />
     </motion.div>
   );

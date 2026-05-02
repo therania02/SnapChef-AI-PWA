@@ -28,43 +28,54 @@ export function CookingPostsProvider({ children }) {
   const [myPosts, setMyPosts] = useState([]);
   const [comments, setComments] = useState({});
 
+  // 1. Ambil data user yang sedang login dari localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = user.id;
+  const userName = user.name || "Guest";
+
   // FITUR 1: POST MASAKAN KE BACKEND
   const addPost = async (post) => {
+    if (!userId) {
+      toast.error("Anda harus login untuk membuat postingan");
+      return;
+    }
+
     try {
-      // 1. Tembak ke API Backend
       const response = await fetch(`${API_URL}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipeName: post.recipeName || "Masakan Baru",
           description: post.description || "",
-          image: post.image || "", // Pastikan mengirim base64 atau URL
-          privacy: post.privacy || "public"
+          image: post.image || "", 
+          privacy: post.privacy || "public",
+          userId: userId // KIRIM USER ID KE BACKEND
         })
       });
 
-      if (response.ok) {
-        // 2. Update UI jika berhasil
-        const newPost = {
-          ...post,
-          id: Date.now(), // Gunakan ID sementara untuk UI
-          userId: "currentUser",
-          userName: "Guest",
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Gunakan data asli dari database (result.data) untuk update UI
+        const dbPost = {
+          ...result.data,
+          userName: userName, // Tambahkan info user untuk tampilan UI
           userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
           likes: 0,
-          comments: 0,
-          createdAt: new Date().toISOString(),
+          comments: 0
         };
         
-        setMyPosts([newPost, ...myPosts]);
-        if (post.privacy === "public") {
-          setPosts([newPost, ...posts]);
+        setMyPosts([dbPost, ...myPosts]);
+        if (dbPost.privacy === "public") {
+          setPosts([dbPost, ...posts]);
         }
+        toast.success("Postingan berhasil dibagikan!");
       } else {
-        console.error("Gagal simpan ke database");
+        toast.error(result.message || "Gagal simpan ke database");
       }
     } catch (error) {
       console.error("Error API:", error);
+      toast.error("Terjadi kesalahan koneksi");
     }
   };
 
@@ -72,18 +83,40 @@ export function CookingPostsProvider({ children }) {
   const deletePost = async (postId) => {
     try {
       const response = await fetch(`${API_URL}/posts/${postId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId }) // Mengirim userId untuk validasi kepemilikan
       });
       
-      // Update UI (Optimistic Delete)
-      setMyPosts(myPosts.filter((post) => post.id !== postId));
-      setPosts(posts.filter((post) => post.id !== postId));
-      const newComments = { ...comments };
-      delete newComments[postId];
-      setComments(newComments);
-      
+      if (response.ok) {
+        setMyPosts(myPosts.filter((post) => post.id !== postId));
+        setPosts(posts.filter((post) => post.id !== postId));
+        toast.success("Postingan berhasil dihapus");
+      }
     } catch (error) {
       console.error("Error delete API:", error);
+      toast.error("Gagal menghapus postingan");
+    }
+  };
+
+  // FITUR 3: UPDATE POSTINGAN KE BACKEND
+  const updatePost = async (postId, updatedData) => {
+    try {
+      const response = await fetch(`${API_URL}/posts/${postId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...updatedData, userId: userId })
+      });
+
+      if (response.ok) {
+        const updateState = (list) => list.map((p) => p.id === postId ? { ...p, ...updatedData } : p);
+        setPosts(updateState(posts));
+        setMyPosts(updateState(myPosts));
+        toast.success("Postingan berhasil diperbarui");
+      }
+    } catch (error) {
+      console.error("Error update post:", error);
+      toast.error("Gagal memperbarui postingan");
     }
   };
 
@@ -96,68 +129,108 @@ export function CookingPostsProvider({ children }) {
   const getFriendsPosts = () => posts.filter((post) => post.privacy === "public" || post.privacy === "friends");
   const getComments = (postId) => comments[postId] || [];
 
-  // FITUR 3: POST KOMENTAR KE BACKEND
+  // FITUR 4: POST KOMENTAR KE BACKEND
   const addComment = async (postId, text) => {
+    if (!userId) {
+      toast.error("Silahkan login untuk berkomentar");
+      return;
+    }
+
     try {
-      // 1. Tembak ke API Backend
       const response = await fetch(`${API_URL}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId: postId, text: text })
+        body: JSON.stringify({ 
+          postId: postId, 
+          text: text,
+          userId: userId // KIRIM USER ID KE BACKEND
+        })
       });
 
-      // 2. Update UI secara instan
-      const newComment = {
-        id: Date.now(),
-        userId: "currentUser",
-        userName: "Guest",
-        userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
-        text,
-        createdAt: new Date().toISOString(),
-      };
+      const result = await response.json();
 
-      setComments({
-        ...comments,
-        [postId]: [...(comments[postId] || []), newComment],
-      });
+      if (response.ok && result.success) {
+        const newComment = {
+          ...result.data,
+          userName: userName,
+          userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
+        };
 
-      const updateCommentCount = (postList) => postList.map((post) =>
-          post.id === postId ? { ...post, comments: (post.comments || 0) + 1 } : post
-      );
-      setPosts(updateCommentCount(posts));
-      setMyPosts(updateCommentCount(myPosts));
+        setComments({
+          ...comments,
+          [postId]: [...(comments[postId] || []), newComment],
+        });
 
-      return newComment;
+        const updateCommentCount = (postList) => postList.map((p) =>
+            p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p
+        );
+        setPosts(updateCommentCount(posts));
+        setMyPosts(updateCommentCount(myPosts));
+
+        return newComment;
+      }
     } catch (error) {
       console.error("Error post komentar:", error);
+      toast.error("Gagal mengirim komentar");
     }
   };
 
-  // FITUR 4: HAPUS KOMENTAR DARI BACKEND
+  // FITUR 5: HAPUS KOMENTAR DARI BACKEND
   const deleteComment = async (postId, commentId) => {
     try {
-      await fetch(`${API_URL}/comments/${commentId}`, { method: 'DELETE' });
-      
-      setComments({
-        ...comments,
-        [postId]: (comments[postId] || []).filter((c) => c.id !== commentId),
+      const response = await fetch(`${API_URL}/comments/${commentId}`, { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId }) 
       });
+      
+      if (response.ok) {
+        setComments({
+          ...comments,
+          [postId]: (comments[postId] || []).filter((c) => c.id !== commentId),
+        });
 
-      const updateCommentCount = (postList) => postList.map((post) =>
-          post.id === postId ? { ...post, comments: Math.max((post.comments || 0) - 1, 0) } : post
-      );
-      setPosts(updateCommentCount(posts));
-      setMyPosts(updateCommentCount(myPosts));
+        const updateCount = (list) => list.map((p) =>
+          p.id === postId ? { ...p, comments: Math.max((p.comments || 0) - 1, 0) } : p
+        );
+        setPosts(updateCount(posts));
+        setMyPosts(updateCount(myPosts));
+        toast.success("Komentar dihapus");
+      }
     } catch (error) {
       console.error("Error delete komentar:", error);
+    }
+  };
+
+  // FITUR 6: UPDATE KOMENTAR KE BACKEND
+  const updateComment = async (postId, commentId, newText) => {
+    try {
+      const response = await fetch(`${API_URL}/comments/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newText, userId: userId })
+      });
+
+      if (response.ok) {
+        setComments({
+          ...comments,
+          [postId]: comments[postId].map((c) => 
+            c.id === commentId ? { ...c, text: newText } : c
+          ),
+        });
+        toast.success("Komentar diperbarui");
+      }
+    } catch (error) {
+      console.error("Error update komentar:", error);
+      toast.error("Gagal memperbarui komentar");
     }
   };
 
   return (
     <CookingPostsContext.Provider
       value={{
-        posts, myPosts, addPost, deletePost, updatePostPrivacy,
-        getPublicPosts, getFriendsPosts, getComments, addComment, deleteComment,
+        posts, myPosts, addPost, deletePost, updatePost, updatePostPrivacy,
+        getPublicPosts, getFriendsPosts, getComments, addComment, deleteComment, updateComment
       }}
     >
       {children}
@@ -168,191 +241,5 @@ export function CookingPostsProvider({ children }) {
 export function useCookingPosts() {
   const context = useContext(CookingPostsContext);
   if (!context) throw new Error("useCookingPosts must be used within a CookingPostsProvider");
-  return context;
-}
-    userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-    image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&h=600&fit=crop",
-    recipeName: "Pancake Blueberry",
-    description: "Pancake fluffy dengan topping blueberry segar",
-    privacy: "friends",
-    likes: 18,
-    comments: 3,
-    createdAt: "2026-03-28T08:15:00",
-  },
-];
-
-export function CookingPostsProvider({ children }) {
-  const [posts, setPosts] = useState(initialPosts);
-  const [myPosts, setMyPosts] = useState([
-    {
-      id: 4,
-      image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop",
-      recipeName: "Salad Buah Tropis",
-      description: "Campuran buah segar dengan yogurt",
-      privacy: "public",
-      likes: 15,
-      comments: 2,
-      createdAt: "2026-03-31T09:00:00",
-    },
-  ]);
-
-  // Comments data structure: { postId: [comments] }
-  const [comments, setComments] = useState({
-    1: [
-      {
-        id: 1,
-        userId: "user2",
-        userName: "John Doe",
-        userAvatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop",
-        text: "Looks delicious! 😋",
-        createdAt: "2026-03-30T11:00:00",
-      },
-      {
-        id: 2,
-        userId: "currentUser",
-        userName: "Guest",
-        userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
-        text: "Saya juga mau coba resep ini!",
-        createdAt: "2026-03-30T12:30:00",
-      },
-    ],
-    2: [
-      {
-        id: 3,
-        userId: "user1",
-        userName: "Sarah Chen",
-        userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-        text: "Pizza terbaik yang pernah saya lihat!",
-        createdAt: "2026-03-29T19:00:00",
-      },
-    ],
-  });
-
-  const addPost = (post) => {
-    const newPost = {
-      ...post,
-      id: Date.now(),
-      userId: "currentUser",
-      userName: "Guest",
-      userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
-      likes: 0,
-      comments: 0,
-      createdAt: new Date().toISOString(),
-    };
-    setMyPosts([newPost, ...myPosts]);
-    if (post.privacy === "public") {
-      setPosts([newPost, ...posts]);
-    }
-  };
-
-  const deletePost = (postId) => {
-    setMyPosts(myPosts.filter((post) => post.id !== postId));
-    setPosts(posts.filter((post) => post.id !== postId));
-    // Also delete comments for this post
-    const newComments = { ...comments };
-    delete newComments[postId];
-    setComments(newComments);
-  };
-
-  const updatePostPrivacy = (postId, newPrivacy) => {
-    setMyPosts(
-      myPosts.map((post) =>
-        post.id === postId ? { ...post, privacy: newPrivacy } : post
-      )
-    );
-    setPosts(
-      posts.map((post) =>
-        post.id === postId ? { ...post, privacy: newPrivacy } : post
-      )
-    );
-  };
-
-  const getPublicPosts = () => {
-    return posts.filter((post) => post.privacy === "public");
-  };
-
-  const getFriendsPosts = () => {
-    return posts.filter((post) => 
-      post.privacy === "public" || post.privacy === "friends"
-    );
-  };
-
-  // Comment functions
-  const getComments = (postId) => {
-    return comments[postId] || [];
-  };
-
-  const addComment = (postId, text) => {
-    const newComment = {
-      id: Date.now(),
-      userId: "currentUser",
-      userName: "Guest",
-      userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop",
-      text,
-      createdAt: new Date().toISOString(),
-    };
-
-    setComments({
-      ...comments,
-      [postId]: [...(comments[postId] || []), newComment],
-    });
-
-    // Update comment count in posts
-    const updateCommentCount = (postList) =>
-      postList.map((post) =>
-        post.id === postId
-          ? { ...post, comments: (post.comments || 0) + 1 }
-          : post
-      );
-
-    setPosts(updateCommentCount(posts));
-    setMyPosts(updateCommentCount(myPosts));
-
-    return newComment;
-  };
-
-  const deleteComment = (postId, commentId) => {
-    setComments({
-      ...comments,
-      [postId]: (comments[postId] || []).filter((c) => c.id !== commentId),
-    });
-
-    // Update comment count in posts
-    const updateCommentCount = (postList) =>
-      postList.map((post) =>
-        post.id === postId
-          ? { ...post, comments: Math.max((post.comments || 0) - 1, 0) }
-          : post
-      );
-
-    setPosts(updateCommentCount(posts));
-    setMyPosts(updateCommentCount(myPosts));
-  };
-
-  return (
-    <CookingPostsContext.Provider
-      value={{
-        posts,
-        myPosts,
-        addPost,
-        deletePost,
-        updatePostPrivacy,
-        getPublicPosts,
-        getFriendsPosts,
-        getComments,
-        addComment,
-        deleteComment,
-      }}
-    >
-      {children}
-    </CookingPostsContext.Provider>
-  );
-}
-
-export function useCookingPosts() {
-  const context = useContext(CookingPostsContext);
-  if (!context) {
-    throw new Error("useCookingPosts must be used within a CookingPostsProvider");
-  }
   return context;
 }

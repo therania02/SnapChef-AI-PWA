@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.TEXT
       },
       image: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT('long') // Gunakan TEXT untuk menyimpan base64 atau URL panjang
       },
       privacy: {
         type: Sequelize.STRING

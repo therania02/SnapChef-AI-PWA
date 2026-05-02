@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   Post.init({
     recipeName: DataTypes.STRING,
     description: DataTypes.TEXT,
-    image: DataTypes.STRING,
+    image: DataTypes.TEXT('long'),
     privacy: DataTypes.STRING,
     likes: DataTypes.INTEGER,
     userId: DataTypes.INTEGER
