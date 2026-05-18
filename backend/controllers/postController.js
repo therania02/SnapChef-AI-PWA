@@ -1,7 +1,7 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const db = require('../models/index.cjs');
-const { Post, Sequelize } = db;
+const { Post, User, Comment, Sequelize } = db;
 const { Op } = Sequelize;
 
 import BaseController from './basecontroller.js';
@@ -28,27 +28,70 @@ class PostController extends BaseController {
                 where: {
                     recipeName: { [Op.like]: `%${search}%` }
                 },
+                // PENTING: Tambahkan atribut virtual untuk menghitung komentar
+                attributes: {
+                    include: [
+                        [
+                            Sequelize.literal(`(SELECT COUNT(*) FROM Comments WHERE Comments.postId = Post.id)`),
+                            'commentCount'
+                        ]
+                    ]
+                },
+                // PENTING: Join ke tabel User untuk mengambil nama
+                include: [
+                    {
+                        model: User,
+                        attributes: ['name'] 
+                    }
+                ],
                 limit: limit,
                 offset: offset,
                 order: [['createdAt', 'DESC']]
+            });
+
+            // Map data agar userName tersedia langsung di root object
+            const formattedData = posts.rows.map(post => {
+                const p = post.toJSON();
+                return {
+                    ...p,
+                    userName: p.User?.name || "Guest", // Mengambil hasil join
+                    comments: parseInt(p.commentCount) || 0 // Mengambil hasil hitung subquery
+                };
             });
 
             return this.sendSuccess(res, 200, "Berhasil mengambil postingan", {
                 totalData: posts.count,
                 totalPages: Math.ceil(posts.count / limit),
                 currentPage: page,
-                data: posts.rows
+                data: formattedData
             });
         } catch (error) {
             return this.sendError(res, 500, error.message);
         }
     };
 
+    // Terapkan include yang sama pada getById agar saat buka detail data juga lengkap
     getById = async (req, res) => {
         try {
-            const post = await Post.findByPk(req.params.id);
+            const post = await Post.findByPk(req.params.id, {
+                include: [{ model: User, attributes: ['name'] }],
+                attributes: {
+                    include: [
+                        [Sequelize.literal(`(SELECT COUNT(*) FROM Comments WHERE Comments.postId = Post.id)`), 'commentCount']
+                    ]
+                }
+            });
+
             if (!post) return this.sendError(res, 404, "Postingan tidak ditemukan");
-            return this.sendSuccess(res, 200, "Berhasil", post);
+
+            const p = post.toJSON();
+            const formatted = {
+                ...p,
+                userName: p.User?.name || "Guest",
+                comments: parseInt(p.commentCount) || 0
+            };
+
+            return this.sendSuccess(res, 200, "Berhasil", formatted);
         } catch (error) {
             return this.sendError(res, 500, error.message);
         }

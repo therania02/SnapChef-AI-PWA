@@ -1,7 +1,7 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const db = require('../models/index.cjs');
-const { Comment, Sequelize } = db;
+const { Comment, User, Sequelize } = db;
 const { Op } = Sequelize;
 
 import BaseController from './basecontroller.js';
@@ -31,14 +31,29 @@ class CommentController extends BaseController {
                 where: whereClause,
                 limit: limit,
                 offset: offset,
-                order: [['createdAt', 'DESC']]
+                order: [['createdAt', 'DESC']],
+                include: [
+                    {
+                        model: User,
+                        attributes: ['name'] // Ambil hanya kolom nama
+                    }
+                ]
+            });
+
+            // Format data agar lebih mudah dibaca oleh Frontend
+            const formattedData = comments.rows.map(comment => {
+                const c = comment.toJSON();
+                return {
+                    ...c,
+                    userName: c.User?.name || "Anonim" // Map User.name ke userName
+                };
             });
 
             return this.sendSuccess(res, 200, "Berhasil mengambil komentar", {
                 totalData: comments.count,
                 totalPages: Math.ceil(comments.count / limit),
                 currentPage: page,
-                data: comments.rows
+                data: formattedData
             });
         } catch (error) {
             return this.sendError(res, 500, error.message);

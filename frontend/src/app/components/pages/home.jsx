@@ -443,19 +443,65 @@ export default function HomeScreen() {
                   <button onClick={() => setGalleryTab("my")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "my" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Saya ({myPosts.length})</button>
                 </div>
 
-                <motion.div key={galleryTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-4">
+                <motion.div 
+                  key={galleryTab} 
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  transition={{ duration: 0.3 }} 
+                  className="space-y-4"
+                >
                   {galleryTab === "public" ? (
-                    getPublicPosts().length > 0 ? getPublicPosts().map((post, index) => <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}><CookingPostCard post={post} /></motion.div>) : (
-                      <div className="text-center py-12 text-muted-foreground"><ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" /><p className="text-sm">Belum ada masakan yang dibagikan</p></div>
+                    getPublicPosts().length > 0 ? (
+                      getPublicPosts().map((post, index) => (
+                        <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+                          {/* Tambahkan isMyPost jika ternyata postingan publik itu milik user sendiri */}
+                          <CookingPostCard 
+                            post={post} 
+                            isMyPost={Number(post.userId) === Number(user?.id)} 
+                            onDelete={handleDeletePost} 
+                            onUpdatePrivacy={handleUpdatePrivacy} 
+                          />
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">Belum ada masakan yang dibagikan</p>
+                      </div>
                     )
                   ) : galleryTab === "friends" ? (
-                    getFriendsPosts().length > 0 ? getFriendsPosts().map((post, index) => <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}><CookingPostCard post={post} /></motion.div>) : (
-                      <div className="text-center py-12 text-muted-foreground"><ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" /><p className="text-sm">Belum ada masakan dari teman</p></div>
+                    getFriendsPosts().length > 0 ? (
+                      getFriendsPosts().map((post, index) => (
+                        <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+                          <CookingPostCard post={post} />
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">Belum ada masakan dari teman</p>
+                      </div>
                     )
                   ) : myPosts.length > 0 ? (
-                    myPosts.map((post, index) => <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}><CookingPostCard post={post} isMyPost={true} onDelete={handleDeletePost} onUpdatePrivacy={handleUpdatePrivacy} /></motion.div>)
+                    // Gunakan map dari myPosts yang sudah disinkronkan di context
+                    myPosts.map((post, index) => (
+                      <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+                        <CookingPostCard 
+                          post={post} 
+                          isMyPost={true} 
+                          onDelete={handleDeletePost} 
+                          onUpdatePrivacy={handleUpdatePrivacy} 
+                        />
+                      </motion.div>
+                    ))
                   ) : (
-                    <div className="text-center py-12 text-muted-foreground"><ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" /><p className="text-sm mb-4">Belum ada masakan yang Anda bagikan</p><Button onClick={() => setShowUploadModal(true)} className="rounded-xl"><Plus className="h-4 w-4 mr-2" /> Bagikan Masakan Pertama</Button></div>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm mb-4">Belum ada masakan yang Anda bagikan</p>
+                      <Button onClick={() => setShowUploadModal(true)} className="rounded-xl">
+                        <Plus className="h-4 w-4 mr-2" /> Bagikan Masakan Pertama
+                      </Button>
+                    </div>
                   )}
                 </motion.div>
               </div>

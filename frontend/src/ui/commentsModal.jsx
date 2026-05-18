@@ -1,12 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Trash2 } from "lucide-react";
+import { X, Send, Trash2, Edit2 } from "lucide-react"; 
 import { useState, useRef, useEffect } from "react";
 import { useCookingPosts } from "../app/lib/cookingPostContext";
+import { useUser } from "../app/lib/userContext.jsx"; 
 import { toast } from "sonner";
 
 export function CommentsModal({ isOpen, onClose, post }) {
   const [commentText, setCommentText] = useState("");
-  const { getComments, addComment, deleteComment } = useCookingPosts();
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const { user } = useUser(); // Sekarang useUser sudah terdefinisi dan tidak error lagi
+  const { getComments, fetchComments, addComment, deleteComment, updateComment } = useCookingPosts(); // Ambil updateComment dari context
   const comments = getComments(post?.id);
   const commentsEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -17,33 +20,49 @@ export function CommentsModal({ isOpen, onClose, post }) {
 
   useEffect(() => {
     if (isOpen) {
-      // Focus textarea when modal opens
+      // Focus textarea ketika modal terbuka
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 300);
     }
   }, [isOpen]);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (isOpen && post?.id) {
+      fetchComments(post.id);
+    }
+  }, [isOpen, post?.id]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
 
-    addComment(post.id, commentText.trim());
-    setCommentText("");
-    toast.success("Komentar berhasil ditambahkan!");
+    if (editingCommentId) {
+      // Logic untuk UPDATE KOMENTAR ke Backend jika sedang dalam mode edit
+      await updateComment(post.id, editingCommentId, commentText.trim());
+      setEditingCommentId(null);
+    } else {
+      // Logic untuk TAMBAH KOMENTAR BARU ke Backend
+      await addComment(post.id, commentText.trim());
+      toast.success("Komentar berhasil ditambahkan!");
+    }
 
-    // Reset textarea height
+    setCommentText("");
+
+    // Reset tinggi textarea
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
 
-    // Scroll to bottom after adding comment
+    // Gulirkan layar ke bawah setelah selesai submit
     setTimeout(scrollToBottom, 100);
   };
 
   const handleDelete = (commentId) => {
-    deleteComment(post.id, commentId);
-    toast.success("Komentar berhasil dihapus!");
+    if (window.confirm("Apakah Anda yakin ingin menghapus komentar ini?")) {
+      deleteComment(post.id, commentId);
+      toast.success("Komentar berhasil dihapus!");
+    }
   };
 
   const getTimeAgo = (dateString) => {
@@ -118,8 +137,8 @@ export function CommentsModal({ isOpen, onClose, post }) {
                       transition={{ delay: index * 0.05 }}
                       className="flex gap-3"
                     >
-                      {/* Avatar */}
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                      {/* Avatar - Menggunakan Inisial jika tidak ada foto */}
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-primary/10 flex-shrink-0 flex items-center justify-center border border-primary/20">
                         {comment.userAvatar ? (
                           <img
                             src={comment.userAvatar}
@@ -127,34 +146,53 @@ export function CommentsModal({ isOpen, onClose, post }) {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                            ?
-                          </div>
+                          <span className="text-primary font-bold text-xs">
+                            {(comment.userName || "U")[0].toUpperCase()}
+                          </span>
                         )}
                       </div>
 
                       {/* Comment Content */}
                       <div className="flex-1 min-w-0">
-                        <div className="bg-muted rounded-2xl px-4 py-3">
-                          <p className="font-medium text-sm">
-                            {comment.userName}
+                        <div className="bg-muted rounded-2xl px-4 py-3 relative group">
+                          <p className="font-bold text-xs text-primary">
+                            {comment.userName || "Guest"}
                           </p>
-                          <p className="text-sm mt-1 break-words">
+                          
+                          {/* Teks Komentar */}
+                          <p className="text-sm mt-1 break-words text-slate-700">
                             {comment.text}
                           </p>
                         </div>
-                        <div className="flex items-center gap-3 mt-1 px-4">
-                          <span className="text-xs text-muted-foreground">
+
+                        {/* Actions: Time, Edit, Delete */}
+                        <div className="flex items-center gap-3 mt-1 px-2">
+                          <span className="text-[10px] text-muted-foreground">
                             {getTimeAgo(comment.createdAt)}
                           </span>
-                          {comment.userId === "currentUser" && (
-                            <button
-                              onClick={() => handleDelete(comment.id)}
-                              className="text-xs text-destructive hover:underline flex items-center gap-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              Hapus
-                            </button>
+
+                          {/* HANYA MUNCUL JIKA MILIK USER YANG LOGIN */}
+                          {Number(comment.userId) === Number(user?.id) && (
+                            <div className="flex gap-3">
+                              <button
+                                onClick={() => {
+                                  setEditingCommentId(comment.id);
+                                  setCommentText(comment.text); // Set teks komentar lama ke kolom textarea input agar siap diedit
+                                  textareaRef.current?.focus();
+                                }}
+                                className="text-[10px] font-medium text-primary hover:underline flex items-center gap-1"
+                              >
+                                <Edit2 className="h-3 w-3" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(comment.id)}
+                                className="text-[10px] font-medium text-destructive hover:underline flex items-center gap-1"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                Hapus
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -178,7 +216,7 @@ export function CommentsModal({ isOpen, onClose, post }) {
                     ref={textareaRef}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Tulis komentar..."
+                    placeholder={editingCommentId ? "Edit komentar Anda..." : "Tulis komentar..."}
                     rows={1}
                     maxLength={500}
                     className="w-full px-4 py-3 bg-muted rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-primary text-sm max-h-32"
@@ -194,6 +232,21 @@ export function CommentsModal({ isOpen, onClose, post }) {
                     }}
                   />
                 </div>
+                
+                {/* Tombol Batal jika dalam mode Edit */}
+                {editingCommentId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCommentId(null);
+                      setCommentText("");
+                    }}
+                    className="text-xs text-muted-foreground px-2 py-3 hover:underline"
+                  >
+                    Batal
+                  </button>
+                )}
+
                 <motion.button
                   type="submit"
                   disabled={!commentText.trim()}

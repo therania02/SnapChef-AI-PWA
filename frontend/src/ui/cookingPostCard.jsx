@@ -8,17 +8,22 @@ import {
   DropdownMenuTrigger,
 } from "./dropdownMenu";
 import { CommentsModal } from "./commentsModal";
-
+import { useCookingPosts } from "../app/lib/cookingPostContext.jsx";
+ 
 export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePrivacy }) {
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likes);
+  const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [showComments, setShowComments] = useState(false);
+  const { getComments } = useCookingPosts(); // Ambil dari context
+  
+  // Gunakan jumlah komentar dari database, atau fallback ke jumlah di context (real-time)
+  const displayCommentCount = getComments(post.id).length || post.comments || 0;
 
   const handleLike = () => {
     setLiked(!liked);
     setLikesCount(liked ? likesCount - 1 : likesCount + 1);
   };
-
+ 
   const getPrivacyIcon = (privacy) => {
     switch (privacy) {
       case "public":
@@ -31,7 +36,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
         return <Globe className="h-3 w-3" />;
     }
   };
-
+ 
   const getPrivacyLabel = (privacy) => {
     switch (privacy) {
       case "public":
@@ -44,7 +49,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
         return "Publik";
     }
   };
-
+ 
   const getTimeAgo = (dateString) => {
     const now = new Date();
     const postDate = new Date(dateString);
@@ -52,7 +57,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-
+ 
     if (diffMins < 1) return "Baru saja";
     if (diffMins < 60) return `${diffMins} menit lalu`;
     if (diffHours < 24) return `${diffHours} jam lalu`;
@@ -63,7 +68,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
       year: "numeric",
     });
   };
-
+ 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -98,7 +103,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
             </div>
           </div>
         </div>
-
+ 
         {isMyPost && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -106,7 +111,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
                 <MoreVertical className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-white text-black shadow-lg rounded-xl border border-gray">
               <DropdownMenuItem onClick={() => onUpdatePrivacy?.(post.id, "public")}>
                 <Globe className="h-4 w-4 mr-2" />
                 Ubah ke Publik
@@ -130,7 +135,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
           </DropdownMenu>
         )}
       </div>
-
+ 
       {/* Image */}
       <div className="aspect-[4/3] bg-muted">
         <img
@@ -139,7 +144,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
           className="w-full h-full object-cover"
         />
       </div>
-
+ 
       {/* Actions */}
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-4">
@@ -159,10 +164,10 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
             onClick={() => setShowComments(true)}
           >
             <MessageCircle className="h-5 w-5" />
-            <span>{post.comments}</span>
+            <span>{displayCommentCount}</span>
           </button>
         </div>
-
+ 
         {/* Caption */}
         <div>
           <p className="font-medium">{post.recipeName}</p>
@@ -173,7 +178,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
           )}
         </div>
       </div>
-
+ 
       {/* Comments Modal */}
       <CommentsModal
         isOpen={showComments}
@@ -183,3 +188,4 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
     </motion.div>
   );
 }
+ 

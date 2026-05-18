@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner"; // Pastikan sonner tetap ada
+import { useUser } from "../lib/userContext.jsx";
 
 const CookingPostsContext = createContext(null);
 
@@ -24,16 +25,52 @@ const initialPosts = [
 ];
 
 export function CookingPostsProvider({ children }) {
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
   const [comments, setComments] = useState({});
+  const { user } = useUser();
+  const userId = user?.id || "user1";
+  const userName = user?.name || "Guest";
 
-  // 1. Ambil data user yang sedang login dari localStorage
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = user.id;
-  const userName = user.name || "Guest";
+  // // 1. Ambil data user yang sedang login dari localStorage
+  // const user = JSON.parse(localStorage.getItem("user") || "{}");
+  // const userId = user.id;
+  // const userName = user.name || "Guest";
 
-  // FITUR 1: POST MASAKAN KE BACKEND
+  // FITUR 1: AMBIL POSTINGAN DARI BACKEND
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch(`${API_URL}/posts`);
+      const result = await response.json();
+      
+      // Pastikan mengambil properti 'data' dari dalam objek hasil respons
+      const actualPosts = result.data?.data || [];
+      
+      if (response.ok) {
+        setPosts(actualPosts);
+        
+        // GUNAKAN == (double equals) atau konversi ke Number agar filter tidak gagal
+        const mine = actualPosts.filter(p => Number(p.userId) === Number(userId));
+        setMyPosts(mine);
+
+        actualPosts.forEach(post => {
+          fetchComments(post.id);
+        });
+      }
+    } catch (error) {
+      console.error("Gagal mengambil postingan:", error);
+      setPosts([]); // Set ke array kosong jika error
+    }
+  };
+
+  useEffect(() => {
+    if (posts.length > 0 && userId) {
+      const mine = posts.filter(p => Number(p.userId) === Number(userId));
+      setMyPosts(mine);
+    }
+  }, [posts, userId]);
+  
+  // FITUR 2: POST MASAKAN KE BACKEND
   const addPost = async (post) => {
     if (!userId) {
       toast.error("Anda harus login untuk membuat postingan");
@@ -79,7 +116,7 @@ export function CookingPostsProvider({ children }) {
     }
   };
 
-  // FITUR 2: HAPUS MASAKAN DARI BACKEND
+  // FITUR 3: HAPUS MASAKAN DARI BACKEND
   const deletePost = async (postId) => {
     try {
       const response = await fetch(`${API_URL}/posts/${postId}`, {
@@ -99,7 +136,7 @@ export function CookingPostsProvider({ children }) {
     }
   };
 
-  // FITUR 3: UPDATE POSTINGAN KE BACKEND
+  // FITUR 4: UPDATE POSTINGAN KE BACKEND
   const updatePost = async (postId, updatedData) => {
     try {
       const response = await fetch(`${API_URL}/posts/${postId}`, {
@@ -125,11 +162,30 @@ export function CookingPostsProvider({ children }) {
     setPosts(posts.map((post) => post.id === postId ? { ...post, privacy: newPrivacy } : post));
   };
 
-  const getPublicPosts = () => posts.filter((post) => post.privacy === "public");
-  const getFriendsPosts = () => posts.filter((post) => post.privacy === "public" || post.privacy === "friends");
+  const getPublicPosts = () => (Array.isArray(posts) ? posts.filter((post) => post.privacy === "public") : []);
+  const getFriendsPosts = () => (Array.isArray(posts) ? posts.filter((post) => post.privacy === "public" || post.privacy === "friends") : []);
   const getComments = (postId) => comments[postId] || [];
 
-  // FITUR 4: POST KOMENTAR KE BACKEND
+  // FITUR 5: AMBIL KOMENTAR DARI BACKEND
+  const fetchComments = async (postId) => {
+    try {
+      const response = await fetch(`${API_URL}/comments?postId=${postId}`);
+      const result = await response.json();
+
+      const commentData = result.data?.data || [];
+
+      if (response.ok) {
+        setComments(prev => ({
+          ...prev,
+          [postId]: commentData
+        }));
+      }
+    } catch (error) {
+      console.error("Gagal ambil komentar:", error);
+    }
+  };
+
+  // FITUR 6: POST KOMENTAR KE BACKEND
   const addComment = async (postId, text) => {
     if (!userId) {
       toast.error("Silahkan login untuk berkomentar");
@@ -175,7 +231,7 @@ export function CookingPostsProvider({ children }) {
     }
   };
 
-  // FITUR 5: HAPUS KOMENTAR DARI BACKEND
+  // FITUR 7: HAPUS KOMENTAR DARI BACKEND
   const deleteComment = async (postId, commentId) => {
     try {
       const response = await fetch(`${API_URL}/comments/${commentId}`, { 
@@ -202,7 +258,7 @@ export function CookingPostsProvider({ children }) {
     }
   };
 
-  // FITUR 6: UPDATE KOMENTAR KE BACKEND
+  // FITUR 8: UPDATE KOMENTAR KE BACKEND
   const updateComment = async (postId, commentId, newText) => {
     try {
       const response = await fetch(`${API_URL}/comments/${commentId}`, {
@@ -226,11 +282,15 @@ export function CookingPostsProvider({ children }) {
     }
   };
 
+  useEffect(() => {
+    fetchPosts();
+  }, [userId]);
+
   return (
     <CookingPostsContext.Provider
       value={{
         posts, myPosts, addPost, deletePost, updatePost, updatePostPrivacy,
-        getPublicPosts, getFriendsPosts, getComments, addComment, deleteComment, updateComment
+        getPublicPosts, getFriendsPosts, getComments, fetchComments, addComment, deleteComment, updateComment
       }}
     >
       {children}
