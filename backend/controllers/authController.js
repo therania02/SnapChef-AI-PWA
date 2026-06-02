@@ -4,9 +4,50 @@ const db = require('../models/index.cjs');
 const { User, Sequelize } = db;
 const { Op } = Sequelize;
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 // Import BaseController untuk Inheritance
 import BaseController from './baseController.js';
+
+const buildUserData = (user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    scanLimit: user.scanLimit,
+    lastScanDate: user.lastScanDate,
+    premiumExpiresAt: user.premiumExpiresAt,
+    isPremium: user.role === 'premium' && (!user.premiumExpiresAt || new Date(user.premiumExpiresAt) > new Date())
+});
+
+const applyPremiumExpiry = async (user) => {
+    const now = new Date();
+    const expiresAt = user.premiumExpiresAt ? new Date(user.premiumExpiresAt) : null;
+
+    if (user.role === 'premium' && expiresAt && expiresAt <= now) {
+        await user.update({ role: 'user', premiumExpiresAt: null });
+        return user.reload();
+    }
+
+    return user;
+};
+
+const applyDailyScanReset = async (user) => {
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const localToday = new Date(today.getTime() - (offset * 60 * 1000));
+    const todayStr = localToday.toISOString().split('T')[0];
+
+    if (user.role !== 'premium' && user.lastScanDate !== todayStr) {
+        await user.update({
+          scanLimit: 3,
+          lastScanDate: todayStr
+        });
+
+        return user.reload();
+    }
+
+    return user;
+};
 
 // AuthController mewarisi BaseController
 class AuthController extends BaseController {
@@ -52,14 +93,44 @@ class AuthController extends BaseController {
                 return this.sendError(res, 401, "Password salah");
             }
 
-            const userData = {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            };
+            const activeUser = await applyPremiumExpiry(user);
+            const dailyResetUser = await applyDailyScanReset(activeUser);
+
+            const userData = buildUserData(dailyResetUser);
+
+            const token = jwt.sign(userData, process.env.JWT_SECRET || 'rahasia_snapchef_2026', {
+                expiresIn: '7d'
+            });
 
             // Menggunakan method dari class induk
-            return this.sendSuccess(res, 200, "Login Berhasil!", { user: userData });
+            return this.sendSuccess(res, 200, "Login Berhasil!", { user: userData, token });
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    upgradePremium = async (req, res) => {
+        try {
+            const user = await User.findByPk(req.user.id);
+
+            if (!user) {
+                return this.sendError(res, 404, "Pengguna tidak ditemukan");
+            }
+
+            const premiumExpiresAt = new Date();
+            premiumExpiresAt.setDate(premiumExpiresAt.getDate() + 30);
+
+            await user.update({
+                role: 'premium',
+                premiumExpiresAt
+            });
+
+            const userData = buildUserData(user);
+            const token = jwt.sign(userData, process.env.JWT_SECRET || 'rahasia_snapchef_2026', {
+                expiresIn: '7d'
+            });
+
+            return this.sendSuccess(res, 200, "Upgrade premium berhasil", { user: userData, token });
         } catch (error) {
             return this.sendError(res, 500, error.message);
         }

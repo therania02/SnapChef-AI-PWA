@@ -36,6 +36,16 @@ export default function AccountScreen() {
   const currentName = user?.name || user?.nama || "Guest";
   const currentEmail = user?.email || "guest@example.com";
 
+  const formatExpiryDate = (dateValue) => {
+    if (!dateValue) return "-";
+
+    return new Date(dateValue).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(currentName);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -209,6 +219,11 @@ export default function AccountScreen() {
                   "Free Tier"
                 )}
               </div>
+              {user?.isPremium && user?.premiumExpiresAt && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Aktif sampai {formatExpiryDate(user.premiumExpiresAt)}
+                </div>
+              )}
             </div>
             {!user?.isPremium && (
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

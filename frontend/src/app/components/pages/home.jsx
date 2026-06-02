@@ -47,12 +47,9 @@ const resizeImage = (base64, maxWidth = 512) => {
 };
 
 export default function HomeScreen() {
-  const [scanHistory, setScanHistory] = useState(() => {
-    const saved = localStorage.getItem("scanHistory");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [scanHistory, setScanHistory] = useState([]);
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const { t } = useLanguage();
 
   const { scanFood } = useRecipes();
@@ -110,6 +107,41 @@ export default function HomeScreen() {
   const [cameraOn, setCameraOn] = useState(false);
   const [loadingScan, setLoadingScan] = useState(false);
 
+  const token = user?.token || localStorage.getItem("token");
+
+  useEffect(() => {
+    if (user?.isPremium) {
+      setScansToday(0);
+      return;
+    }
+
+    if (typeof user?.scanLimit === "number") {
+      const usedScans = Math.max(3 - user.scanLimit, 0);
+      setScansToday(usedScans);
+      localStorage.setItem("scansToday", String(usedScans));
+    }
+  }, [user]);
+
+  const fetchScanHistory = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch("http://localhost:3000/api/history", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setScanHistory(result.data || []);
+      }
+    } catch (error) {
+      console.error("Gagal memuat riwayat scan:", error);
+    }
+  };
+
   useEffect(() => {
     return () => {
       const stream = videoRef.current?.srcObject;
@@ -117,7 +149,13 @@ export default function HomeScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    fetchScanHistory();
+  }, [token]);
+
   const startCamera = async () => {
+    if (loadingScan) return;
+
     try {
       const oldStream = videoRef.current?.srcObject;
       oldStream?.getTracks().forEach(track => track.stop());
@@ -161,45 +199,74 @@ export default function HomeScreen() {
   };
 
   const processImageToBackend = async (base64Image) => {
+    if (loadingScan) return;
+
+    setLoadingScan(true);
+    toast.loading("Menganalisis masakan...", { id: "scan-loading" });
     try {
-      setLoadingScan(true);
       const resized = await resizeImage(base64Image);
-
-      const customPrefTexts = customPreferences.map(p => typeof p === 'string' ? p : p.text);
-      const allPreferences = [...selectedPreferences, ...customPrefTexts].join(", ");
-
-      const resultData = await scanFood(`data:image/jpeg;base64,${resized}`, allPreferences, user?.id);
-
-      const newScan = {
-        id: Date.now(),
-        image: `data:image/jpeg;base64,${resized}`,
-        date: new Date().toISOString(),
-        ingredients: resultData.ingredients_detected || [],
-        recipesGenerated: resultData.recipes?.length || 0,
-      };
-
-      setScanHistory((prev) => {
-        const updated = [newScan, ...prev].slice(0, 20);
-        localStorage.setItem("scanHistory", JSON.stringify(updated));
-        return updated;
+    
+      // Request langsung ke endpoint backend baru
+      const response = await fetch("http://localhost:3000/api/scan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "X-User-Premium": user?.isPremium ? "true" : "false"
+        },
+        body: JSON.stringify({ image: resized })
       });
 
-      incrementScan();
-      navigate("/scan-result", { state: resultData });
-
-    } catch (err) {
-      console.error(err);
-      if (err?.message?.includes("503") || err?.message?.includes("high demand")) {
-        toast.error("Server AI sedang sangat sibuk. Mohon tunggu beberapa menit dan coba lagi.");
-      } else {
-        toast.error(err.message || "Gagal memproses gambar masakan ke Server.");
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        const rawText = await response.text();
+        console.error("Backend returned invalid JSON:", rawText, parseError);
+        throw new Error("Respons backend tidak valid. Silakan coba lagi.");
       }
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Gagal memproses gambar");
+      }
+
+      toast.success("Scan selesai!", { id: "scan-loading" });
+
+      if (!user?.isPremium && typeof result.data.scanLimit === "number") {
+        const remaining = Math.max(result.data.scanLimit, 0);
+        const used = 3 - remaining;
+        setScansToday(used);
+        localStorage.setItem("scansToday", String(used));
+        localStorage.setItem("lastScanDate", new Date().toDateString());
+        if (typeof setUser === "function") {
+          setUser({
+            ...(user || {}),
+            scanLimit: remaining,
+          });
+        }
+      }
+
+      await fetchScanHistory();
+
+      // Pindah ke halaman hasil scan dengan membawa data utuh terbungkus rapi
+      navigate("/scan-result", { 
+        state: { 
+          ingredients_detected: result.data.ingredients_detected, 
+          recipes: result.data.recipes 
+        } 
+      });
+
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Terjadi kesalahan saat memproses gambar", { id: "scan-loading" });
     } finally {
       setLoadingScan(false);
     }
   };
 
   const handleTakePhoto = async () => {
+    if (loadingScan) return;
+
     if (!canScan()) {
       toast.error("Limit scan harian tercapai!", {
         action: { label: "Upgrade", onClick: () => navigate("/premium") },
@@ -219,7 +286,17 @@ export default function HomeScreen() {
     await processImageToBackend(image);
   };
 
+  const handleViewScanFromHome = (scanItem) => {
+    const passData = {
+      ingredients_detected: scanItem.ingredients || [],
+      recipes: scanItem.rawRecipes || []
+    };
+    navigate("/scan-result", { state: passData });
+  };
+
   const handleUpload = async (e) => {
+    if (loadingScan) return;
+
     if (!canScan()) {
       toast.error("Limit scan harian tercapai!", {
         action: { label: "Upgrade", onClick: () => navigate("/premium") },
@@ -237,6 +314,8 @@ export default function HomeScreen() {
 
     const reader = new FileReader();
     reader.onloadend = async () => {
+      if (loadingScan) return;
+
       const base64 = reader.result.split(",")[1];
       await processImageToBackend(base64);
     };
@@ -379,7 +458,7 @@ export default function HomeScreen() {
               <div className="flex gap-3 text-white">
                 <Button onClick={startCamera} className="flex-1" disabled={loadingScan}>Buka Kamera</Button>
                 {cameraOn && <Button onClick={handleTakePhoto} className="flex-1" disabled={loadingScan}>📸 Jepret</Button>}
-                <Button variant="outline" onClick={() => fileInputRef.current.click()} disabled={loadingScan}>Upload</Button>
+                <Button variant="outline" onClick={() => !loadingScan && fileInputRef.current?.click()} disabled={loadingScan}>Upload</Button>
               </div>
             </div>
           </div>
@@ -413,7 +492,7 @@ export default function HomeScreen() {
                 <div className="space-y-3">
                   {scanHistory.length === 0 && <p className="text-center text-sm text-muted-foreground">Belum ada riwayat scan</p>}
                   {scanHistory.map((scan, index) => (
-                    <motion.div key={scan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => navigate("/scan-result")} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
+                    <motion.div key={scan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => handleViewScanFromHome(scan)} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src={scan.image} alt="Scan" className="w-full h-full object-cover" />
                       </div>
@@ -512,7 +591,7 @@ export default function HomeScreen() {
 
       <UploadCookingPostModal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} onSubmit={handlePostSubmit} />
       <BottomNav />
-      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleUpload} hidden />
+      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleUpload} disabled={loadingScan} hidden />
       <canvas ref={canvasRef} className="hidden" />
     </motion.div>
   );

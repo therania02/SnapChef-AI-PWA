@@ -43,14 +43,20 @@ export const useAuth = () => {
         throw new Error(data.message || "Login gagal");
       }
 
-      // Ambil objek user secara presisi (tergantung backend-mu, biasanya data.data atau data.user)
-      const userData = data.data || data.user || data;
+      // Ambil objek user dan token secara presisi dari response backend
+      const responseData = data.data || data;
+      const userData = responseData.user || data.user || responseData;
+      const token = responseData.token || data.token;
 
-      // Simpan token/data user di localStorage sebagai cadangan ganda
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+
+      // Simpan data user di localStorage sebagai cadangan ganda
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // Kembalikan userData agar ditangkap oleh Login.jsx
-      return userData;
+      // Kembalikan user dan token agar Login.jsx dapat menyimpannya utuh
+      return { ...userData, token };
     } catch (error) {
       console.error("Login Error:", error.message);
       throw error;
@@ -62,5 +68,41 @@ export const useAuth = () => {
     console.log("Fitur Google Login sedang diarahkan...");
   };
 
-  return { register, login, loginWithGoogle };
+  const upgradePremium = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("Token login tidak ditemukan");
+      }
+
+      const response = await fetch(`${API_URL}/upgrade-premium`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal upgrade premium");
+      }
+
+      const responseData = data.data || data;
+      const userData = responseData.user || responseData;
+      const updatedToken = responseData.token || token;
+
+      localStorage.setItem('token', updatedToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      return { ...userData, token: updatedToken };
+    } catch (error) {
+      console.error("Upgrade Premium Error:", error.message);
+      throw error;
+    }
+  };
+
+  return { register, login, loginWithGoogle, upgradePremium };
 };

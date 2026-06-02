@@ -8,6 +8,7 @@ import recipeRoutes from './routes/recipeRoutes.js';
 import ingredientRoutes from './routes/ingredientRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
+import scanRoutes from './routes/scanRoutes.js';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/recipes', recipeRoutes);    // 2. Recipes
 app.use('/api/ingredients', ingredientRoutes); // 3. Ingredients
 app.use('/api/posts', postRoutes);        // 4. Posts
 app.use('/api/comments', commentRoutes);  // 5. Comments
+app.use('/api', scanRoutes);              // 6. Scan and history
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -16,6 +16,8 @@ module.exports = {
         email: 'gilbert.situmorang@mikroskil.ac.id',
         password: passwordA,
         role: 'admin',
+        scanLimit: 3,
+        lastScanDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -24,6 +26,8 @@ module.exports = {
         email: 'carita.angel@students.mikroskil.ac.id',
         password: passwordB,
         role: 'user',
+        scanLimit: 3,
+        lastScanDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -32,6 +36,8 @@ module.exports = {
         email: 'therania@students.mikroskil.ac.id',
         password: passwordC,
         role: 'user',
+        scanLimit: 3,
+        lastScanDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -40,6 +46,8 @@ module.exports = {
         email: 'sastrawan@students.mikroskil.ac.id',
         password: passwordD,
         role: 'user',
+        scanLimit: 3,
+        lastScanDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -48,6 +56,8 @@ module.exports = {
         email: 'steven.lienardi@students.mikroskil.ac.id',
         password: passwordE,
         role: 'user',
+        scanLimit: 3,
+        lastScanDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date()
       }

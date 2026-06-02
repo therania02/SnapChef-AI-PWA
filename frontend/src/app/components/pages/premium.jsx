@@ -15,11 +15,24 @@ import { Button } from "../../../ui/button.jsx";
 import { toast } from "sonner";
 import { useUser } from "../../lib/userContext.jsx";
 import { PaymentModal } from "../../../ui/paymentModal.jsx";
+import { useAuth } from "../../../hooks/useAuth.js";
 
 export default function PremiumScreen() {
   const navigate = useNavigate();
-  const { user, upgradeToPremium } = useUser();
+  const { user, setUser } = useUser();
+  const { upgradePremium } = useAuth();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  const formatExpiryDate = (dateValue) => {
+    if (!dateValue) return "-";
+
+    return new Date(dateValue).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
 
   const handleUpgrade = () => {
     // Check if user is logged in
@@ -38,20 +51,25 @@ export default function PremiumScreen() {
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = () => {
-    // Upgrade user to premium
-    upgradeToPremium();
+  const handlePaymentSuccess = async () => {
+    try {
+      setIsUpgrading(true);
+      const updatedUser = await upgradePremium();
+      setUser(updatedUser);
 
-    // Show success toast
-    toast.success("🎉 Selamat! Anda sekarang Premium!", {
-      duration: 3000,
-      description: "Fitur premium telah aktif di akun Anda",
-    });
+      toast.success("🎉 Selamat! Anda sekarang Premium!", {
+        duration: 3000,
+        description: "Fitur premium telah aktif di akun Anda",
+      });
 
-    // Navigate to account after short delay
-    setTimeout(() => {
-      navigate("/account", { replace: true });
-    }, 1000);
+      setTimeout(() => {
+        navigate("/account", { replace: true });
+      }, 1000);
+    } catch (error) {
+      toast.error(error.message || "Gagal mengaktifkan premium");
+    } finally {
+      setIsUpgrading(false);
+    }
   };
 
   return (
@@ -102,6 +120,11 @@ export default function PremiumScreen() {
             {user?.isPremium && (
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3">
                 <p className="text-sm font-medium">✅ Anda sudah Premium!</p>
+                {user?.premiumExpiresAt && (
+                  <p className="text-xs mt-1 text-white/90">
+                    Aktif sampai {formatExpiryDate(user.premiumExpiresAt)}
+                  </p>
+                )}
               </div>
             )}
             {!user && (
@@ -172,14 +195,14 @@ export default function PremiumScreen() {
             <Button
               size="lg"
               onClick={handleUpgrade}
-              disabled={user?.isPremium}
+              disabled={user?.isPremium || isUpgrading}
               className={`w-full rounded-2xl shadow-lg ${user?.isPremium
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-white"
                 }`}
             >
               <Crown className="h-5 w-5 mr-2" />
-              {user?.isPremium ? "Sudah Premium ✓" : "Upgrade Sekarang"}
+              {user?.isPremium ? "Sudah Premium ✓" : isUpgrading ? "Memproses..." : "Upgrade Sekarang"}
             </Button>
           </motion.div>
         </motion.div>
