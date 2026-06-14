@@ -107,7 +107,7 @@ export default function HomeScreen() {
   const [cameraOn, setCameraOn] = useState(false);
   const [loadingScan, setLoadingScan] = useState(false);
 
-  const token = user?.token || localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (user?.isPremium) {

@@ -22,11 +22,16 @@ const Login = () => {
 
     try {
       const responseData = await login(email, password);
-
+      console.log("LOGIN RESPONSE:", responseData);
       // 👇 INI KUNCI FIX-NYA: Membongkar data bersarang dari Backend 👇
       // Kita pastikan mengambil objek user yang terdalam (actual user data)
       const actualUser = responseData?.user || responseData?.data?.user || responseData?.data || responseData;
 
+      const token = actualUser?.token;
+
+      if (token) {
+        localStorage.setItem("token", token);
+      }
       setUser(actualUser);
       navigate("/home");
     } catch (err) {

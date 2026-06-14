@@ -13,7 +13,7 @@ export default function ScanHistoryScreen() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const token = user?.token || localStorage.getItem("token"); // Ambil JWT token login aktif
+  const token = localStorage.getItem("token"); // Ambil JWT token login aktif
 
   // Mengambil data riwayat dari database backend saat halaman dibuka
   const fetchHistory = async () => {

@@ -3,7 +3,17 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 export const authMiddleware = (req, res, next) => {
+    console.log("URL:", req.originalUrl);
+    console.log("METHOD:", req.method);
+    console.log("HEADERS:", req.headers);
+    console.log("AUTH:", req.headers.authorization);
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+    
     try {
+        console.log("AUTH HEADER:", req.headers.authorization);
+
         // Ambil token dari header Authorization (Format: "Bearer <token>")
         const authHeader = req.headers.authorization;
 

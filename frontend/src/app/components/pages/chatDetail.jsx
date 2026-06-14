@@ -1,603 +1,382 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowLeft,
-  Send,
-  Image as ImageIcon,
-  Smile,
-  MoreVertical,
-  Phone,
-  Video,
-  X,
-  Users,
-  Bell,
-  Star,
-  Trash2,
-  Search,
-} from "lucide-react";
-import { mockChats, mockChatMessages } from "../../lib/data";
-import { toast } from "sonner";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Send, Image as ImageIcon, Smile, Search, X } from 'lucide-react';
+import { fetchChatMessages, getCurrentUserId, postChatMessage, uploadImage } from '../../lib/chatApi';
+import { getChatSocket } from '../../lib/chatSocket';
+import { useUser } from '../../lib/userContext.jsx';
+import { toast } from 'sonner';
 
-const EMOJI_REACTIONS = ["❤️", "👍", "😂", "😮", "😢", "🔥", "🎉"];
+/* ── Konstanta ─────────────────────────────────────────────────────────── */
+const AVATAR_MAP = {
+    gilbert:   'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
+    therania:  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
+    sastrawan: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+    steven:    'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200',
+    carita:    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
+};
+const GROUP_AVATAR   = 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=200';
+const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200';
+const GROUP_CHAT_ID  = 'group-1';
+const TIME_GAP_MIN   = 3;
+
+const EMOJI_LIST = [
+    '😀','😂','😍','🥰','😎','😢','😡','👍','👎','🙏',
+    '❤️','🔥','🎉','✅','💯','🍳','🥘','🍜','🍣','🥗',
+];
+
+const ID_MAPPING = {
+    1: 'Pak Gilbert Fernando Situmorang',
+    2: 'Carita Angel Samudra Tjoatja',
+    3: 'Therania',
+    4: 'Sastrawan',
+    5: 'Steven Lienardi',
+};
+
+const avatarByName = (name = '') => {
+    const lower = name.toLowerCase();
+    const key   = Object.keys(AVATAR_MAP).find((k) => lower.includes(k));
+    return key ? AVATAR_MAP[key] : DEFAULT_AVATAR;
+};
+
+const fmtTime = (v) =>
+    v ? new Date(v).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
+
+const diffMin = (a, b) =>
+    Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 60000;
 
 export default function ChatDetailScreen() {
-  const { chatId } = useParams();
-  const navigate = useNavigate();
-  const [messageText, setMessageText] = useState("");
-  const [messages, setMessages] = useState(mockChatMessages[chatId] || []);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(null);
-  const [showContactInfo, setShowContactInfo] = useState(false);
-  const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
+    const { user } = useUser();
+    const { chatId } = useParams();
+    const navigate   = useNavigate();
 
-  const chat = mockChats.find((c) => c.id === chatId);
+    const [messages,     setMessages]     = useState([]);
+    const [loading,      setLoading]      = useState(true);
+    const [inputText,    setInputText]    = useState('');
+    const [searchQuery,  setSearchQuery]  = useState('');
+    const [showSearch,   setShowSearch]   = useState(false);
+    const [showEmoji,    setShowEmoji]    = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [sending,      setSending]      = useState(false);
+    const [onlineUserIds, setOnlineUserIds] = useState([]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const token = localStorage.getItem('token');
+    console.log("DEBUG AUTH:", {
+        user,
+        tokenFromContext: user?.token,
+        tokenFromStorage: localStorage.getItem("token"),
+    });
+    const myId   = useMemo(() => getCurrentUserId(user), [user]);
+    const myName = useMemo(() => (user?.name || '').trim(), [user]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+    const messagesEndRef = useRef(null);
+    const fileInputRef   = useRef(null);
 
-  const handleSendMessage = () => {
-    if (!messageText.trim()) return;
+    const opponentId = useMemo(() => {
+        if (!chatId || chatId.startsWith('group-') || chatId === GROUP_CHAT_ID) return null;
+        const ids = chatId.split('-').map(Number).filter((n) => Number.isFinite(n) && n > 0);
+        return ids.find((n) => n !== myId) ?? null;
+    }, [chatId, myId]);
 
-    const newMessage = {
-      id: Date.now().toString(),
-      senderId: "me",
-      senderName: "You",
-      senderAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
-      text: messageText,
-      timestamp: new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+    const isMyMessage = useCallback((msg) => {
+        const sId = Number(msg.senderId);
+        if (myId > 0 && sId > 0) return sId === myId;
+        const sName = (msg.senderName || '').trim().toLowerCase();
+        return sName !== '' && sName === myName.toLowerCase();
+    }, [myId, myName]);
 
-    setMessages([...messages, newMessage]);
-    setMessageText("");
-    toast.success("Pesan terkirim");
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Simulate image upload
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const newMessage = {
-        id: Date.now().toString(),
-        senderId: "me",
-        senderName: "You",
-        senderAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
-        image: event.target.result,
-        text: "📸",
-        timestamp: new Date().toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setMessages([...messages, newMessage]);
-      toast.success("Foto terkirim");
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleReaction = (messageId, emoji) => {
-    setMessages(
-      messages.map((msg) => {
-        if (msg.id === messageId) {
-          const reactions = msg.reactions || [];
-          const existingReaction = reactions.find((r) => r.emoji === emoji);
-
-          if (existingReaction) {
-            // Toggle reaction
-            if (existingReaction.userIds.includes("me")) {
-              existingReaction.userIds = existingReaction.userIds.filter(
-                (id) => id !== "me"
-              );
-              if (existingReaction.userIds.length === 0) {
-                return {
-                  ...msg,
-                  reactions: reactions.filter((r) => r.emoji !== emoji),
-                };
-              }
-            } else {
-              existingReaction.userIds.push("me");
-            }
-          } else {
-            reactions.push({ emoji, userIds: ["me"] });
-          }
-
-          return { ...msg, reactions };
+    const chatMeta = useMemo(() => {
+        if (!chatId || chatId === GROUP_CHAT_ID || chatId.startsWith('group-')) {
+            return { name: 'Grup Masak Bareng', avatar: GROUP_AVATAR, isGroup: true, opponentId: null };
         }
-        return msg;
-      })
-    );
-    setShowEmojiPicker(null);
-  };
+        const name = ID_MAPPING[opponentId] || 'Teman Masak';
+        return { name, avatar: avatarByName(name), isGroup: false, opponentId };
+    }, [chatId, opponentId]);
 
-  if (!chat) {
+    const isOnline = useMemo(() => {
+        if (!chatMeta.opponentId) return false;
+        return onlineUserIds.includes(Number(chatMeta.opponentId));
+    }, [chatMeta.opponentId, onlineUserIds]);
+
+    useEffect(() => {
+        const savedToken = localStorage.getItem('token');
+        const currentUid = getCurrentUserId(user);
+
+        if (!chatId || !savedToken || !currentUid) return;
+        setLoading(true);
+
+        // Gunakan savedToken untuk fetch data pesan di chat room tertentu
+        fetchChatMessages(chatId, savedToken, currentUid)
+            .then(setMessages)
+            .catch((err) => console.error("Gagal load pesan detail:", err))
+            .finally(() => setLoading(false));
+
+    }, [chatId, user]);
+
+    useEffect(() => {
+        if (!token) return;
+        const socket = getChatSocket(token, myId);
+        if (!socket || !chatId) return;
+
+        socket.emit('chat:join', { chatId });
+        socket.emit('online:request_list');
+
+        socket.on('message:new', (msg) => {
+            if (msg?.chatId !== chatId) return;
+            setMessages((prev) => {
+                const idx = prev.findIndex(
+                    (m) =>
+                        String(m.id).startsWith('temp-') &&
+                        Number(m.senderId) === Number(msg.senderId) &&
+                        (m.text || '').trim() === (msg.text || '').trim()
+                );
+                if (idx !== -1) {
+                    const next = [...prev];
+                    next[idx] = msg;
+                    return next;
+                }
+                if (prev.some((m) => m.id === msg.id)) return prev;
+                return [...prev, msg];
+            });
+        });
+
+        socket.on('online:list', (ids) => { setOnlineUserIds(ids.map(Number)); });
+        socket.on('online:join', (id) => { setOnlineUserIds((prev) => [...new Set([...prev, Number(id)])]); });
+        socket.on('online:leave', (id) => { setOnlineUserIds((prev) => prev.filter((uid) => uid !== Number(id))); });
+
+        return () => {
+            socket.emit('chat:leave', { chatId });
+            socket.off('message:new');
+            socket.off('online:list');
+            socket.off('online:join');
+            socket.off('online:leave');
+        };
+    }, [token, chatId, myId]);
+
+    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+    const handleSend = async (e) => {
+        e?.preventDefault();
+        const text  = inputText.trim();
+        const hasText  = text.length > 0;
+        const hasImage = imagePreview !== null;
+
+        if (!hasText && !hasImage) return;
+        if (!chatId || sending) return;
+
+        setSending(true);
+        setInputText('');
+        setShowEmoji(false);
+
+        let imageUrl = '';
+        if (hasImage) {
+            try {
+                imageUrl = await uploadImage(
+                    imagePreview.file,
+                    token
+                );
+            } catch (err) {
+                toast.error('Gagal upload gambar');
+                setSending(false);
+                return;
+            }
+            setImagePreview(null);
+        }
+
+        const tempId = `temp-${Date.now()}`;
+        const optimistic = {
+            id:         tempId,
+            chatId,
+            senderId:   myId,
+            senderName: myName || 'User',
+            text,
+            image:      imageUrl,
+            createdAt:  new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, optimistic]);
+
+        try {
+            await postChatMessage(
+                chatId,
+                { text, image: imageUrl, senderId: myId, senderName: myName || 'User' },
+                token,
+                myId
+            );
+        } catch (err) {
+            setMessages((prev) => prev.filter((m) => m.id !== tempId));
+            toast.error('Gagal mengirim pesan');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) { toast.error('Hanya file gambar'); return; }
+        setImagePreview({ file, url: URL.createObjectURL(file) });
+        e.target.value = '';
+    };
+
+    const insertEmoji = (em) => setInputText((p) => p + em);
+
+    const filtered = useMemo(() => {
+        if (!searchQuery.trim()) return messages;
+        return messages.filter((m) =>
+            (m.text || '').toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [messages, searchQuery]);
+
+    const annotated = useMemo(() =>
+        filtered.map((msg, i) => {
+            const prev        = filtered[i - 1];
+            const sameSender  = prev && String(prev.senderId) === String(msg.senderId);
+            const closeInTime = prev && diffMin(prev.createdAt, msg.createdAt) < TIME_GAP_MIN;
+            return { ...msg, showName: !(sameSender && closeInTime) };
+        })
+    , [filtered]);
+
+    const statusLabel = chatMeta.isGroup ? 'Grup' : isOnline ? 'Online' : 'Offline';
+    const statusDot   = chatMeta.isGroup ? 'bg-blue-400' : isOnline ? 'bg-green-400' : 'bg-red-400';
+    const canSend     = (inputText.trim().length > 0 || imagePreview !== null) && !sending;
+
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p>Chat tidak ditemukan</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header - Fixed/Sticky */}
-      <div className="sticky top-0 z-40 bg-primary text-primary-foreground px-4 pt-12 pb-4 flex items-center gap-4 shadow-lg">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => navigate("/messages")}
-          className="p-2 hover:bg-white/10 rounded-full transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </motion.button>
-
-        <div
-          className="flex items-center gap-3 flex-1 cursor-pointer"
-          onClick={() => setShowContactInfo(true)}
-        >
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full overflow-hidden">
-              <img
-                src={chat.avatar}
-                alt={chat.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {chat.isOnline && !chat.isGroup && (
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-primary" />
-            )}
-          </div>
-          <div>
-            <h2 className="font-medium">{chat.name}</h2>
-            <p className="text-xs opacity-90">
-              {chat.isGroup
-                ? `${chat.participants.length} anggota`
-                : chat.isOnline
-                  ? "Online"
-                  : "Offline"}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            onClick={() => toast.info("Panggilan suara")}
-          >
-            <Phone className="h-5 w-5" />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            onClick={() => toast.info("Panggilan video")}
-          >
-            <Video className="h-5 w-5" />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            onClick={() => toast.info("Menu lainnya")}
-          >
-            <MoreVertical className="h-5 w-5" />
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4 max-w-md lg:max-w-full mx-auto lg:mx-0 w-full">
-        {messages.map((message, index) => {
-          const isMe = message.senderId === "me";
-          const showAvatar =
-            chat.isGroup &&
-            !isMe &&
-            (index === messages.length - 1 ||
-              messages[index + 1]?.senderId !== message.senderId);
-
-          return (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={`flex gap-2 ${isMe ? "flex-row-reverse" : ""}`}
-            >
-              {/* Avatar for group chat */}
-              {chat.isGroup && !isMe ? (
-                <div className="w-8 h-8 flex-shrink-0">
-                  {showAvatar && (
-                    <div className="w-8 h-8 rounded-full overflow-hidden">
-                      <img
-                        src={message.senderAvatar}
-                        alt={message.senderName}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-              ) : null}
-
-              <div className={`flex flex-col ${isMe ? "items-end" : ""}`}>
-                {/* Sender name for group chat */}
-                {chat.isGroup && !isMe && showAvatar && (
-                  <span className="text-xs text-muted-foreground mb-1 ml-2">
-                    {message.senderName}
-                  </span>
-                )}
-
-                <div className="relative group">
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className={`rounded-2xl px-4 py-2 max-w-[280px] ${isMe
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-white border border-border"
-                      }`}
-                  >
-                    {message.image && (
-                      <div className="rounded-xl overflow-hidden mb-2">
-                        <img
-                          src={message.image}
-                          alt="Shared"
-                          className="w-full h-auto"
-                        />
-                      </div>
-                    )}
-                    {message.text && <p className="break-words">{message.text}</p>}
-
-                    {/* Reactions */}
-                    {message.reactions && message.reactions.length > 0 && (
-                      <div className="flex gap-1 mt-2 flex-wrap">
-                        {message.reactions.map((reaction, idx) => (
-                          <motion.button
-                            key={idx}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() =>
-                              handleReaction(message.id, reaction.emoji)
-                            }
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${reaction.userIds.includes("me")
-                              ? "bg-primary/20 border border-primary"
-                              : "bg-muted"
-                              }`}
-                          >
-                            <span>{reaction.emoji}</span>
-                            <span className="text-xs">
-                              {reaction.userIds.length}
-                            </span>
-                          </motion.button>
-                        ))}
-                      </div>
-                    )}
-                  </motion.div>
-
-                  {/* Reaction Button */}
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() =>
-                      setShowEmojiPicker(
-                        showEmojiPicker === message.id ? null : message.id
-                      )
-                    }
-                    className={`absolute -bottom-2 ${isMe ? "left-2" : "right-2"
-                      } p-1 bg-white border border-border rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg`}
-                  >
-                    <Smile className="h-4 w-4" />
-                  </motion.button>
-
-                  {/* Emoji Picker */}
-                  <AnimatePresence>
-                    {showEmojiPicker === message.id && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className={`absolute -bottom-12 ${isMe ? "left-0" : "right-0"
-                          } bg-white border border-border rounded-2xl p-2 shadow-xl flex gap-1 z-10`}
-                      >
-                        {EMOJI_REACTIONS.map((emoji) => (
-                          <motion.button
-                            key={emoji}
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleReaction(message.id, emoji)}
-                            className="text-xl p-1 hover:bg-muted rounded-lg transition-colors"
-                          >
-                            {emoji}
-                          </motion.button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <span
-                    className={`text-xs text-muted-foreground mt-1 block ${isMe ? "text-right" : "text-left"
-                      }`}
-                  >
-                    {message.timestamp}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area - Fixed at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border p-4 z-30">
-        <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 flex gap-2 items-end">
-          {/* Image Upload */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => fileInputRef.current?.click()}
-            className="p-3 bg-primary/10 text-primary rounded-2xl hover:bg-primary/20 transition-colors"
-          >
-            <ImageIcon className="h-5 w-5" />
-          </motion.button>
-
-          {/* Text Input */}
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder="Tulis pesan..."
-              className="w-full px-4 py-3 bg-muted rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          {/* Send Button */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={handleSendMessage}
-            disabled={!messageText.trim()}
-            className={`p-3 rounded-2xl transition-all ${messageText.trim()
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
-          >
-            <Send className="h-5 w-5" />
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Contact Info Modal */}
-      <ContactInfoModal
-        isOpen={showContactInfo}
-        onClose={() => setShowContactInfo(false)}
-        chat={chat}
-        messages={messages}
-      />
-    </div>
-  );
-}
-
-// Contact Info Modal Component
-function ContactInfoModal({ isOpen, onClose, chat, messages }) {
-  if (!isOpen) return null;
-
-  // Extract all images from messages
-  const sharedMedia = messages
-    .filter((msg) => msg.image)
-    .map((msg) => ({
-      id: msg.id,
-      image: msg.image,
-      sender: msg.senderName,
-      timestamp: msg.timestamp,
-    }));
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          className="bg-background w-full max-w-md h-[90vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="bg-primary text-white p-6 flex items-center justify-between">
-            <h2 className="text-xl font-medium text-white">Info Kontak</h2>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </motion.button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            {/* Profile Section */}
-            <div className="p-6 text-center border-b border-border">
-              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4">
-                <img
-                  src={chat.avatar}
-                  alt={chat.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h3 className="text-2xl font-medium mb-1">{chat.name}</h3>
-              {chat.isGroup ? (
-                <p className="text-sm text-muted-foreground">
-                  Grup · {chat.participants.length} anggota
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {chat.isOnline ? "Online" : "Offline"}
-                </p>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="grid grid-cols-3 gap-4 p-6 border-b border-border">
-              <ActionButton
-                icon={<Phone className="h-5 w-5" />}
-                label="Telepon"
-                onClick={() => toast.info("Panggilan suara")}
-              />
-              <ActionButton
-                icon={<Video className="h-5 w-5" />}
-                label="Video"
-                onClick={() => toast.info("Panggilan video")}
-              />
-              <ActionButton
-                icon={<Search className="h-5 w-5" />}
-                label="Cari"
-                onClick={() => toast.info("Cari pesan")}
-              />
-            </div>
-
-            {/* Shared Media */}
-            <div className="p-6 border-b border-border">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="font-medium">Media, Link, dan Dokumen</h4>
-                <button className="text-sm text-primary hover:underline">
-                  {sharedMedia.length}
+        <div className="flex flex-col h-screen bg-[#F9F6F0]">
+            {/* Header */}
+            <div className="bg-[#6A9ABF] text-white px-4 py-3 flex items-center gap-3 shadow-md shrink-0">
+                <button onClick={() => navigate(-1)} className="p-1 hover:bg-white/10 rounded-full">
+                    <ArrowLeft className="h-6 w-6" />
                 </button>
-              </div>
-              {sharedMedia.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2">
-                  {sharedMedia.slice(0, 6).map((media) => (
-                    <motion.div
-                      key={media.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="aspect-square rounded-lg overflow-hidden cursor-pointer"
-                    >
-                      <img
-                        src={media.image}
-                        alt="Media"
-                        className="w-full h-full object-cover"
-                      />
-                    </motion.div>
-                  ))}
+                <div className="relative">
+                    <img src={chatMeta.avatar} alt={chatMeta.name}
+                        className="w-10 h-10 rounded-full object-cover border border-white/20" />
+                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#6A9ABF] ${statusDot}`} />
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Belum ada media yang dibagikan
-                </p>
-              )}
+                <div className="flex-1 min-w-0">
+                    <h2 className="font-semibold text-sm truncate">{chatMeta.name}</h2>
+                    <p className="text-xs text-white/80">{statusLabel}</p>
+                </div>
+                <button onClick={() => { setShowSearch((v) => !v); setSearchQuery(''); }}
+                    className="p-2 hover:bg-white/10 rounded-full">
+                    <Search className="h-5 w-5" />
+                </button>
             </div>
 
-            {/* Group Members */}
-            {chat.isGroup && (
-              <div className="p-6 border-b border-border">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-medium">
-                    {chat.participants.length} Anggota
-                  </h4>
-                  <button className="text-sm text-primary hover:underline">
-                    Lihat Semua
-                  </button>
+            {/* Search bar */}
+            {showSearch && (
+                <div className="bg-white p-2 shrink-0 shadow-sm border-b flex gap-2">
+                    <input type="text" placeholder="Cari pesan..." value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="flex-1 bg-gray-100 px-3 py-1.5 rounded-xl text-sm focus:outline-none" />
+                    <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}
+                        className="text-xs text-gray-500 px-2">Batal</button>
                 </div>
-                <div className="space-y-3">
-                  {chat.participants.map((participant) => (
-                    <motion.div
-                      key={participant.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="flex items-center gap-3 cursor-pointer"
-                    >
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-full overflow-hidden">
-                          <img
-                            src={participant.avatar}
-                            alt={participant.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {participant.isOnline && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{participant.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {participant.isOnline
-                            ? "Online"
-                            : participant.lastSeen || "Offline"}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
             )}
 
-            {/* Settings */}
-            <div className="p-6 space-y-2">
-              <SettingItem
-                icon={<Bell className="h-5 w-5" />}
-                label="Notifikasi"
-                onClick={() => toast.info("Pengaturan notifikasi")}
-              />
-              <SettingItem
-                icon={<Star className="h-5 w-5" />}
-                label="Pesan Berbintang"
-                onClick={() => toast.info("Pesan berbintang")}
-              />
-              <SettingItem
-                icon={<Trash2 className="h-5 w-5" />}
-                label="Hapus Chat"
-                onClick={() => toast.error("Hapus chat")}
-                danger
-              />
+            {/* Area pesan */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-0.5">
+                {loading ? (
+                    <div className="text-center text-gray-400 text-sm py-8">Memuat chat...</div>
+                ) : annotated.length === 0 ? (
+                    <div className="text-center text-gray-400 text-xs py-12 italic">
+                        Belum ada riwayat obrolan.
+                    </div>
+                ) : (
+                    annotated.map((msg) => {
+                        const mine = isMyMessage(msg);
+                        return (
+                            <div
+                                key={msg.id}
+                                className={`flex flex-col ${mine ? 'items-end' : 'items-start'} ${msg.showName ? 'mt-3' : 'mt-0.5'}`}
+                            >
+                                {msg.showName && (
+                                    <span className={`text-[11px] font-medium mb-0.5 mx-2 ${mine ? 'text-[#4a80a8]' : 'text-gray-500'}`}>
+                                        {mine ? myName : (msg.senderName || chatMeta.name)}
+                                    </span>
+                                )}
+
+                                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 shadow-sm text-sm ${
+                                    mine
+                                        ? 'bg-[#6A9ABF] text-white rounded-br-none'
+                                        : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
+                                }`}>
+                                    {msg.image && (
+                                        <img src={msg.image} alt="foto"
+                                            className="max-w-[220px] rounded-xl mb-1 object-cover" />
+                                    )}
+                                    {msg.text ? (
+                                        <p className="leading-relaxed break-words">{msg.text}</p>
+                                    ) : null}
+                                    <span className={`text-[9px] block text-right mt-1 ${mine ? 'text-white/70' : 'text-gray-400'}`}>
+                                        {fmtTime(msg.createdAt)}
+                                        {String(msg.id).startsWith('temp-') && <span className="ml-1 opacity-50">⏳</span>}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
+                <div ref={messagesEndRef} />
             </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
 
-function ActionButton({ icon, label, onClick }) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.95 }}
-      onClick={onClick}
-      className="flex flex-col items-center gap-2 p-4 bg-muted rounded-2xl hover:bg-muted/80 transition-colors"
-    >
-      <div className="text-primary">{icon}</div>
-      <span className="text-xs font-medium">{label}</span>
-    </motion.button>
-  );
-}
+            {/* Preview gambar */}
+            {imagePreview && (
+                <div className="bg-white border-t px-4 py-2 flex items-center gap-3 shrink-0">
+                    <div className="relative">
+                        <img src={imagePreview.url} alt="preview"
+                            className="h-20 w-20 object-cover rounded-xl border" />
+                        <button onClick={() => setImagePreview(null)}
+                            className="absolute -top-2 -right-2 bg-gray-700 text-white rounded-full p-0.5">
+                            <X className="h-3 w-3" />
+                        </button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                        {inputText.trim() ? `+ "${inputText.trim()}"` : 'Siap dikirim'}
+                    </p>
+                </div>
+            )}
 
-function SettingItem({ icon, label, onClick, danger }) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition-colors ${danger ? "text-destructive" : ""
-        }`}
-    >
-      {icon}
-      <span>{label}</span>
-    </motion.button>
-  );
+            {/* Emoji picker */}
+            {showEmoji && (
+                <div className="bg-white border-t px-3 py-2 shrink-0">
+                    <div className="flex flex-wrap gap-2">
+                        {EMOJI_LIST.map((em) => (
+                            <button key={em} onClick={() => insertEmoji(em)}
+                                className="text-xl hover:scale-125 transition-transform">
+                                {em}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Input bar */}
+            <form onSubmit={handleSend} className="p-3 bg-white border-t flex items-center gap-2 shrink-0 pb-4">
+                <button type="button" onClick={() => fileInputRef.current?.click()}
+                    className={`p-2 transition-colors ${imagePreview ? 'text-[#6A9ABF]' : 'text-gray-400 hover:text-[#6A9ABF]'}`}>
+                    <ImageIcon className="h-5 w-5" />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*"
+                    className="hidden" onChange={handleFileChange} />
+
+                <input
+                    type="text"
+                    placeholder={imagePreview ? 'Tambahkan keterangan... (opsional)' : 'Ketik pesan...'}
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) handleSend(e); }}
+                    className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:border-[#6A9ABF]"
+                />
+
+                <button type="button" onClick={() => setShowEmoji((v) => !v)}
+                    className={`p-2 transition-colors ${showEmoji ? 'text-[#6A9ABF]' : 'text-gray-400 hover:text-[#6A9ABF]'}`}>
+                    <Smile className="h-5 w-5" />
+                </button>
+
+                <button type="submit" disabled={!canSend}
+                    className="p-2.5 bg-[#6A9ABF] text-white rounded-xl disabled:opacity-40 transition-opacity">
+                    <Send className="h-4 w-4" />
+                </button>
+            </form>
+        </div>
+    );
 }
