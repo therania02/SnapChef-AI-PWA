@@ -65,7 +65,9 @@ class AuthController extends BaseController {
                 name,
                 email,
                 password: hashedPassword,
-                role: 'user'
+                role: 'user',
+                scanLimit: 3,
+                lastScanDate: new Date().toISOString().split('T')[0] // Set ke tanggal hari ini
             });
 
             // Menggunakan method dari class induk (BaseController)
@@ -109,6 +111,50 @@ class AuthController extends BaseController {
         }
     };
 
+    googleLogin = async (req, res) => {
+        try {
+            const { name, email } = req.body;
+
+            let user = await User.findOne({
+                where: { email }
+            });
+
+            if (!user) {
+                user = await User.create({
+                    name,
+                    email,
+                    password: null,
+                    role: 'user',
+                    scanLimit: 3,
+                    lastScanDate: new Date().toISOString().split('T')[0]
+                });
+            }
+
+            const userData = buildUserData(user);
+
+            const token = jwt.sign(
+                userData,
+                process.env.JWT_SECRET || 'rahasia_snapchef_2026',
+                {
+                    expiresIn: '7d'
+                }
+            );
+
+            return this.sendSuccess(
+                res,
+                200,
+                "Login Google Berhasil",
+                {
+                    user: userData,
+                    token
+                }
+            );
+
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+    
     upgradePremium = async (req, res) => {
         try {
             const user = await User.findByPk(req.user.id);

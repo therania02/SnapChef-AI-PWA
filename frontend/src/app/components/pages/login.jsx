@@ -41,6 +41,33 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+
+      const responseData = await loginWithGoogle();
+
+      const actualUser =
+        responseData?.user ||
+        responseData?.data?.user ||
+        responseData;
+
+      const token = actualUser?.token || responseData?.token;
+
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      setUser(actualUser);
+
+      navigate("/home");
+    } catch (err) {
+      setError(err.message || "Login Google gagal");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-[#E9E4DE] flex items-center justify-center px-4">
       <motion.div
@@ -115,7 +142,7 @@ const Login = () => {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={loginWithGoogle}
+            onClick={handleGoogleLogin}
             className="w-full py-2 border rounded-full flex items-center justify-center gap-2"
           >
             <span className="font-bold">G</span>

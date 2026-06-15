@@ -133,7 +133,15 @@ const Register = () => {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={loginWithGoogle}
+            onClick={async () => {
+              try {
+                await loginWithGoogle();
+                navigate("/home");
+              } catch (err) {
+                setError(err.message || "Gagal terhubung ke server");
+                console.error("Detail Error:", err);
+              }
+            }}
             className="w-full py-2 border rounded-full flex items-center justify-center gap-2"
           >
             <span className="font-bold">G</span>

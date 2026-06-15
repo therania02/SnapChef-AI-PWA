@@ -394,13 +394,13 @@ export default function HomeScreen() {
                 )}
               </div>
             </div>
-            <button onClick={() => navigate("/account")} className="p-2 bg-card/20 rounded-full hover:bg-card/30 transition-colors">
+            <button onClick={() => navigate("/account")} className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors">
               <User className="h-5 w-5" />
             </button>
           </div>
 
           {/* Daily Scan Limit */}
-          <div className="bg-card/10 backdrop-blur-sm rounded-2xl p-4 space-y-2 text-foreground">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 space-y-2 text-foreground">
             <div className="flex justify-between items-center">
               <span className="text-sm opacity-90">Pencarian hari ini</span>
               {user?.isPremium ? (
@@ -492,7 +492,7 @@ export default function HomeScreen() {
                 <div className="space-y-3">
                   {scanHistory.length === 0 && <p className="text-center text-sm text-muted-foreground">Belum ada riwayat scan</p>}
                   {scanHistory.map((scan, index) => (
-                    <motion.div key={scan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => handleViewScanFromHome(scan)} className="bg-card rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
+                    <motion.div key={scan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => handleViewScanFromHome(scan)} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src={scan.image} alt="Scan" className="w-full h-full object-cover" />
                       </div>

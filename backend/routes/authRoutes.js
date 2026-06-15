@@ -6,6 +6,7 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.post('/google', authController.googleLogin);
 router.post('/upgrade-premium', authMiddleware, authController.upgradePremium);
 
 router.get('/users', authController.getAll);           // READ ALL

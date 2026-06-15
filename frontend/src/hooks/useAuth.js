@@ -1,3 +1,6 @@
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../api/firebase";
+
 export const useAuth = () => {
   // Alamat server backend Node.js kamu
   const API_URL = "http://localhost:3000/api/auth";
@@ -65,7 +68,44 @@ export const useAuth = () => {
 
   // 3. Login dengan Google (Tetap simpan untuk fungsionalitas Figma)
   const loginWithGoogle = async () => {
-    console.log("Fitur Google Login sedang diarahkan...");
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const googleUser = result.user;
+      const response = await fetch(`${API_URL}/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: googleUser.displayName,
+          email: googleUser.email
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login dengan Google gagal");
+      }
+
+      // Ambil objek user dan token secara presisi dari response backend
+      const responseData = data.data || data;
+      const userData = responseData.user || data.user || responseData;
+      const token = responseData.token || data.token;
+
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+
+      // Simpan data user di localStorage sebagai cadangan ganda
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Kembalikan user dan token agar Login.jsx dapat menyimpannya utuh
+      return { ...userData, token };
+    } catch (error) {
+      console.error("Google Login Error:", error.message);
+      throw error;
+    }
   };
 
   const upgradePremium = async () => {
