@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 
 const UserContext = createContext(null);
 
@@ -14,7 +14,7 @@ export function UserProvider({ children }) {
   });
 
   // 2. Update state DAN simpan ke localStorage setiap ada perubahan
-  const setUser = (newUser) => {
+  const setUser = useCallback((newUser) => {
     if (newUser) {
       const updatedUser = {
         ...newUser,
@@ -27,7 +27,7 @@ export function UserProvider({ children }) {
       setUserState(null);
       localStorage.removeItem("user"); // Hapus memori saat logout
     }
-  };
+  }, []);
 
   const updateUserName = (name) => {
     if (user) {

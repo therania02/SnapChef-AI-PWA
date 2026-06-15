@@ -14,6 +14,7 @@ import MessageScreen from "./app/components/pages/message";
 import ChatDetailScreen from "./app/components/pages/chatDetail";
 import AccountScreen from "./app/components/pages/account";
 import PremiumScreen from "./app/components/pages/premium";
+import PaymentSuccessScreen from "./app/components/pages/paymentSuccess";
 import SettingsScreen from "./app/components/pages/settings";
 import ScanHistoryScreen from "./app/components/pages/scanHistory";
 import HelpCenterScreen from "./app/components/pages/helpCenter";
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
       { path: "terms", Component: TermsScreen },
       { path: "privacy", Component: PrivacyScreen },
       { path: "premium", Component: PremiumScreen },
+      { path: "payment-success", Component: PaymentSuccessScreen },
       { path: "messages", Component: MessageScreen },
       { path: "messages/:chatId", Component: ChatDetailScreen },
       { path: "*", Component: NotFoundScreen },

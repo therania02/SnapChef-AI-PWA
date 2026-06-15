@@ -14,14 +14,10 @@ import {
 import { Button } from "../../../ui/button.jsx";
 import { toast } from "sonner";
 import { useUser } from "../../lib/userContext.jsx";
-import { PaymentModal } from "../../../ui/paymentModal.jsx";
-import { useAuth } from "../../../hooks/useAuth.js";
 
 export default function PremiumScreen() {
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
-  const { upgradePremium } = useAuth();
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const { user } = useUser();
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const formatExpiryDate = (dateValue) => {
@@ -34,8 +30,7 @@ export default function PremiumScreen() {
     });
   };
 
-  const handleUpgrade = () => {
-    // Check if user is logged in
+  const handleUpgrade = async () => {
     if (!user) {
       toast.error("Anda harus login terlebih dahulu!", {
         duration: 3000,
@@ -47,26 +42,25 @@ export default function PremiumScreen() {
       return;
     }
 
-    // Open payment modal
-    setShowPaymentModal(true);
-  };
-
-  const handlePaymentSuccess = async () => {
     try {
       setIsUpgrading(true);
-      const updatedUser = await upgradePremium();
-      setUser(updatedUser);
-
-      toast.success("🎉 Selamat! Anda sekarang Premium!", {
-        duration: 3000,
-        description: "Fitur premium telah aktif di akun Anda",
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3000/api/payment/create", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
+      const data = await response.json();
 
-      setTimeout(() => {
-        navigate("/account", { replace: true });
-      }, 1000);
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal membuat transaksi");
+      }
+
+      window.location.href = data.redirect_url;
     } catch (error) {
-      toast.error(error.message || "Gagal mengaktifkan premium");
+      toast.error(error.message || "Gagal membuka pembayaran Midtrans");
     } finally {
       setIsUpgrading(false);
     }
@@ -265,12 +259,6 @@ export default function PremiumScreen() {
         </div>
       </div>
 
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onSuccess={handlePaymentSuccess}
-      />
     </div>
   );
 }
