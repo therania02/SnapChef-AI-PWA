@@ -377,7 +377,7 @@ export default function HomeScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-8 rounded-b-3xl text-white">
+      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-8 rounded-b-3xl text-foreground">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex justify-between items-start">
             <div>
@@ -394,13 +394,13 @@ export default function HomeScreen() {
                 )}
               </div>
             </div>
-            <button onClick={() => navigate("/account")} className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors">
+            <button onClick={() => navigate("/account")} className="p-2 bg-card/20 rounded-full hover:bg-card/30 transition-colors">
               <User className="h-5 w-5" />
             </button>
           </div>
 
           {/* Daily Scan Limit */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 space-y-2 text-white">
+          <div className="bg-card/10 backdrop-blur-sm rounded-2xl p-4 space-y-2 text-foreground">
             <div className="flex justify-between items-center">
               <span className="text-sm opacity-90">Pencarian hari ini</span>
               {user?.isPremium ? (
@@ -435,10 +435,10 @@ export default function HomeScreen() {
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-8 space-y-6">
         {/* Scan Button */}
         <motion.div animate={{ boxShadow: ["0 0 0 0 rgba(122, 155, 118, 0.4)", "0 0 0 20px rgba(122, 155, 118, 0)"] }} transition={{ duration: 2, repeat: Infinity }} className="relative">
-          <div className="bg-white rounded-3xl p-8 shadow-xl text-center space-y-4">
+          <div className="bg-card rounded-3xl p-8 shadow-xl text-center space-y-4">
             <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="inline-block">
               <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto">
-                <Sparkles className="h-10 w-10 text-white" />
+                <Sparkles className="h-10 w-10 text-foreground" />
               </div>
             </motion.div>
 
@@ -455,7 +455,7 @@ export default function HomeScreen() {
                   <video ref={videoRef} autoPlay playsInline className="w-full h-64 object-cover" muted />
                 </div>
               )}
-              <div className="flex gap-3 text-white">
+              <div className="flex gap-3 text-foreground">
                 <Button onClick={startCamera} className="flex-1" disabled={loadingScan}>Buka Kamera</Button>
                 {cameraOn && <Button onClick={handleTakePhoto} className="flex-1" disabled={loadingScan}>📸 Jepret</Button>}
                 <Button variant="outline" onClick={() => !loadingScan && fileInputRef.current?.click()} disabled={loadingScan}>Upload</Button>
@@ -468,10 +468,10 @@ export default function HomeScreen() {
         <div className="space-y-4">
           <div className="relative">
             <motion.div className="flex gap-2 p-1 bg-muted rounded-xl" drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={handleTabSwipe}>
-              <button onClick={() => setMainTab("gallery")} className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "gallery" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <button onClick={() => setMainTab("gallery")} className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "gallery" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                 <ImagePlus className="h-4 w-4" /> Galeri Masakan
               </button>
-              <button onClick={() => setMainTab("scan")} className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "scan" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <button onClick={() => setMainTab("scan")} className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "scan" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                 <History className="h-4 w-4" /> Riwayat
               </button>
             </motion.div>
@@ -492,7 +492,7 @@ export default function HomeScreen() {
                 <div className="space-y-3">
                   {scanHistory.length === 0 && <p className="text-center text-sm text-muted-foreground">Belum ada riwayat scan</p>}
                   {scanHistory.map((scan, index) => (
-                    <motion.div key={scan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => handleViewScanFromHome(scan)} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
+                    <motion.div key={scan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => handleViewScanFromHome(scan)} className="bg-card rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src={scan.image} alt="Scan" className="w-full h-full object-cover" />
                       </div>
@@ -516,7 +516,7 @@ export default function HomeScreen() {
                   </motion.button>
                 </div>
 
-                <div className="flex gap-2 p-1 bg-white border border-border rounded-xl">
+                <div className="flex gap-2 p-1 bg-card border border-border rounded-xl">
                   <button onClick={() => setGalleryTab("public")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "public" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Publik</button>
                   <button onClick={() => setGalleryTab("friends")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "friends" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Teman</button>
                   <button onClick={() => setGalleryTab("my")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "my" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Saya ({myPosts.length})</button>

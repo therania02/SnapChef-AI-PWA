@@ -61,11 +61,11 @@ export function FeedbackModal({ isOpen, onClose }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+              className="bg-card rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-border p-6 flex items-center justify-between rounded-t-[32px] sm:rounded-t-[32px]">
+              <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between rounded-t-[32px] sm:rounded-t-[32px]">
                 <h2 className="text-xl font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
                   Kirim Feedback
                 </h2>

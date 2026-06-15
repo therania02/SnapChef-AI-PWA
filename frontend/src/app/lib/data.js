@@ -1,9 +1,3 @@
-// Mock data for the application
-
-
-
-
-
 export const mockIngredients = [
   "Tomat",
   "Telur",

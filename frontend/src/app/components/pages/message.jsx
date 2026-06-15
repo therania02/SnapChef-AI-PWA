@@ -131,33 +131,33 @@ export default function MessageScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="bg-[#F9F6F0] min-h-screen pb-24"
+            className="bg-background text-foreground min-h-screen pb-24"
         >
             {/* Header */}
-            <div className="bg-[#6A9ABF] text-white px-6 pt-8 pb-6 rounded-b-[32px] shadow-md">
+            <div className="bg-primary text-primary-foreground px-6 pt-8 pb-6 rounded-b-[32px] shadow-md">
                 <h1 className="text-2xl font-bold mb-4">Pesan</h1>
-                <div className="relative flex items-center bg-white/20 rounded-2xl px-4 py-2.5 backdrop-blur-md">
-                    <Search className="text-white/70 mr-3 h-5 w-5" />
+                <div className="relative flex items-center bg-background/20 rounded-2xl px-4 py-2.5 backdrop-blur-md">
+                    <Search className="text-foreground/70 mr-3 h-5 w-5" />
                     <input
                         type="text"
                         placeholder="Cari obrolan..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-transparent text-white placeholder-white/60 focus:outline-none w-full text-sm"
+                        className="bg-transparent text-foreground placeholder:text-foreground/60 focus:outline-none w-full text-sm"
                     />
                 </div>
             </div>
 
             <div className="px-6 mt-6">
                 {/* Daftar Teman */}
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                     Teman Memasak
                 </h2>
                 <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
                     {loading ? (
-                        <div className="text-xs text-gray-400 py-2">Memuat teman...</div>
+                        <div className="text-xs text-muted-foreground py-2">Memuat teman...</div>
                     ) : friends.length === 0 ? (
-                        <div className="text-xs text-gray-400 py-2 italic">Tidak ada teman lain</div>
+                        <div className="text-xs text-muted-foreground py-2 italic">Tidak ada teman lain</div>
                     ) : (
                         friends.map((friend) => {
                             const isOnline = onlineUserIds.includes(Number(friend.id));
@@ -178,7 +178,7 @@ export default function MessageScreen() {
                                         />
                                         <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-red-400'}`} />
                                     </div>
-                                    <span className="text-xs text-gray-700 font-medium max-w-[64px] truncate text-center">
+                                    <span className="text-xs text-foreground font-medium max-w-[64px] truncate text-center">
                                         {friend.name.split(' ')[0]}
                                     </span>
                                 </div>
@@ -188,14 +188,14 @@ export default function MessageScreen() {
                 </div>
 
                 {/* Riwayat Obrolan */}
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mt-5 mb-3">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mt-5 mb-3">
                     Obrolan Terakhir
                 </h2>
                 <div className="space-y-3">
                     {loading ? (
-                        <div className="text-center text-sm text-gray-400 py-8">Memuat obrolan...</div>
+                        <div className="text-center text-sm text-muted-foreground py-8">Memuat obrolan...</div>
                     ) : filteredSummaries.length === 0 ? (
-                        <div className="text-center text-xs text-gray-400 py-12 italic bg-white rounded-2xl border border-gray-100">
+                        <div className="text-center text-xs text-muted-foreground py-12 italic bg-card rounded-2xl border border-gray-100">
                             Belum ada riwayat pesan.
                         </div>
                     ) : (
@@ -213,7 +213,7 @@ export default function MessageScreen() {
                                     key={summary.chatId}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => navigate(`/messages/${summary.chatId}`)}
-                                    className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                                    className="bg-card rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 cursor-pointer hover:bg-muted/50 transition-colors"
                                 >
                                     <div className="relative flex-shrink-0">
                                         <img src={opponent.avatar} alt={opponent.name} className="w-14 h-14 rounded-full object-cover" />
@@ -221,12 +221,12 @@ export default function MessageScreen() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">
-                                            <h3 className="font-semibold text-gray-800 text-base truncate">{opponent.name}</h3>
-                                            <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                                            <h3 className="font-semibold text-foreground text-base truncate">{opponent.name}</h3>
+                                            <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
                                                 {formatTime(summary.lastMessageAt || summary.createdAt)}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-gray-500 truncate">
+                                        <p className="text-sm text-muted-foreground truncate">
                                             {summary.text || summary.lastMessage || 'Belum ada pesan'}
                                         </p>
                                     </div>

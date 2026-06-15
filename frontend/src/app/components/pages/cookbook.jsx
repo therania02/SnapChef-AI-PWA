@@ -144,7 +144,7 @@ export default function CookbookScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl text-white">
+      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl text-foreground">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl flex-1" style={{ fontFamily: 'var(--font-family-display)' }}>
@@ -199,7 +199,7 @@ export default function CookbookScreen() {
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
                 onClick={() => navigate(`/recipe/${recipe.id}`, { state: { recipeData: recipe } })}
-                className="bg-white rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow border border-gray-100"
+                className="bg-card rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow border border-gray-100"
               >
                 {/* 👇 FIX GAMBAR STRETCH: Mengubah struktur flex agar gambar meregang (stretch) otomatis menyesuaikan konten teks */}
                 <div className="flex items-stretch">
@@ -213,7 +213,7 @@ export default function CookbookScreen() {
                           {recipe.tags && recipe.tags.map((tag, i) => (
                             <span
                               key={i}
-                              className="text-[9px] font-bold px-1.5 py-0.5 bg-[#5E87A6]/10 text-[#5E87A6] rounded-md uppercase tracking-wider"
+                              className="text-[9px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary rounded-md uppercase tracking-wider"
                             >
                               {tag}
                             </span>
@@ -229,14 +229,14 @@ export default function CookbookScreen() {
                             onClick={(e) => handleDelete(e, recipe.id)}
                             className="p-1.5 hover:bg-red-50 rounded-full transition-colors"
                           >
-                            <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
+                            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500 transition-colors" />
                           </button>
                         </div>
                       </div>
 
-                      <h3 className="font-medium line-clamp-2 leading-snug text-gray-800 mt-1">{recipe.title}</h3>
+                      <h3 className="font-medium line-clamp-2 leading-snug text-foreground mt-1">{recipe.title}</h3>
                     </div>
-                    <div className="grid grid-cols-4 gap-2 text-center mt-3 pt-3 border-t border-gray-100">
+                    <div className="grid grid-cols-4 gap-2 text-center mt-3 pt-3 border-t border-border">
                       <div>
                         <div className="text-sm font-bold text-primary">{recipe.calories}</div>
                         <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Kalori</div>
@@ -272,7 +272,7 @@ function FilterChip({ label, active, onClick }) {
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${active ? "bg-white text-primary shadow-sm" : "bg-white/10 text-primary-foreground hover:bg-white/20"}`}
+      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${active ? "bg-card text-primary shadow-sm" : "bg-primary/20 text-primary-foreground hover:bg-card/20"}`}
     >
       {label}
     </motion.button>
@@ -284,7 +284,7 @@ function SortChip({ label, active, onClick }) {
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${active ? "bg-white text-primary shadow-sm" : "bg-white/10 text-primary-foreground hover:bg-white/20"}`}
+      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${active ? "bg-card text-primary shadow-sm" : "bg-primary/20 text-primary-foreground hover:bg-card/20"}`}
     >
       {label}
     </motion.button>

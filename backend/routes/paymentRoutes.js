@@ -32,6 +32,10 @@ router.post("/create", authMiddleware, async (req, res) => {
       });
     }
 
+    console.log("MIDTRANS_SERVER_KEY =", process.env.MIDTRANS_SERVER_KEY);
+    console.log("MIDTRANS_CLIENT_KEY =", process.env.MIDTRANS_CLIENT_KEY);
+    console.log("MIDTRANS_IS_PRODUCTION =", process.env.MIDTRANS_IS_PRODUCTION);
+
     const snap = new midtransClient.Snap({
       isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
       serverKey: process.env.MIDTRANS_SERVER_KEY,

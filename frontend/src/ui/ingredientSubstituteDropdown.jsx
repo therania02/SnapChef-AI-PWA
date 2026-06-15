@@ -72,7 +72,7 @@ export function IngredientSubstituteDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 right-0 mt-2 z-20 bg-white border border-border rounded-2xl shadow-xl overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-2 z-20 bg-card border border-border rounded-2xl shadow-xl overflow-hidden"
           >
             <div className="p-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-500/20">
               <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ export function IngredientSubstituteDropdown({
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm">{substitute.name}</p>
+                        <p className="font-medium text-sm text-foreground">{substitute.name}</p>
                         {selectedSubstitute === substitute.name && (
                           <Check className="h-3.5 w-3.5 text-primary" />
                         )}

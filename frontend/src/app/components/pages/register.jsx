@@ -59,7 +59,7 @@ const Register = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-2xl shadow-md p-6 text-left space-y-4"
+          className="bg-card rounded-2xl shadow-md p-6 text-left space-y-4"
         >
           <form onSubmit={handleRegister} className="space-y-4">
 
@@ -118,7 +118,7 @@ const Register = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               disabled={loading}
-              className="w-full py-2 bg-[#5E87A6] text-white rounded-full font-semibold"
+              className="w-full py-2 bg-[#5E87A6] text-foreground rounded-full font-semibold"
             >
               {loading ? "Loading..." : "Daftar"}
             </motion.button>

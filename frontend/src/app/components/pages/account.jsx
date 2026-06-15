@@ -28,7 +28,7 @@ import { BottomNav } from "../../../ui/bottomNav.jsx";
 
 export default function AccountScreen() {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const { user, updateUserName, setUser, canChangeName } = useUser();
   const { selectedPreferences, customPreferences } = usePreferences();
 
@@ -134,7 +134,7 @@ export default function AccountScreen() {
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-6">
           {/* Profile */}
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-secondary dark:bg-secondary/50 border border-border flex items-center justify-center text-white">
+            <div className="w-20 h-20 rounded-full bg-secondary dark:bg-secondary/50 border border-border flex items-center justify-center text-foreground">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -151,7 +151,7 @@ export default function AccountScreen() {
                   <Input
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
-                    className="bg-white border-border text-foreground rounded-2xl"
+                    className="bg-card border-border text-foreground rounded-2xl"
                     placeholder="Nama Anda"
                   />
                   <div className="flex gap-2">
@@ -171,7 +171,7 @@ export default function AccountScreen() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-white">
+                  <div className="flex items-center gap-2 text-foreground">
                     <h1 className="text-2xl text-foreground font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
                       {/* 👇 NAMA USER DIREnder DI SINI 👇 */}
                       {currentName}
@@ -206,7 +206,7 @@ export default function AccountScreen() {
           </div>
 
           {/* Plan Badge */}
-          <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-border shadow-sm">
+          <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border shadow-sm">
             <div>
               <div className="text-sm text-muted-foreground">Paket Saat Ini</div>
               <div className="font-medium flex items-center gap-2 text-foreground">
@@ -229,7 +229,7 @@ export default function AccountScreen() {
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   size="sm"
-                  className="rounded-full bg-primary text-white hover:bg-primary/90"
+                  className="rounded-full bg-primary text-foreground hover:bg-primary/90"
                   onClick={() => navigate("/premium")}
                 >
                   <Crown className="h-4 w-4 mr-1" />
@@ -242,9 +242,9 @@ export default function AccountScreen() {
       </div>
 
       {/* Content */}
-      <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 -mt-8 space-y-6">
+      <div className="max-w-md mx-auto px-6 mt-6 space-y-6">
         {/* Stats Card */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg border border-border">
+        <div className="bg-card rounded-3xl p-6 shadow-lg border border-border">
           <h3 className="font-medium mb-4">Statistik Anda</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -263,7 +263,7 @@ export default function AccountScreen() {
         </div>
 
         {/* Preferences */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg space-y-4 border border-border">
+        <div className="bg-card rounded-3xl p-6 shadow-lg space-y-4 border border-border">
           <h3 className="font-medium">Preferensi Diet</h3>
           <div className="flex flex-wrap gap-2">
             {selectedPrefLabels.map((pref) => (
@@ -284,7 +284,7 @@ export default function AccountScreen() {
         </div>
 
         {/* Settings */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-border">
+        <div className="bg-card rounded-3xl shadow-lg overflow-hidden border border-border">
           <MenuItem
             icon={<ChefHat className="h-5 w-5" />}
             label="Riwayat Scan"
@@ -296,11 +296,11 @@ export default function AccountScreen() {
             onClick={() => navigate("/settings")}
           />
           <MenuItem
-            icon={theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            icon={resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             label="Mode Gelap"
             action={
               <Switch
-                checked={theme === "dark"}
+                checked={resolvedTheme === "dark"}
                 onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
               />
             }

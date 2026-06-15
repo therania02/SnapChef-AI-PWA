@@ -30,18 +30,40 @@
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
+
+  --card: 255 255 255;
+  --card-foreground: 45 45 45;
+  --primary-foreground: 255 255 255;
+  --muted-foreground: 120 120 120;
 }
 
-.dark {
-  --background: 26 26 26;
-  --foreground: 245 239 231;
-  --card: 45 45 45;
-  --primary: 122 175 219;
-  --secondary: 58 58 58;
-  --muted: 58 58 58;
-  --accent: 229 168 148;
-  --border: 122 175 219;
-  --ring: 122 175 219;
+html.dark {
+  /* Background utama */
+  --background: 15 23 42;      /* slate-900 */
+
+  /* Card */
+  --card: 30 41 59;            /* slate-800 */
+  --card-foreground: 248 250 252;
+  
+  /* Header Biru */
+  --primary: 37 99 235;        /* blue-600 */
+
+  /* Text */
+  --foreground: 248 250 252;   /* slate-50 */
+
+  /* Secondary */
+  --secondary: 51 65 85;       /* slate-700 */
+
+  /* Muted */
+  --muted: 51 65 85;
+
+  /* Border */
+  --border: 71 85 105;
+
+  /* Accent */
+  --accent: 96 165 250;
+
+  --ring: 96 165 250;
 }
 
 /* BASE STYLES */
@@ -90,4 +112,13 @@
     @apply bg-background text-foreground;
     font-family: var(--font-family);
   }
+}
+
+html,
+body,
+* {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }

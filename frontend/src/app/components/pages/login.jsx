@@ -63,7 +63,7 @@ const Login = () => {
           Masuk ke akun Anda
         </p>
 
-        <div className="bg-white rounded-2xl shadow-md p-6 text-left space-y-4">
+        <div className="bg-card rounded-2xl shadow-md p-6 text-left space-y-4">
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="text-sm text-gray-700">Email</label>
@@ -102,7 +102,7 @@ const Login = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               disabled={loading}
-              className="w-full py-2 bg-[#5E87A6] text-white rounded-full font-semibold"
+              className="w-full py-2 bg-[#5E87A6] text-foreground rounded-full font-semibold"
             >
               {loading ? "Loading..." : "Masuk"}
             </motion.button>

@@ -100,7 +100,7 @@ export default function ScanResultScreen() {
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 flex items-center gap-4">
           <button
             onClick={() => navigate("/home")}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-card/10 rounded-full transition-colors"
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
@@ -124,7 +124,7 @@ export default function ScanResultScreen() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl p-8 shadow-xl"
+            className="bg-card rounded-3xl p-8 shadow-xl"
           >
             <div className="flex flex-col items-center justify-center space-y-4">
               <motion.div
@@ -153,7 +153,7 @@ export default function ScanResultScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-3xl p-6 shadow-lg space-y-4"
+            className="bg-card rounded-3xl p-6 shadow-lg space-y-4"
           >
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -200,7 +200,7 @@ export default function ScanResultScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.2 }}
-                className="bg-white rounded-3xl overflow-hidden shadow-lg"
+                className="bg-card rounded-3xl overflow-hidden shadow-lg"
               >
                 <div className="relative h-48">
                   <img
@@ -217,7 +217,7 @@ export default function ScanResultScreen() {
                       {recipe.type}
                     </div>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4">
                     <h3 className="text-white font-medium text-lg">
                       {recipe.title}
@@ -246,7 +246,7 @@ export default function ScanResultScreen() {
                   </div>
 
                   <Button
-                    className="w-full rounded-2xl bg-[#5E87A6] text-white transition-all hover:bg-[#4A6E8A]"
+                    className="w-full rounded-2xl bg-[#5E87A6] text-foreground transition-all hover:bg-[#4A6E8A]"
                     onClick={async (e) => {
                       try {
                         const btn = e.currentTarget;

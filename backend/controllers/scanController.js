@@ -74,8 +74,9 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
           mimeType: "image/jpeg"
         }
       };
-
+      console.log("1");
       const result = await model.generateContent([prompt, imagePart]);
+      console.log("2");
       const response = await result.response;
       const text = await response.text();
       const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();

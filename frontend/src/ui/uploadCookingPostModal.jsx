@@ -86,7 +86,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-white rounded-3xl z-50 overflow-hidden flex flex-col"
+            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-card rounded-3xl z-50 overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b">
@@ -121,7 +121,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
                         setImage(null);
                         setImagePreview(null);
                       }}
-                      className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                      className="absolute top-2 right-2 p-2 bg-black/50 text-foreground rounded-full hover:bg-black/70 transition-colors"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -139,7 +139,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
                         <Camera className="h-8 w-8" />
                       </div>
                       <div className="text-center">
-                        <p className="font-medium">Ambil atau Upload Foto</p>
+                        <p className="font-medium text-foreground">Ambil atau Upload Foto</p>
                         <p className="text-xs mt-1">JPG, PNG (Max 5MB)</p>
                       </div>
                     </div>
@@ -199,7 +199,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="font-medium">{option.label}</p>
+                              <p className="font-medium text-foreground">{option.label}</p>
                               {privacy === option.value && (
                                 <Check className="h-4 w-4 text-primary" />
                               )}

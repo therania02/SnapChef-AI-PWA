@@ -95,7 +95,7 @@ export default function OnboardingScreen() {
                 </p>
 
                 {slides[currentSlide].highlight && (
-                  <div className="inline-block bg-[#5E87A6] text-white px-4 py-1 rounded-full text-sm">
+                  <div className="inline-block bg-[#5E87A6] text-foreground px-4 py-1 rounded-full text-sm">
                     {slides[currentSlide].highlight}
                   </div>
                 )}
@@ -135,7 +135,7 @@ export default function OnboardingScreen() {
 
         <button
           onClick={next}
-          className="bg-[#5E87A6] text-white px-6 py-2 rounded-full flex items-center gap-1 shadow-md"
+          className="bg-[#5E87A6] text-foreground px-6 py-2 rounded-full flex items-center gap-1 shadow-md"
         >
           {currentSlide === slides.length - 1
             ? "Mulai"

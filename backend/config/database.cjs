@@ -2,7 +2,7 @@
 
 const path = require('path');
 
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config();
 
 const makeConfig = (database, defaults = {}) => ({
   username: process.env.DB_USERNAME || defaults.username || 'root',

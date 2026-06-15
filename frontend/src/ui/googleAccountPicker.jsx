@@ -49,7 +49,7 @@ export function GoogleAccountPicker({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
-              className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden pointer-events-auto"
+              className="bg-card rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -226,7 +226,7 @@ export function GoogleAccountPicker({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
-              className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden pointer-events-auto"
+              className="bg-card rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}

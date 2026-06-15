@@ -37,7 +37,7 @@ function TabsTrigger({ className, ...props }) {
       data-slot="tabs-trigger"
       className={cn(
         "inline-flex flex-1 items-center justify-center rounded-xl px-2 py-1 text-sm font-medium",
-        "data-[state=active]:bg-white",
+        "data-[state=active]:bg-card",
         "focus-visible:outline-none focus-visible:ring-2",
         "disabled:opacity-50",
         className

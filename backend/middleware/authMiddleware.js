@@ -28,7 +28,11 @@ export const authMiddleware = (req, res, next) => {
         const token = authHeader.split(' ')[1];
 
         // Verifikasi token (Pastikan JWT_SECRET ada di file .env)
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'rahasia_snapchef_2026');
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET tidak ditemukan di environment");
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Simpan payload user ke dalam request agar bisa diakses oleh controller
         req.user = decoded;

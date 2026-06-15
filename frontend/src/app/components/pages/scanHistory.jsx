@@ -110,7 +110,7 @@ export default function ScanHistoryScreen() {
       <div className="sticky top-0 z-50 bg-primary/70 backdrop-blur-lg text-primary-foreground px-6 pt-6 pb-4 shadow-lg">
         <div className="max-w-md mx-auto space-y-3">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/home")} className="p-2 hover:bg-white/20 rounded-full">
+            <button onClick={() => navigate("/home")} className="p-2 hover:bg-card/20 rounded-full">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-xl font-medium">Riwayat Scan</h1>
@@ -122,7 +122,7 @@ export default function ScanHistoryScreen() {
               placeholder="Cari berdasarkan bahan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2 rounded-2xl bg-white/20 border text-sm text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none"
+              className="w-full pl-11 pr-4 py-2 rounded-2xl bg-card/20 border text-sm text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none"
             />
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function ScanHistoryScreen() {
           <div className="text-center py-12 text-muted-foreground">Memuat riwayat...</div>
         ) : filteredHistory.length > 0 ? (
           filteredHistory.map((item) => (
-            <div key={item.id} className="bg-white rounded-3xl shadow-lg overflow-hidden flex gap-4 p-4">
+            <div key={item.id} className="bg-card rounded-3xl shadow-lg overflow-hidden flex gap-4 p-4">
               <div onClick={() => handleViewScan(item)} className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 cursor-pointer bg-muted">
                 <img src={item.image || "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=500"} alt="Scan" className="w-full h-full object-cover" />
               </div>
@@ -161,7 +161,7 @@ export default function ScanHistoryScreen() {
             </div>
           ))
         ) : (
-          <div className="bg-white rounded-3xl shadow-lg p-12 text-center">
+          <div className="bg-card rounded-3xl shadow-lg p-12 text-center">
             <p className="text-muted-foreground">Tidak ada riwayat ditemukan</p>
           </div>
         )}

@@ -148,7 +148,7 @@ export default function CookingModeScreen() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)} // Memperbaiki tombol back agar kembali ke Detail Resep
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 hover:bg-card/10 rounded-full transition-colors"
             >
               <ArrowLeft className="h-6 w-6" />
             </button>
@@ -198,7 +198,7 @@ export default function CookingModeScreen() {
                   </div>
                   {/* Timer Badge if available */}
                   {stepTimer > 0 && (
-                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm">
+                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm">
                       <Clock className="h-4 w-4" />
                       <span>{Math.floor(stepTimer / 60)}:{(stepTimer % 60).toString().padStart(2, '0')}</span>
                     </div>
@@ -281,7 +281,7 @@ export default function CookingModeScreen() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="bg-white rounded-3xl p-6 shadow-lg"
+                className="bg-card rounded-3xl p-6 shadow-lg"
               >
                 <p className="text-lg leading-relaxed">
                   {currentStepData.instruction}
@@ -327,7 +327,7 @@ export default function CookingModeScreen() {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="bg-white border-t border-border px-6 py-6">
+      <div className="bg-card border-t border-border px-6 py-6">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex gap-3">
             <Button
@@ -398,7 +398,7 @@ export default function CookingModeScreen() {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-40 right-6 w-64 bg-white rounded-3xl shadow-2xl p-4 border border-border z-50"
+            className="fixed bottom-40 right-6 w-64 bg-card rounded-3xl shadow-2xl p-4 border border-border z-50"
           >
             <h3 className="font-medium mb-2">AI Sous-Chef 🧑‍🍳</h3>
             <p className="text-sm text-muted-foreground mb-3">

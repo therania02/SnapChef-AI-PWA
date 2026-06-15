@@ -54,7 +54,7 @@ export default function PaymentSuccessScreen() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background px-6">
-      <section className="w-full max-w-md bg-white rounded-3xl p-8 text-center shadow-lg">
+      <section className="w-full max-w-md bg-card rounded-3xl p-8 text-center shadow-lg">
         {status === "loading" && (
           <>
             <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin text-primary" />

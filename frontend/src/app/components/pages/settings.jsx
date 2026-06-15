@@ -72,7 +72,7 @@ export default function SettingsScreen() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate("/account")}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="p-2 hover:bg-card/20 rounded-full transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
             </motion.button>
@@ -86,7 +86,7 @@ export default function SettingsScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4 space-y-6">{/* Removed -mt-4 to avoid overlap */}
         {/* Notifications */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <Bell className="h-5 w-5 text-primary" />
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
         </div>
 
         {/* App Preferences */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <Globe className="h-5 w-5 text-primary" />
@@ -184,7 +184,7 @@ export default function SettingsScreen() {
         </div>
 
         {/* Data & Privacy */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-primary" />
@@ -218,7 +218,7 @@ export default function SettingsScreen() {
         </div>
 
         {/* Support */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-card rounded-3xl shadow-lg overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <HelpCircle className="h-5 w-5 text-primary" />
@@ -294,7 +294,7 @@ function SettingItem({ label, description, action, last }) {
         }`}
     >
       <div className="flex-1">
-        <p className="font-medium">{label}</p>
+        <p className="font-medium text-foreground">{label}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
       <div className="ml-4">{action}</div>
@@ -312,7 +312,7 @@ function SettingButton({ icon, label, description, onClick, last }) {
     >
       <div className="text-muted-foreground">{icon}</div>
       <div className="flex-1">
-        <p className="font-medium">{label}</p>
+        <p className="font-medium text-foreground">{label}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </motion.button>

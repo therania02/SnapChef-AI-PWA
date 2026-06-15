@@ -69,7 +69,7 @@ export default function PremiumScreen() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#D4AF37] to-[#E8C968] text-white px-6 pt-12 pb-16 rounded-b-3xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#D4AF37] to-[#E8C968] text-foreground px-6 pt-12 pb-16 rounded-b-3xl relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -81,7 +81,7 @@ export default function PremiumScreen() {
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-6 relative z-10">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-card/10 rounded-full transition-colors"
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
@@ -106,16 +106,16 @@ export default function PremiumScreen() {
               SnapChef Premium
             </h1>
 
-            <p className="text-white/90 text-lg">
+            <p className="text-foreground/90 text-lg">
               Nikmati pengalaman memasak tanpa batas dengan AI yang lebih pintar
             </p>
 
             {/* Current Status Indicator */}
             {user?.isPremium && (
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3">
+              <div className="bg-card/20 backdrop-blur-sm rounded-2xl p-3">
                 <p className="text-sm font-medium">✅ Anda sudah Premium!</p>
                 {user?.premiumExpiresAt && (
-                  <p className="text-xs mt-1 text-white/90">
+                  <p className="text-xs mt-1 text-foreground/90">
                     Aktif sampai {formatExpiryDate(user.premiumExpiresAt)}
                   </p>
                 )}
@@ -136,7 +136,7 @@ export default function PremiumScreen() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl p-8 shadow-2xl border-2 border-[#D4AF37]/20 mt-6"
+          className="bg-card rounded-3xl p-8 shadow-2xl border-2 border-[#D4AF37]/20 mt-6"
         >
           <div className="text-center mb-6">
             <div className="flex items-baseline justify-center gap-2">
@@ -192,7 +192,7 @@ export default function PremiumScreen() {
               disabled={user?.isPremium || isUpgrading}
               className={`w-full rounded-2xl shadow-lg ${user?.isPremium
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-white"
+                  : "bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-foreground"
                 }`}
             >
               <Crown className="h-5 w-5 mr-2" />
@@ -202,7 +202,7 @@ export default function PremiumScreen() {
         </motion.div>
 
         {/* Payment Methods */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg">
+        <div className="bg-card rounded-3xl p-6 shadow-lg">
           <h3 className="font-medium mb-4 text-center">Metode Pembayaran</h3>
           <div className="flex justify-center items-center gap-3 flex-wrap">
             <PaymentBadge label="GoPay" onClick={handleUpgrade} />
@@ -220,7 +220,7 @@ export default function PremiumScreen() {
         </div>
 
         {/* Free vs Premium Comparison */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg">
+        <div className="bg-card rounded-3xl p-6 shadow-lg">
           <h3 className="font-medium mb-4 text-center">Perbandingan Paket</h3>
           <div className="space-y-3">
             <ComparisonRow

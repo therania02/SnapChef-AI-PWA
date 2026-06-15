@@ -240,35 +240,35 @@ export default function ChatDetailScreen() {
     const canSend     = (inputText.trim().length > 0 || imagePreview !== null) && !sending;
 
     return (
-        <div className="flex flex-col h-screen bg-[#F9F6F0]">
+        <div className="flex flex-col h-screen bg-background text-foreground">
             {/* Header */}
-            <div className="bg-[#6A9ABF] text-white px-4 py-3 flex items-center gap-3 shadow-md shrink-0">
-                <button onClick={() => navigate(-1)} className="p-1 hover:bg-white/10 rounded-full">
+            <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 shadow-md shrink-0">
+                <button onClick={() => navigate(-1)} className="p-1 hover:bg-card/10 rounded-full">
                     <ArrowLeft className="h-6 w-6" />
                 </button>
                 <div className="relative">
                     <img src={chatMeta.avatar} alt={chatMeta.name}
                         className="w-10 h-10 rounded-full object-cover border border-white/20" />
-                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#6A9ABF] ${statusDot}`} />
+                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-primary ${statusDot}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                     <h2 className="font-semibold text-sm truncate">{chatMeta.name}</h2>
-                    <p className="text-xs text-white/80">{statusLabel}</p>
+                    <p className="text-xs text-foreground/80">{statusLabel}</p>
                 </div>
                 <button onClick={() => { setShowSearch((v) => !v); setSearchQuery(''); }}
-                    className="p-2 hover:bg-white/10 rounded-full">
+                    className="p-2 hover:bg-card/10 rounded-full">
                     <Search className="h-5 w-5" />
                 </button>
             </div>
 
             {/* Search bar */}
             {showSearch && (
-                <div className="bg-white p-2 shrink-0 shadow-sm border-b flex gap-2">
+                <div className="bg-card p-2 shrink-0 shadow-sm border-b border-border flex gap-2">
                     <input type="text" placeholder="Cari pesan..." value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 bg-gray-100 px-3 py-1.5 rounded-xl text-sm focus:outline-none" />
+                        className="flex-1 bg-muted px-3 py-1.5 rounded-xl text-sm focus:outline-none" />
                     <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-                        className="text-xs text-gray-500 px-2">Batal</button>
+                        className="text-xs text-muted-foreground px-2">Batal</button>
                 </div>
             )}
 
@@ -289,15 +289,15 @@ export default function ChatDetailScreen() {
                                 className={`flex flex-col ${mine ? 'items-end' : 'items-start'} ${msg.showName ? 'mt-3' : 'mt-0.5'}`}
                             >
                                 {msg.showName && (
-                                    <span className={`text-[11px] font-medium mb-0.5 mx-2 ${mine ? 'text-[#4a80a8]' : 'text-gray-500'}`}>
+                                    <span className={`text-[11px] font-medium mb-0.5 mx-2 ${mine ? 'text-primary' : 'text-muted-foreground'}`}>
                                         {mine ? myName : (msg.senderName || chatMeta.name)}
                                     </span>
                                 )}
 
                                 <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 shadow-sm text-sm ${
                                     mine
-                                        ? 'bg-[#6A9ABF] text-white rounded-br-none'
-                                        : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
+                                        ? 'bg-primary text-primary-foreground rounded-br-none'
+                                        : 'bg-card text-card-foreground rounded-bl-none border border-border'
                                 }`}>
                                     {msg.image && (
                                         <img src={msg.image} alt="foto"
@@ -306,7 +306,7 @@ export default function ChatDetailScreen() {
                                     {msg.text ? (
                                         <p className="leading-relaxed break-words">{msg.text}</p>
                                     ) : null}
-                                    <span className={`text-[9px] block text-right mt-1 ${mine ? 'text-white/70' : 'text-gray-400'}`}>
+                                    <span className={`text-[9px] block text-right mt-1 ${mine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                                         {fmtTime(msg.createdAt)}
                                         {String(msg.id).startsWith('temp-') && <span className="ml-1 opacity-50">⏳</span>}
                                     </span>
@@ -320,16 +320,16 @@ export default function ChatDetailScreen() {
 
             {/* Preview gambar */}
             {imagePreview && (
-                <div className="bg-white border-t px-4 py-2 flex items-center gap-3 shrink-0">
+                <div className="bg-card border-t px-4 py-2 flex items-center gap-3 shrink-0">
                     <div className="relative">
                         <img src={imagePreview.url} alt="preview"
                             className="h-20 w-20 object-cover rounded-xl border" />
                         <button onClick={() => setImagePreview(null)}
-                            className="absolute -top-2 -right-2 bg-gray-700 text-white rounded-full p-0.5">
+                            className="absolute -top-2 -right-2 bg-gray-700 text-foreground rounded-full p-0.5">
                             <X className="h-3 w-3" />
                         </button>
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                         {inputText.trim() ? `+ "${inputText.trim()}"` : 'Siap dikirim'}
                     </p>
                 </div>
@@ -337,7 +337,7 @@ export default function ChatDetailScreen() {
 
             {/* Emoji picker */}
             {showEmoji && (
-                <div className="bg-white border-t px-3 py-2 shrink-0">
+                <div className="bg-card border-t px-3 py-2 shrink-0">
                     <div className="flex flex-wrap gap-2">
                         {EMOJI_LIST.map((em) => (
                             <button key={em} onClick={() => insertEmoji(em)}
@@ -350,9 +350,9 @@ export default function ChatDetailScreen() {
             )}
 
             {/* Input bar */}
-            <form onSubmit={handleSend} className="p-3 bg-white border-t flex items-center gap-2 shrink-0 pb-4">
+            <form onSubmit={handleSend} className="p-3 bg-card border-t flex items-center gap-2 shrink-0 pb-4">
                 <button type="button" onClick={() => fileInputRef.current?.click()}
-                    className={`p-2 transition-colors ${imagePreview ? 'text-[#6A9ABF]' : 'text-gray-400 hover:text-[#6A9ABF]'}`}>
+                    className={`p-2 transition-colors ${imagePreview ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
                     <ImageIcon className="h-5 w-5" />
                 </button>
                 <input ref={fileInputRef} type="file" accept="image/*"
@@ -364,16 +364,16 @@ export default function ChatDetailScreen() {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) handleSend(e); }}
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:border-[#6A9ABF]"
+                    className="flex-1 bg-background border border-border rounded-2xl px-4 py-2 text-sm focus:outline-none focus:border-primary"
                 />
 
                 <button type="button" onClick={() => setShowEmoji((v) => !v)}
-                    className={`p-2 transition-colors ${showEmoji ? 'text-[#6A9ABF]' : 'text-gray-400 hover:text-[#6A9ABF]'}`}>
+                    className={`p-2 transition-colors ${showEmoji ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
                     <Smile className="h-5 w-5" />
                 </button>
 
                 <button type="submit" disabled={!canSend}
-                    className="p-2.5 bg-[#6A9ABF] text-white rounded-xl disabled:opacity-40 transition-opacity">
+                    className="p-2.5 bg-primary text-primary-foreground rounded-xl disabled:opacity-40 transition-opacity">
                     <Send className="h-4 w-4" />
                 </button>
             </form>

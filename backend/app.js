@@ -15,7 +15,7 @@ import scanRoutes from './routes/scanRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { DEFAULT_CHAT_AVATAR } from './controllers/messageController.js';
-import { setupSocket } from './config/socketHandler.js';
+import { setupSocket } from './sockets/socketHandler.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,7 +27,7 @@ app.use(cors({
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization", "X-User-Premium"]
 }));
 app.use(express.json({ limit: '10mb' }));
 

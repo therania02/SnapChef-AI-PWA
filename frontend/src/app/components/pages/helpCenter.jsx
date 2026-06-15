@@ -97,7 +97,7 @@ export default function HelpCenterScreen() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate("/settings")}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="p-2 hover:bg-card/20 rounded-full transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
             </motion.button>
@@ -114,7 +114,7 @@ export default function HelpCenterScreen() {
               placeholder="Cari pertanyaan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white/20 border border-white/30 text-sm text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-card/20 border border-white/30 text-sm text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-white/50"
             />
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function HelpCenterScreen() {
       {/* Content */}
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4 space-y-6">{/* Changed from -mt-4 to mt-4 */}
         {/* Quick Links */}
-        <div className="bg-white rounded-3xl shadow-lg p-6 space-y-3">
+        <div className="bg-card rounded-3xl shadow-lg p-6 space-y-3">
           <h3 className="font-medium mb-4">Kategori Bantuan</h3>
           <div className="grid grid-cols-2 gap-3">
             {categories.map((category) => {
@@ -151,7 +151,7 @@ export default function HelpCenterScreen() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden"
+              className="bg-card rounded-3xl shadow-lg overflow-hidden"
             >
               <motion.button
                 whileTap={{ scale: 0.98 }}
@@ -162,7 +162,7 @@ export default function HelpCenterScreen() {
                   <div className="text-primary mt-1">{item.icon}</div>
                   <div className="flex-1">
                     <div className="text-xs text-primary mb-1">{item.category}</div>
-                    <p className="font-medium">{item.question}</p>
+                    <p className="font-medium text-foreground">{item.question}</p>
                   </div>
                 </div>
                 <motion.div
@@ -193,7 +193,7 @@ export default function HelpCenterScreen() {
         </div>
 
         {filteredFAQ.length === 0 && (
-          <div className="bg-white rounded-3xl shadow-lg p-12 text-center">
+          <div className="bg-card rounded-3xl shadow-lg p-12 text-center">
             <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground">Tidak ada hasil ditemukan</p>
             <p className="text-sm text-muted-foreground mt-2">

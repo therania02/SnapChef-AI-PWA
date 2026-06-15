@@ -73,7 +73,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm"
+      className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border"
     >
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
@@ -92,7 +92,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
             )}
           </div>
           <div>
-            <p className="font-medium text-sm">{post.userName || "Guest"}</p>
+            <p className="font-medium text-sm text-foreground">{post.userName || "Guest"}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{getTimeAgo(post.createdAt)}</span>
               <span>•</span>
@@ -111,7 +111,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
                 <MoreVertical className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white text-black shadow-lg rounded-xl border border-gray">
+            <DropdownMenuContent align="end" className="bg-card text-foreground shadow-lg rounded-xl border border-border">
               <DropdownMenuItem onClick={() => onUpdatePrivacy?.(post.id, "public")}>
                 <Globe className="h-4 w-4 mr-2" />
                 Ubah ke Publik
@@ -170,7 +170,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
  
         {/* Caption */}
         <div>
-          <p className="font-medium">{post.recipeName}</p>
+          <p className="font-medium text-foreground">{post.recipeName}</p>
           {post.description && (
             <p className="text-sm text-muted-foreground mt-1">
               {post.description}

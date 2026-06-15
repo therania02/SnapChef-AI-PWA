@@ -150,7 +150,7 @@ export default function ShoppingListScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl text-white">
+      <div className="bg-primary text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl text-foreground">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl flex-1" style={{ fontFamily: 'var(--font-family-display)' }}>
@@ -191,7 +191,7 @@ export default function ShoppingListScreen() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`bg-white rounded-2xl p-4 shadow-sm ${item.checked ? "opacity-50" : ""}`}
+                className={`bg-card rounded-2xl p-4 shadow-sm ${item.checked ? "opacity-50" : ""}`}
               >
                 <div className="flex items-start gap-4">
                   <motion.button
@@ -222,7 +222,7 @@ export default function ShoppingListScreen() {
                         animate={{ x: [0, 3, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
                         onClick={() => openShopeeApp(item.name)}
-                        className="px-3 py-1 bg-[#EE4D2D] hover:bg-[#D73211] text-white rounded-full text-xs font-medium transition-colors"
+                        className="px-3 py-1 bg-[#EE4D2D] hover:bg-[#D73211] text-foreground rounded-full text-xs font-medium transition-colors"
                       >
                         Beli
                       </motion.button>

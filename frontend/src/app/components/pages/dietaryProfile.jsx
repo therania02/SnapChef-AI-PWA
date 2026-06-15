@@ -138,7 +138,7 @@ export default function DietaryProfileScreen() {
                 onClick={() => togglePreference(pref.id)}
                 className={`relative p-6 rounded-3xl border-2 transition-all ${isSelected
                     ? "border-primary bg-primary/5"
-                    : "border-border bg-white hover:border-primary/50"
+                    : "border-border bg-card hover:border-primary/50"
                   }`}
               >
                 {/* Check Icon */}
@@ -186,7 +186,7 @@ export default function DietaryProfileScreen() {
                 }
               }}
               placeholder="Contoh: Tanpa MSG, Rendah Garam"
-              className="flex-1 px-4 py-3 bg-white border-2 border-border rounded-2xl text-sm focus:outline-none focus:border-primary transition-colors"
+              className="flex-1 px-4 py-3 bg-card border-2 border-border rounded-2xl text-sm focus:outline-none focus:border-primary transition-colors"
             />
             <motion.button
               whileHover={{ scale: 1.05 }}

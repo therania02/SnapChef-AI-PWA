@@ -47,7 +47,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+              className="bg-card rounded-t-[32px] sm:rounded-[32px] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -61,7 +61,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                   </div>
                   <button
                     onClick={onClose}
-                    className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                    className="p-2 hover:bg-card/20 rounded-full transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -114,7 +114,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{ingredient.emoji}</span>
                           <div>
-                            <p className="font-medium">{ingredient.name}</p>
+                            <p className="font-medium text-foreground">{ingredient.name}</p>
                             <p className="text-xs text-muted-foreground">
                               Digunakan {ingredient.count}x
                             </p>
@@ -144,7 +144,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                       >
                         <span className="text-3xl">{achievement.icon}</span>
                         <div>
-                          <p className="font-medium">{achievement.title}</p>
+                          <p className="font-medium text-foreground">{achievement.title}</p>
                           <p className="text-xs text-muted-foreground">
                             {achievement.description}
                           </p>

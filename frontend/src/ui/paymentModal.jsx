@@ -199,7 +199,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
           className="relative w-full max-w-lg bg-background rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
         >
           {/* Header */}
-          <div className="bg-gradient-to-br from-[#D4AF37] to-[#E8C968] text-white px-6 py-6 relative overflow-hidden flex-shrink-0">
+          <div className="bg-gradient-to-br from-[#D4AF37] to-[#E8C968] text-foreground px-6 py-6 relative overflow-hidden flex-shrink-0">
             <div className="absolute inset-0 opacity-10">
               <div
                 className="absolute inset-0"
@@ -216,7 +216,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                 {step === "process" && (
                   <button
                     onClick={handleBack}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                    className="p-2 hover:bg-card/10 rounded-full transition-colors"
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </button>
@@ -231,14 +231,14 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
 
                 <button
                   onClick={handleClose}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                  className="p-2 hover:bg-card/10 rounded-full transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               {/* Price Summary */}
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 space-y-2">
+              <div className="bg-card/20 backdrop-blur-sm rounded-2xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm opacity-90">Paket Premium - 1 Bulan</span>
                   <Crown className="h-4 w-4" />
@@ -279,11 +279,11 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                             handleMethodSelect(method);
                             setStep("process");
                           }}
-                          className="w-full bg-white border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
+                          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
                         >
                           <div className="text-3xl">{method.icon}</div>
                           <div className="flex-1">
-                            <p className="font-medium">{method.name}</p>
+                            <p className="font-medium text-foreground">{method.name}</p>
                             <p className="text-sm text-muted-foreground">
                               {method.description}
                             </p>
@@ -309,11 +309,11 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                             handleMethodSelect(method);
                             setStep("process");
                           }}
-                          className="w-full bg-white border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
+                          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
                         >
                           <div className="text-3xl">{method.icon}</div>
                           <div className="flex-1">
-                            <p className="font-medium">{method.name}</p>
+                            <p className="font-medium text-foreground">{method.name}</p>
                             <p className="text-sm text-muted-foreground">
                               {method.description}
                             </p>
@@ -339,11 +339,11 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                             handleMethodSelect(method);
                             setStep("process");
                           }}
-                          className="w-full bg-white border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
+                          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:border-primary transition-colors text-left"
                         >
                           <div className="text-3xl">{method.icon}</div>
                           <div className="flex-1">
-                            <p className="font-medium">{method.name}</p>
+                            <p className="font-medium text-foreground">{method.name}</p>
                             <p className="text-sm text-muted-foreground">
                               {method.description}
                             </p>
@@ -382,7 +382,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                   <div className="bg-muted/50 rounded-2xl p-4 flex items-center gap-4">
                     <div className="text-3xl">{selectedMethod.icon}</div>
                     <div className="flex-1">
-                      <p className="font-medium">{selectedMethod.name}</p>
+                      <p className="font-medium text-foreground">{selectedMethod.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {selectedMethod.description}
                       </p>
@@ -423,7 +423,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                   {/* Bank Transfer Form */}
                   {selectedMethod.type === "bank" && (
                     <div className="space-y-4">
-                      <div className="bg-white border-2 border-dashed border-primary/30 rounded-2xl p-6 text-center space-y-3">
+                      <div className="bg-card border-2 border-dashed border-primary/30 rounded-2xl p-6 text-center space-y-3">
                         <p className="text-sm text-muted-foreground">
                           Nomor Virtual Account
                         </p>
@@ -532,7 +532,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                     size="lg"
                     onClick={handlePay}
                     disabled={isProcessing}
-                    className="w-full rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-white shadow-lg"
+                    className="w-full rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-foreground shadow-lg"
                   >
                     {isProcessing ? (
                       <div className="flex items-center gap-2">
@@ -584,7 +584,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                     }}
                   >
                     <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle2 className="h-12 w-12 text-white" />
+                      <CheckCircle2 className="h-12 w-12 text-foreground" />
                     </div>
                   </motion.div>
 
@@ -603,7 +603,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                   <div className="bg-gradient-to-br from-[#D4AF37]/20 to-[#E8C968]/20 border border-[#D4AF37]/30 rounded-2xl p-6 space-y-3">
                     <Crown className="h-10 w-10 text-[#D4AF37] mx-auto" />
                     <div className="space-y-1">
-                      <p className="font-medium">Paket Premium Aktif</p>
+                      <p className="font-medium text-foreground">Paket Premium Aktif</p>
                       <p className="text-sm text-muted-foreground">
                         Berlaku hingga 10 Mei 2026
                       </p>

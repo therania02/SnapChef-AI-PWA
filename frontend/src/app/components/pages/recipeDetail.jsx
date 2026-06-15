@@ -234,7 +234,7 @@ export default function RecipeDetailScreen() {
       <div className="sticky top-0 left-0 right-0 px-6 py-6 z-50 flex justify-between items-center">
         <button
           onClick={() => navigate("/cookbook")}
-          className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-white shadow-lg"
+          className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-foreground shadow-lg"
         >
           <ArrowLeft className="h-6 w-6" />
         </button>
@@ -242,14 +242,14 @@ export default function RecipeDetailScreen() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={handleShare}
-            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-white shadow-lg"
+            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-foreground shadow-lg"
           >
             <Share2 className="h-6 w-6" />
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={handleSave}
-            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-white shadow-lg"
+            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-foreground shadow-lg"
           >
             <Heart className={`h-6 w-6 ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
           </motion.button>
@@ -264,9 +264,9 @@ export default function RecipeDetailScreen() {
           <div className="flex flex-wrap gap-2 mb-2">
             {recipe.isHalal && <Badge className="bg-accent text-accent-foreground shadow-lg">Halal</Badge>}
             {recipe.isVegetarian && <Badge className="bg-primary text-primary-foreground shadow-lg">Vegetarian</Badge>}
-            <Badge className="bg-black/50 text-white backdrop-blur-sm shadow-lg">{recipe.type}</Badge>
+            <Badge className="bg-black/50 text-foreground backdrop-blur-sm shadow-lg">{recipe.type}</Badge>
           </div>
-          <h1 className="text-white text-3xl drop-shadow-lg" style={{ fontFamily: 'var(--font-family-display)' }}>
+          <h1 className="text-foreground text-3xl drop-shadow-lg" style={{ fontFamily: 'var(--font-family-display)' }}>
             {recipe.title}
           </h1>
         </div>
@@ -276,7 +276,7 @@ export default function RecipeDetailScreen() {
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 space-y-6 mt-6">
 
         {/* Nutrition Info */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg">
+        <div className="bg-card rounded-3xl p-6 shadow-lg">
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-2xl font-medium text-primary">{Math.round((recipe.calories || 0) * servingMultiplier)}</div>
@@ -298,7 +298,7 @@ export default function RecipeDetailScreen() {
         </div>
 
         {/* Portion Scaler */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg">
+        <div className="bg-card rounded-3xl p-6 shadow-lg">
           <div className="flex justify-between items-center">
             <h3 className="font-medium">Porsi</h3>
             <div className="flex items-center gap-4">
@@ -398,7 +398,7 @@ export default function RecipeDetailScreen() {
 
               return (
                 <motion.div key={index} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.05 }} className="space-y-2">
-                  <div className={`flex items-center justify-between p-4 rounded-2xl ${hasSubstitution ? "bg-muted/30 border border-dashed border-muted-foreground/30" : ingredient.available ? "bg-white" : "bg-destructive/5 border-2 border-destructive/20"}`}>
+                  <div className={`flex items-center justify-between p-4 rounded-2xl ${hasSubstitution ? "bg-muted/30 border border-dashed border-muted-foreground/30" : ingredient.available ? "bg-card" : "bg-destructive/5 border-2 border-destructive/20"}`}>
                     <div className="flex items-center gap-3 flex-1">
                       {!ingredient.available && !hasSubstitution && (
                         <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
@@ -470,7 +470,7 @@ export default function RecipeDetailScreen() {
           <div className="space-y-4">
             {(recipe.steps || []).map((step, index) => {
               return (
-                <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="bg-white rounded-3xl overflow-hidden shadow-lg">
+                <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="bg-card rounded-3xl overflow-hidden shadow-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gradient-to-r from-primary/10 to-accent/10">
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg flex-shrink-0">
@@ -527,7 +527,7 @@ export default function RecipeDetailScreen() {
         </motion.div>
 
         {/* Rating */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg">
+        <div className="bg-card rounded-3xl p-6 shadow-lg">
           <h3 className="font-medium mb-3">Beri Rating</h3>
           <div className="flex gap-2 mb-3">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -564,7 +564,7 @@ export default function RecipeDetailScreen() {
       </div>
 
       {/* Fixed Bottom Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border p-6">
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-6">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0">
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button size="lg" className="w-full rounded-2xl" onClick={() => navigate(`/cooking/${recipe.id}`, { state: { ingredientSubstitutions, recipeData: recipe } })}>
