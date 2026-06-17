@@ -12,6 +12,10 @@ import { useFavorites } from "../../lib/favoritesContext.jsx";
 import { useUser } from "../../lib/userContext.jsx";
 import { IngredientSubstituteDropdown } from "../../../ui/ingredientSubstituteDropdown.jsx";
 import { useRecipes } from "../../../hooks/useRecipes.js"; // Pastikan ini di-import
+import {
+  tweakRecipeWithAI
+}
+  from "../../lib/geminiVision";
 
 // --- FUNGSI PARSER CERDAS UNTUK BAHAN ---
 const parseIngredientLine = (line) => {
@@ -70,9 +74,27 @@ export default function RecipeDetailScreen() {
   // 👇 PINDAHKAN KETIGA HOOK INI KE SINI 👇
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useUser();
+  console.log(user);
   const { rateRecipe } = useRecipes();
 
   const incomingRecipe = location.state?.recipeData;
+
+  const rawSteps =
+    incomingRecipe?.instructions ||
+    incomingRecipe?.steps ||
+    [];
+
+  const parsedSteps = Array.isArray(rawSteps)
+    ? rawSteps
+    : String(rawSteps)
+      .split("\n")
+      .filter(s => s.trim() !== "");
+
+  const detectedIngredients =
+    location.state?.detectedIngredients ||
+    incomingRecipe?.detectedIngredients ||
+    [];
+
 
   const formattedAIRecipe = incomingRecipe ? {
     id: incomingRecipe.id || id,
@@ -81,22 +103,78 @@ export default function RecipeDetailScreen() {
     type: "AI Recommendation",
     isHalal: true,
     isVegetarian: false,
-    calories: incomingRecipe.calories ?? 0,
-    protein: incomingRecipe.protein ?? 0,
-    carbs: incomingRecipe.carbs ?? 0,
+    calories:
+      incomingRecipe.calories ??
+      incomingRecipe.nutrition?.calories ??
+      0,
+
+
+
+    protein:
+      incomingRecipe.protein ??
+      incomingRecipe.nutrition?.protein ??
+      0,
+
+    carbs:
+      incomingRecipe.carbs ??
+      incomingRecipe.nutrition?.carbs ??
+      0,
     prepTime: incomingRecipe.prepTime ?? 0,
     servings: 2,
-    ingredients: (incomingRecipe.ingredients || "").split('\n').filter(i => i.trim() !== '').map(parseIngredientLine),
-    steps: (incomingRecipe.instructions || incomingRecipe.steps || "").split('\n').filter(s => s.trim() !== '').map(step => {
-      const cleanInstruction = step.replace(/^\d+[\.\)]\s*/, '').trim();
-      return {
-        instruction: cleanInstruction,
-        image: null
-      };
-    })
+    ingredients: Array.isArray(
+      incomingRecipe.ingredients
+    )
+      ? incomingRecipe.ingredients.map(item =>
+        typeof item === "string"
+          ? parseIngredientLine(item)
+          : item
+      )
+      : String(
+        incomingRecipe.ingredients || ""
+      )
+        .split("\n")
+        .filter(i => i.trim() !== "")
+        .map(parseIngredientLine),
+
+    steps: parsedSteps.map(step => ({
+      instruction: String(step)
+        .replace(/^\d+[\.\)]\s*/, "")
+        .trim(),
+      image: null
+    })),
   } : null;
 
   const recipe = formattedAIRecipe || mockRecipes.find((r) => String(r.id) === String(id)) || mockRecipes[0];
+
+  const normalizedDetected =
+    detectedIngredients.map((item) =>
+      item.toLowerCase().trim()
+    );
+  console.log(
+    "NORMALIZED:",
+    normalizedDetected
+  );
+
+
+  if (recipe?.ingredients) {
+    recipe.ingredients =
+      recipe.ingredients.map((ingredient) => {
+
+        const ingredientName =
+          ingredient.name.toLowerCase();
+
+        const available =
+          normalizedDetected.some((detected) =>
+            ingredientName.includes(detected) ||
+            detected.includes(ingredientName)
+          );
+
+        return {
+          ...ingredient,
+          available
+        };
+      });
+  }
 
   const displayPrepTime = recipe.prepTime || 30;
 
@@ -146,9 +224,38 @@ export default function RecipeDetailScreen() {
     toast.success("Link resep disalin! Bagikan ke WhatsApp 📱");
   };
 
-  const handleAddToShoppingList = () => {
-    navigate("/shopping-list");
-    toast.success("Ditambahkan ke daftar belanja! 🛒");
+  const handleAddToShoppingList = async (ingredient) => {
+    try {
+      const currentUser = JSON.parse(
+        localStorage.getItem("user")
+      );
+
+      await fetch(
+        "http://localhost:3000/api/ingredients",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: ingredient.name,
+            amount: ingredient.amount || 1,
+            unit: ingredient.unit || "",
+            userId: currentUser.id,
+            fromRecipe: recipe.title
+          })
+        }
+      );
+
+      toast.success(
+        `${ingredient.name} ditambahkan ke keranjang`
+      );
+
+    } catch (error) {
+      toast.error(
+        "Gagal menambah ke daftar belanja"
+      );
+    }
   };
 
   const handleTweakerClick = () => {
@@ -162,31 +269,80 @@ export default function RecipeDetailScreen() {
     setShowTweaker(!showTweaker);
   };
 
-  const handleTweakRequest = (type) => {
-    if (!user?.isPremium) {
-      toast.error("Fitur ini hanya untuk pengguna Premium");
-      return;
-    }
-    let message = "";
-    switch (type) {
-      case "spicy": message = "AI sedang membuat versi lebih pedas... 🌶️"; break;
-      case "less-sugar": message = "AI sedang membuat versi rendah gula... 🍬"; break;
-      case "healthier": message = "AI sedang membuat versi lebih sehat... 🥗"; break;
-      case "no-chili": message = "AI sedang membuat versi tanpa cabai... 🧊"; break;
-      case "less-spicy": message = "AI sedang membuat versi kurang pedas... 🌶️↓"; break;
-      case "custom":
-        if (customRequest.trim()) {
-          message = `AI sedang mengubah resep: "${customRequest}"... ✨`;
-          setCustomRequest("");
-        } else {
-          toast.error("Tulis preferensi Anda terlebih dahulu");
-          return;
+  const handleTweakRequest =
+    async (type) => {
+
+      if (!user?.isPremium) {
+        toast.error(
+          "Premium only"
+        );
+        return;
+      }
+
+      let request = "";
+
+      switch (type) {
+
+        case "spicy":
+          request =
+            "Buat versi lebih pedas";
+          break;
+
+        case "less-sugar":
+          request =
+            "Buat versi rendah gula";
+          break;
+
+        case "healthier":
+          request =
+            "Buat versi lebih sehat";
+          break;
+
+        case "no-chili":
+          request =
+            "Hilangkan semua cabai";
+          break;
+
+        case "less-spicy":
+          request =
+            "Kurangi tingkat pedas";
+          break;
+
+        case "custom":
+          request =
+            customRequest;
+          break;
+      }
+
+      toast.loading(
+        "AI sedang mengubah resep..."
+      );
+
+      const result =
+        await tweakRecipeWithAI(
+          recipe,
+          request
+        );
+
+      toast.dismiss();
+
+      if (!result) {
+        toast.error(
+          "AI gagal memproses"
+        );
+        return;
+      }
+
+      navigate(
+        `/recipe/${recipe.id}`,
+        {
+          state: {
+            recipeData: result,
+            detectedIngredients
+          }
         }
-        break;
-    }
-    toast.success(message);
-    setShowTweaker(false);
-  };
+      );
+    };
 
   const handleRating = (star) => {
     if (!isRatingSaved) setRating(star);
@@ -416,7 +572,9 @@ export default function RecipeDetailScreen() {
                         }
                       </span>
                       {!ingredient.available && !hasSubstitution && (
-                        <motion.button whileHover={{ scale: 1.1 }} animate={{ x: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} onClick={handleAddToShoppingList} className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs">
+                        <motion.button whileHover={{ scale: 1.1 }} animate={{ x: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} onClick={() =>
+                          handleAddToShoppingList(ingredient)
+                        } className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs">
                           Beli
                         </motion.button>
                       )}
@@ -482,7 +640,18 @@ export default function RecipeDetailScreen() {
                     </div>
                   </div>
                   <div className="p-4 space-y-3">
-                    <p className="text-sm leading-relaxed">{step.instruction}</p>
+                    <p className="text-sm leading-relaxed">
+                      {Object.entries(
+                        ingredientSubstitutions
+                      ).reduce(
+                        (text, [original, data]) =>
+                          text.replaceAll(
+                            original,
+                            data.substitute.name
+                          ),
+                        step.instruction
+                      )}
+                    </p>
                   </div>
                 </motion.div>
               );

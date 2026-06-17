@@ -256,8 +256,17 @@ export default function ScanResultScreen() {
                         // Menggabungkan array bahan & instruksi menjadi string sebelum masuk database
                         const recipeToSave = {
                           title: recipe.title,
-                          ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients.join('\n') : recipe.ingredients,
-                          instructions: Array.isArray(recipe.steps) ? recipe.steps.join('\n') : recipe.steps,
+
+                          ingredients: Array.isArray(recipe.ingredients)
+                            ? recipe.ingredients.join('\n')
+                            : recipe.ingredients,
+
+                          instructions: Array.isArray(recipe.steps)
+                            ? recipe.steps.join('\n')
+                            : recipe.steps,
+
+                          detectedIngredients: ingredients,
+
                           calories: recipe.calories,
                           protein: recipe.protein,
                           carbs: recipe.carbs,
@@ -270,7 +279,10 @@ export default function ScanResultScreen() {
 
                         // 2. Pindah ke halaman detail resep
                         navigate(`/recipe/${savedRecipeDB.id}`, {
-                          state: { recipeData: savedRecipeDB }
+                          state: {
+                            recipeData: savedRecipeDB,
+                            detectedIngredients: ingredients
+                          }
                         });
 
                       } catch (err) {

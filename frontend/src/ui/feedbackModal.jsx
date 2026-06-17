@@ -18,7 +18,7 @@ export function FeedbackModal({ isOpen, onClose }) {
     { id: "other", label: "💬 Lainnya" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!category) {
@@ -31,8 +31,29 @@ export function FeedbackModal({ isOpen, onClose }) {
       return;
     }
 
-    // Simulate sending feedback
-    toast.success("Terima kasih atas feedback Anda! 🎉");
+    const user = JSON.parse(
+      localStorage.getItem("user")
+    );
+
+    await fetch(
+      "http://localhost:3000/api/feedback",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          rating,
+          category,
+          feedback
+        })
+      }
+    );
+
+    toast.success(
+      "Terima kasih atas feedback Anda! 🎉"
+    );
 
     // Reset form
     setRating(0);
@@ -98,8 +119,8 @@ export function FeedbackModal({ isOpen, onClose }) {
                       >
                         <Star
                           className={`h-8 w-8 transition-colors ${star <= (hoveredRating || rating)
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-300"
                             }`}
                         />
                       </motion.button>
@@ -120,8 +141,8 @@ export function FeedbackModal({ isOpen, onClose }) {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setCategory(cat.id)}
                         className={`p-3 rounded-2xl border-2 transition-all ${category === cat.id
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border hover:border-primary/50"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/50"
                           }`}
                       >
                         <span className="text-sm font-medium">{cat.label}</span>

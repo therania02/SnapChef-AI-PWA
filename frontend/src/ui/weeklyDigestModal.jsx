@@ -1,17 +1,90 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { X, TrendingUp, ChefHat, Clock, Star, Calendar } from "lucide-react";
 import { Button } from "./button";
 
-
 export function WeeklyDigestModal({ isOpen, onClose }) {
-  const weekRange = "24 Mar - 30 Mar 2026";
+  const getWeekRange = () => {
 
-  const stats = {
-    scans: { value: 12, change: +3, percentage: 33 },
-    recipes: { value: 24, change: +8, percentage: 50 },
-    cookings: { value: 8, change: +2, percentage: 25 },
-    savedRecipes: { value: 15, change: +5, percentage: 50 },
+    const today = new Date();
+
+    const first =
+      new Date(today);
+
+    first.setDate(
+      today.getDate() - 6
+    );
+
+    return `${first.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short"
+    })} - ${today.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    })}`;
+
   };
+
+  const weekRange =
+    getWeekRange();
+
+  const [stats, setStats] = useState({
+    scans: { value: 0, change: 0, percentage: 0 },
+    recipes: { value: 0, change: 0, percentage: 0 },
+    cookings: { value: 0, change: 0, percentage: 0 },
+    savedRecipes: { value: 0, change: 0, percentage: 0 }
+  });
+
+  useEffect(() => {
+
+    const loadStats = async () => {
+
+      try {
+
+        const user = JSON.parse(
+          localStorage.getItem("user")
+        );
+
+        const response = await fetch(
+          `http://localhost:3000/api/weekly-digest/${user.id}`
+        );
+
+        const data = await response.json();
+
+        setStats({
+          scans: {
+            value: data.scans,
+            change: data.scanChange,
+            percentage: Math.min(data.scans * 10, 100)
+          },
+          recipes: {
+            value: data.recipes,
+            change: 0,
+            percentage: Math.min(data.recipes * 10, 100)
+          },
+          cookings: {
+            value: data.cookings,
+            change: 0,
+            percentage: Math.min(data.cookings * 10, 100)
+          },
+          savedRecipes: {
+            value: data.savedRecipes,
+            change: 0,
+            percentage: Math.min(data.savedRecipes * 10, 100)
+          }
+        });
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (isOpen) {
+      loadStats();
+    }
+
+  }, [isOpen]);
 
   const topIngredients = [
     { name: "Ayam", count: 8, emoji: "🍗" },

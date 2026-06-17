@@ -51,10 +51,36 @@ export default function SettingsScreen() {
   };
 
   const handleExportData = () => {
-    toast.success("Data Anda sedang diekspor...");
-    setTimeout(() => {
-      toast.success("Data berhasil diekspor!");
-    }, 2000);
+
+    const user =
+      JSON.parse(localStorage.getItem("user"));
+
+    const exportData = {
+      user,
+      exportedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob(
+      [JSON.stringify(exportData, null, 2)],
+      { type: "application/json" }
+    );
+
+    const url =
+      URL.createObjectURL(blob);
+
+    const a =
+      document.createElement("a");
+
+    a.href = url;
+    a.download = "snapchef-data.json";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+    toast.success(
+      "Data berhasil diekspor"
+    );
   };
 
   const handleDeleteAccount = () => {
@@ -120,15 +146,11 @@ export default function SettingsScreen() {
             }
           />
 
-          <SettingItem
+          <SettingButton
+            icon={<Bell className="h-5 w-5" />}
             label="Ringkasan Mingguan"
             description="Statistik mingguan Anda"
-            action={
-              <Switch
-                checked={notifications.weeklyDigest}
-                onCheckedChange={handleWeeklyDigestToggle}
-              />
-            }
+            onClick={() => setShowWeeklyDigest(true)}
           />
 
           <SettingItem
@@ -203,7 +225,23 @@ export default function SettingsScreen() {
             icon={<Upload className="h-5 w-5" />}
             label="Backup Data"
             description="Simpan data ke cloud"
-            onClick={() => toast.info("Fitur backup akan segera hadir")}
+            onClick={() => {
+
+              localStorage.setItem(
+                "snapchef-backup",
+                JSON.stringify({
+                  user: JSON.parse(
+                    localStorage.getItem("user")
+                  ),
+                  backupDate: new Date().toISOString()
+                })
+              );
+
+              toast.success(
+                "Backup berhasil dibuat"
+              );
+
+            }}
           />
 
           <SettingButton
@@ -211,7 +249,17 @@ export default function SettingsScreen() {
             label="Hapus Cache"
             description="Bersihkan data sementara"
             onClick={() => {
-              toast.success("Cache berhasil dihapus");
+              localStorage.removeItem(
+                "selectedPreferences"
+              );
+
+              localStorage.removeItem(
+                "customPreferences"
+              );
+
+              toast.success(
+                "Cache berhasil dihapus"
+              );
             }}
             last
           />

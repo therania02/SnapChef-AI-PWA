@@ -1,5 +1,45 @@
 // Database bahan pengganti untuk masakan Indonesia
 
+const normalizeIngredientName = (
+  name
+) => {
+  return name
+    .toLowerCase()
+    .replace(
+      "bubuk bawang putih",
+      "bawang putih"
+    )
+    .replace(
+      "bawang putih bubuk",
+      "bawang putih"
+    )
+    .replace(
+      "garam laut",
+      "garam"
+    )
+    .replace(
+      "sea salt",
+      "garam"
+    )
+    .replace(
+      "garam himalaya",
+      "garam"
+    )
+    .replace(
+      "lada hitam",
+      "merica"
+    )
+    .replace(
+      "merica hitam",
+      "merica"
+    )
+    .replace(
+      "olive oil",
+      "minyak zaitun"
+    )
+    .trim();
+};
+
 export const INGREDIENT_SUBSTITUTES = {
   // Gula & Pemanis
   "gula pasir": [
@@ -259,24 +299,117 @@ export const INGREDIENT_SUBSTITUTES = {
     { name: "Kacang cincang", ratio: "1:1", note: "Lebih crunchy" },
     { name: "Sereal cornflakes", ratio: "1:1", note: "Lebih simple" },
   ],
+
+  "kentang": [
+    {
+      name: "Ubi",
+      ratio: "1:1",
+      note: "Tekstur mirip"
+    },
+    {
+      name: "Labu kuning",
+      ratio: "1:1",
+      note: "Lebih manis"
+    }
+  ],
+
+  "wortel": [
+    {
+      name: "Labu kuning",
+      ratio: "1:1",
+      note: "Warna mirip"
+    },
+    {
+      name: "Ubi jalar",
+      ratio: "1:1",
+      note: "Lebih manis"
+    }
+  ],
+
+  "minyak zaitun": [
+    {
+      name: "Minyak sayur",
+      ratio: "1:1",
+      note: "Lebih netral"
+    },
+    {
+      name: "Minyak canola",
+      ratio: "1:1",
+      note: "Alternatif sehat"
+    }
+  ],
+
+  "lada hitam": [
+    {
+      name: "Merica putih",
+      ratio: "1:1",
+      note: "Rasa mirip"
+    },
+    {
+      name: "Cabai bubuk",
+      ratio: "1:2",
+      note: "Lebih pedas"
+    }
+  ],
+
+  "rosemary kering": [
+    {
+      name: "Thyme",
+      ratio: "1:1",
+      note: "Herbal mirip"
+    },
+    {
+      name: "Oregano",
+      ratio: "1:1",
+      note: "Alternatif herbal"
+    }
+  ],
 };
 
 // Function to get substitutes for an ingredient
-export function getSubstitutes(ingredientName) {
-  const normalized = ingredientName.toLowerCase().trim();
-  
-  // Direct match
-  if (INGREDIENT_SUBSTITUTES[normalized]) {
-    return INGREDIENT_SUBSTITUTES[normalized];
+export function getSubstitutes(
+  ingredientName
+) {
+
+  const normalized =
+    normalizeIngredientName(
+      ingredientName
+    );
+
+  if (
+    INGREDIENT_SUBSTITUTES[
+    normalized
+    ]
+  ) {
+    return INGREDIENT_SUBSTITUTES[
+      normalized
+    ];
   }
-  
-  // Fuzzy match - cari yang mengandung kata kunci
-  for (const [key, value] of Object.entries(INGREDIENT_SUBSTITUTES)) {
-    if (normalized.includes(key) || key.includes(normalized)) {
+
+  for (
+    const [key, value]
+    of Object.entries(
+      INGREDIENT_SUBSTITUTES
+    )
+  ) {
+
+    const normalizedKey =
+      normalizeIngredientName(
+        key
+      );
+
+    if (
+      normalized.includes(
+        normalizedKey
+      ) ||
+      normalizedKey.includes(
+        normalized
+      )
+    ) {
       return value;
     }
   }
-  
+
   return null;
 }
 

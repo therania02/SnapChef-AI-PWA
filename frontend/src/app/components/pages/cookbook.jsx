@@ -55,16 +55,29 @@ export default function CookbookScreen() {
           title: recipe.title,
           ingredients: recipe.ingredients,
           instructions: recipe.instructions,
-          image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
+
+          detectedIngredients:
+            recipe.detectedIngredients || [],
+
+          image:
+            "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
+
           tags: detectedTags,
+
           calories: recipe.calories || 0,
           protein: recipe.protein || 0,
           carbs: recipe.carbs || 0,
           prepTime: recipe.prepTime || 0,
           servings: 2,
-          createdAt: recipe.createdAt || new Date(),
-          isHalal: detectedTags.includes("HALAL"),
-          isVegetarian: detectedTags.includes("VEGETARIAN")
+
+          createdAt:
+            recipe.createdAt || new Date(),
+
+          isHalal:
+            detectedTags.includes("HALAL"),
+
+          isVegetarian:
+            detectedTags.includes("VEGETARIAN")
         };
       });
 
@@ -96,18 +109,6 @@ export default function CookbookScreen() {
 
   const getFilteredRecipes = () => {
     let filtered = dbRecipes;
-
-    if (!selectedPreferences.includes("no-preference") && selectedPreferences.length > 0) {
-      filtered = filtered.filter((recipe) => {
-        return selectedPreferences.some((pref) => {
-          if (pref === "halal") return recipe.isHalal;
-          if (pref === "vegetarian") return recipe.isVegetarian;
-          if (pref === "vegan") return recipe.isVegan;
-          if (recipe.tags && recipe.tags.includes(pref.toUpperCase())) return true;
-          return false;
-        });
-      });
-    }
 
     if (filter === "halal") filtered = filtered.filter((r) => r.isHalal);
     if (filter === "vegetarian") filtered = filtered.filter((r) => r.isVegetarian);
@@ -198,7 +199,15 @@ export default function CookbookScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
-                onClick={() => navigate(`/recipe/${recipe.id}`, { state: { recipeData: recipe } })}
+                onClick={() =>
+                  navigate(`/recipe/${recipe.id}`, {
+                    state: {
+                      recipeData: recipe,
+                      detectedIngredients:
+                        recipe.detectedIngredients || []
+                    }
+                  })
+                }
                 className="bg-card rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow border border-gray-100"
               >
                 {/* 👇 FIX GAMBAR STRETCH: Mengubah struktur flex agar gambar meregang (stretch) otomatis menyesuaikan konten teks */}

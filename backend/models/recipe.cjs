@@ -10,6 +10,12 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     ingredients: DataTypes.TEXT,
     instructions: DataTypes.TEXT,
+
+    detectedIngredients: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: []
+    },
     image_url: DataTypes.STRING,
     calories: DataTypes.INTEGER,
     protein: DataTypes.INTEGER,

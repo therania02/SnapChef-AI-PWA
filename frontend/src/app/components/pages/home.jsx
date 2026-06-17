@@ -205,7 +205,7 @@ export default function HomeScreen() {
     toast.loading("Menganalisis masakan...", { id: "scan-loading" });
     try {
       const resized = await resizeImage(base64Image);
-    
+
       // Request langsung ke endpoint backend baru
       const response = await fetch("http://localhost:3000/api/scan", {
         method: "POST",
@@ -214,7 +214,11 @@ export default function HomeScreen() {
           "Authorization": `Bearer ${token}`,
           "X-User-Premium": user?.isPremium ? "true" : "false"
         },
-        body: JSON.stringify({ image: resized })
+        body: JSON.stringify({
+          image: resized,
+          preferences:
+            user?.dietPreferences?.selectedPreferences || []
+        })
       });
 
       let result;
@@ -249,11 +253,11 @@ export default function HomeScreen() {
       await fetchScanHistory();
 
       // Pindah ke halaman hasil scan dengan membawa data utuh terbungkus rapi
-      navigate("/scan-result", { 
-        state: { 
-          ingredients_detected: result.data.ingredients_detected, 
-          recipes: result.data.recipes 
-        } 
+      navigate("/scan-result", {
+        state: {
+          ingredients_detected: result.data.ingredients_detected,
+          recipes: result.data.recipes
+        }
       });
 
     } catch (error) {
@@ -522,11 +526,11 @@ export default function HomeScreen() {
                   <button onClick={() => setGalleryTab("my")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "my" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Saya ({myPosts.length})</button>
                 </div>
 
-                <motion.div 
-                  key={galleryTab} 
-                  initial={{ opacity: 0, y: 10 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  transition={{ duration: 0.3 }} 
+                <motion.div
+                  key={galleryTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                   className="space-y-4"
                 >
                   {galleryTab === "public" ? (
@@ -534,11 +538,11 @@ export default function HomeScreen() {
                       getPublicPosts().map((post, index) => (
                         <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
                           {/* Tambahkan isMyPost jika ternyata postingan publik itu milik user sendiri */}
-                          <CookingPostCard 
-                            post={post} 
-                            isMyPost={Number(post.userId) === Number(user?.id)} 
-                            onDelete={handleDeletePost} 
-                            onUpdatePrivacy={handleUpdatePrivacy} 
+                          <CookingPostCard
+                            post={post}
+                            isMyPost={Number(post.userId) === Number(user?.id)}
+                            onDelete={handleDeletePost}
+                            onUpdatePrivacy={handleUpdatePrivacy}
                           />
                         </motion.div>
                       ))
@@ -565,11 +569,11 @@ export default function HomeScreen() {
                     // Gunakan map dari myPosts yang sudah disinkronkan di context
                     myPosts.map((post, index) => (
                       <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-                        <CookingPostCard 
-                          post={post} 
-                          isMyPost={true} 
-                          onDelete={handleDeletePost} 
-                          onUpdatePrivacy={handleUpdatePrivacy} 
+                        <CookingPostCard
+                          post={post}
+                          isMyPost={true}
+                          onDelete={handleDeletePost}
+                          onUpdatePrivacy={handleUpdatePrivacy}
                         />
                       </motion.div>
                     ))

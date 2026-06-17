@@ -16,6 +16,7 @@ const buildUserData = (user) => ({
     scanLimit: user.scanLimit,
     lastScanDate: user.lastScanDate,
     premiumExpiresAt: user.premiumExpiresAt,
+    dietPreferences: user.dietPreferences,
     isPremium: user.role === 'premium' && (!user.premiumExpiresAt || new Date(user.premiumExpiresAt) > new Date())
 });
 
@@ -39,8 +40,8 @@ const applyDailyScanReset = async (user) => {
 
     if (user.role !== 'premium' && user.lastScanDate !== todayStr) {
         await user.update({
-          scanLimit: 3,
-          lastScanDate: todayStr
+            scanLimit: 3,
+            lastScanDate: todayStr
         });
 
         return user.reload();
@@ -154,7 +155,7 @@ class AuthController extends BaseController {
             return this.sendError(res, 500, error.message);
         }
     };
-    
+
     upgradePremium = async (req, res) => {
         try {
             const user = await User.findByPk(req.user.id);
@@ -253,6 +254,29 @@ class AuthController extends BaseController {
 
             await user.destroy();
             return this.sendSuccess(res, 200, "Pengguna berhasil dihapus");
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    saveDietPreferences = async (req, res) => {
+        try {
+            const { userId, selectedPreferences, customPreferences } = req.body;
+
+            const user = await User.findByPk(userId);
+
+            if (!user) {
+                return this.sendError(res, 404, "Pengguna tidak ditemukan");
+            }
+
+            await user.update({
+                dietPreferences: {
+                    selectedPreferences,
+                    customPreferences
+                }
+            });
+
+            return this.sendSuccess(res, 200, "Preferensi diet berhasil disimpan");
         } catch (error) {
             return this.sendError(res, 500, error.message);
         }

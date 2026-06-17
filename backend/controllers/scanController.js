@@ -6,13 +6,16 @@ const { Scan } = db;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 class ScanController extends BaseController {
-  
+
   // 1. Jalur Proses Unggah & Pengurangan Limit Scan AI
   processImageScan = async (req, res) => {
     try {
       const userId = req.user.id;
       const userInstance = req.userInstance; // Diambil langsung dari hasil olahan middleware
-      const { image } = req.body;
+      const {
+        image,
+        preferences = []
+      } = req.body;
 
       if (!image) {
         return this.sendError(res, 400, "Gambar masakan wajib dikirimkan.");
@@ -20,7 +23,26 @@ class ScanController extends BaseController {
 
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Analisis foto bahan makanan ini.
+      let dietPrompt = "";
+
+      if (preferences.length > 0) {
+        dietPrompt = `
+PREFERENSI DIET USER:
+${preferences.join(", ")}
+
+ATURAN:
+- Jika vegan => jangan gunakan bahan hewani
+- Jika vegetarian => jangan gunakan daging
+- Jika halal => jangan gunakan babi atau alkohol
+- Jika gluten-free => hindari tepung terigu
+- Jika low-sugar => minimalkan gula
+- Jika nut-free => jangan gunakan kacang
+
+WAJIB menyesuaikan semua resep dengan preferensi tersebut.
+`;
+      }
+
+      const prompt = `${dietPrompt} Analisis foto bahan makanan ini.
 Kamu WAJIB mengembalikan TEPAT 3 pilihan resep berdasarkan bahan yang terdeteksi.
 Urutan resep harus bervariasi dan mudah dibuat di rumah.
 
@@ -140,7 +162,7 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
       const formattedHistory = scans.map(item => {
         let parsedIngredients = [];
         let parsedRecipes = [];
-        
+
         try {
           parsedIngredients = JSON.parse(item.ingredients);
           parsedRecipes = JSON.parse(item.rawRecipes);
@@ -175,7 +197,7 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
     try {
       const { id } = req.params;
       const deleted = await Scan.destroy({ where: { id: id, userId: req.user.id } });
-      
+
       if (!deleted) {
         return this.sendError(res, 404, "Riwayat scan tidak ditemukan.");
       }

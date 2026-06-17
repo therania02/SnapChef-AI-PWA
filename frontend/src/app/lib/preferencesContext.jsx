@@ -1,42 +1,89 @@
-import React, { createContext, useContext, useState } from "react";
-
-
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect
+} from "react";
 
 const PreferencesContext = createContext(null);
 
 export function PreferencesProvider({ children }) {
-  const [selectedPreferences, setSelectedPreferences] = useState(["halal"]);
+  const [selectedPreferences, setSelectedPreferences] = useState([]);
   const [customPreferences, setCustomPreferencesState] = useState([]);
+
+  useEffect(() => {
+    const user = JSON.parse(
+      localStorage.getItem("user")
+    );
+
+    if (user?.dietPreferences) {
+
+      setSelectedPreferences(
+        user.dietPreferences.selectedPreferences || []
+      );
+
+      setCustomPreferencesState(
+        user.dietPreferences.customPreferences || []
+      );
+
+    } else {
+
+      setSelectedPreferences([]);
+      setCustomPreferencesState([]);
+
+    }
+  }, []);
 
   const setPreferences = (preferences) => {
     setSelectedPreferences(preferences);
+    localStorage.setItem(
+      "selectedPreferences",
+      JSON.stringify(preferences)
+    );
   };
 
   const setCustomPreferences = (preferences) => {
     setCustomPreferencesState(preferences);
+
+    localStorage.setItem(
+      "customPreferences",
+      JSON.stringify(preferences)
+    );
   };
 
   const togglePreference = (id) => {
     setSelectedPreferences((prev) => {
-      // If clicking "no-preference"
+
+      let newPreferences;
+
       if (id === "no-preference") {
-        // If already selected, unselect it
+
         if (prev.includes("no-preference")) {
-          return prev.filter((p) => p !== "no-preference");
+          newPreferences = prev.filter((p) => p !== "no-preference");
+        } else {
+          newPreferences = ["no-preference"];
         }
-        // Otherwise, select only "no-preference" and clear all others
-        return ["no-preference"];
-      }
-      
-      // If clicking any other preference
-      // Remove "no-preference" if it exists, then toggle the clicked preference
-      const withoutNoPreference = prev.filter((p) => p !== "no-preference");
-      
-      if (withoutNoPreference.includes(id)) {
-        return withoutNoPreference.filter((p) => p !== id);
+
       } else {
-        return [...withoutNoPreference, id];
+
+        const withoutNoPreference =
+          prev.filter((p) => p !== "no-preference");
+
+        if (withoutNoPreference.includes(id)) {
+          newPreferences =
+            withoutNoPreference.filter((p) => p !== id);
+        } else {
+          newPreferences =
+            [...withoutNoPreference, id];
+        }
       }
+
+      localStorage.setItem(
+        "selectedPreferences",
+        JSON.stringify(newPreferences)
+      );
+
+      return newPreferences;
     });
   };
 

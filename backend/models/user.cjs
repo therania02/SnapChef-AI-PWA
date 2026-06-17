@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
     role: DataTypes.STRING,
     scanLimit: DataTypes.INTEGER,
     lastScanDate: DataTypes.DATEONLY,
-    premiumExpiresAt: DataTypes.DATE
+    premiumExpiresAt: DataTypes.DATE,
+    dietPreferences: DataTypes.JSON
   }, {
     sequelize,
     modelName: 'User',

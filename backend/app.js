@@ -16,6 +16,8 @@ import messageRoutes from './routes/messageRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { DEFAULT_CHAT_AVATAR } from './controllers/messageController.js';
 import { setupSocket } from './sockets/socketHandler.js';
+import feedbackRoutes from './routes/feedbackRoutes.js';
+import weeklyDigestRoutes from "./routes/weeklyDigestRoutes.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -39,6 +41,8 @@ app.use('/api/comments', commentRoutes);  // 5. Comments
 app.use('/api', scanRoutes);              // 6. Scan and history
 app.use('/api/messages', messageRoutes);  // 7. Messages
 app.use('/api/payment', paymentRoutes);
+app.use('/api/feedback', feedbackRoutes);   // 8. Feedback
+app.use("/api/weekly-digest", weeklyDigestRoutes); // 9. Weekly Digest
 
 const io = new Server(httpServer, {
     cors: {

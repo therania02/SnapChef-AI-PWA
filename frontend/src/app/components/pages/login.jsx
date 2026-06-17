@@ -33,7 +33,16 @@ const Login = () => {
         localStorage.setItem("token", token);
       }
       setUser(actualUser);
-      navigate("/home");
+
+      const hasDietPreference =
+        actualUser?.dietPreferences &&
+        actualUser?.dietPreferences?.selectedPreferences?.length > 0;
+
+      if (!hasDietPreference) {
+        navigate("/dietary-profile");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       setError(err.message || "Login gagal");
     } finally {
@@ -67,7 +76,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-[#E9E4DE] flex items-center justify-center px-4">
       <motion.div

@@ -125,3 +125,71 @@ export const analyzeAndGenerateRecipes = async (imageBase64) => {
     };
   }
 };
+
+export const tweakRecipeWithAI = async (
+  recipe,
+  request
+) => {
+
+  const model =
+    genAI.getGenerativeModel({
+      model: "gemini-2.5-flash"
+    });
+
+  const prompt = `
+Kamu adalah chef profesional.
+
+Berikut resep asli:
+
+${JSON.stringify(recipe)}
+
+Tugas:
+${request}
+
+Kembalikan format JSON:
+
+{
+  "title":"",
+  "ingredients":[
+    "..."
+  ],
+  "steps":[
+    "..."
+  ],
+  "nutrition":{
+    "calories":0,
+    "protein":0,
+    "carbs":0
+  }
+}
+
+Jangan beri markdown.
+Jangan beri penjelasan.
+JSON saja.
+`;
+
+  try {
+
+    const result =
+      await model.generateContent(
+        prompt
+      );
+
+    const text =
+      (await result.response)
+        .text();
+
+    return JSON.parse(
+      text
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim()
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    return null;
+  }
+};

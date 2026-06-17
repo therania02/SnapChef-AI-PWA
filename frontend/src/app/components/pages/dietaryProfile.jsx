@@ -92,16 +92,42 @@ export default function DietaryProfileScreen() {
     toast.success(`Preferensi "${displayText}" dihapus`);
   };
 
-  const handleContinue = () => {
-    toast.success("Preferensi berhasil disimpan");
+  const handleContinue = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
 
-    // Check if we came from account screen (editing preferences)
-    // Otherwise, this is first-time setup after login/register - go to home
-    if (location.state?.from === 'account') {
-      navigate('/account');
-    } else {
-      // First-time setup after login/register - always go to home
-      navigate("/home");
+      await fetch("http://localhost:3000/api/auth/diet-preferences", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          selectedPreferences,
+          customPreferences
+        })
+      });
+
+      // UPDATE USER YANG ADA DI LOCALSTORAGE
+      user.dietPreferences = {
+        selectedPreferences,
+        customPreferences
+      };
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(user)
+      );
+
+      toast.success("Preferensi berhasil disimpan");
+
+      if (location.state?.from === 'account') {
+        navigate('/account');
+      } else {
+        navigate('/home');
+      }
+    } catch (error) {
+      toast.error("Gagal menyimpan preferensi");
     }
   };
 
@@ -137,8 +163,8 @@ export default function DietaryProfileScreen() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => togglePreference(pref.id)}
                 className={`relative p-6 rounded-3xl border-2 transition-all ${isSelected
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-card hover:border-primary/50"
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-card hover:border-primary/50"
                   }`}
               >
                 {/* Check Icon */}

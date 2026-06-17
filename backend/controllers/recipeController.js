@@ -105,12 +105,26 @@ class RecipeController extends BaseController {
 
     saveRecipe = async (req, res) => {
         try {
-            const { title, ingredients, instructions, calories, protein, carbs, prepTime, userId } = req.body;
+            const {
+                title,
+                ingredients,
+                instructions,
+                detectedIngredients,
+                calories,
+                protein,
+                carbs,
+                prepTime,
+                userId
+            } = req.body;
 
             const newRecipe = await Recipe.create({
-                title: title,
-                ingredients: ingredients,
-                instructions: instructions,
+                title,
+                ingredients,
+                instructions,
+
+                detectedIngredients:
+                    detectedIngredients || [],
+
                 calories: calories || 0,
                 protein: protein || 0,
                 carbs: carbs || 0,
