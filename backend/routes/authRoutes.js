@@ -8,7 +8,7 @@ router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/google', authController.googleLogin);
 router.post('/upgrade-premium', authMiddleware, authController.upgradePremium);
-router.put('/diet-preferences', authController.saveDietPreferences);
+router.put('/diet-preferences', authMiddleware, authController.saveDietPreferences);
 
 router.get('/users', authController.getAll);           // READ ALL
 router.get('/users/:id', authController.getById);      // READ ONE

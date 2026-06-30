@@ -119,15 +119,9 @@ export default function ShoppingListScreen() {
 
   const openShopeeApp = (searchQuery = "") => {
     const query = encodeURIComponent(searchQuery);
-    const deepLink = `shopee://search?keyword=${query}`;
     const webLink = `https://shopee.co.id/search?keyword=${query}`;
 
-    window.location.href = deepLink;
-    setTimeout(() => {
-      window.open(webLink, "_blank");
-    }, 1500);
-
-    toast.success(`Membuka Shopee untuk: ${searchQuery || "belanja"} 🛍️`);
+    window.open(webLink, "_blank");
   };
 
   const swipeConfidenceThreshold = 10000;
@@ -221,7 +215,7 @@ export default function ShoppingListScreen() {
                         whileTap={{ scale: 0.9 }}
                         animate={{ x: [0, 3, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
-                        onClick={() => openShopeeApp(item.name)}
+                        onClick={() => openShopeeApp(item.shopeeKeyword || item.ingredientName || item.name)}
                         className="px-3 py-1 bg-[#EE4D2D] hover:bg-[#D73211] text-foreground rounded-full text-xs font-medium transition-colors"
                       >
                         Beli

@@ -12,12 +12,9 @@ export function PreferencesProvider({ children }) {
   const [customPreferences, setCustomPreferencesState] = useState([]);
 
   useEffect(() => {
-    const user = JSON.parse(
-      localStorage.getItem("user")
-    );
+    const user = JSON.parse(localStorage.getItem("user"));
 
     if (user?.dietPreferences) {
-
       setSelectedPreferences(
         user.dietPreferences.selectedPreferences || []
       );
@@ -25,17 +22,15 @@ export function PreferencesProvider({ children }) {
       setCustomPreferencesState(
         user.dietPreferences.customPreferences || []
       );
-
     } else {
-
       setSelectedPreferences([]);
       setCustomPreferencesState([]);
-
     }
   }, []);
 
   const setPreferences = (preferences) => {
     setSelectedPreferences(preferences);
+
     localStorage.setItem(
       "selectedPreferences",
       JSON.stringify(preferences)
@@ -51,21 +46,38 @@ export function PreferencesProvider({ children }) {
     );
   };
 
+  // ✅ dipisahkan dari state handler (FIX UTAMA)
+  const savePreferencesToDB = async (selected, custom) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await fetch("http://localhost:3000/api/auth/diet-preferences", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          selectedPreferences: selected,
+          customPreferences: custom
+        })
+      });
+    } catch (error) {
+      console.error("Failed to save preferences:", error);
+    }
+  };
+
   const togglePreference = (id) => {
     setSelectedPreferences((prev) => {
-
       let newPreferences;
 
       if (id === "no-preference") {
-
         if (prev.includes("no-preference")) {
           newPreferences = prev.filter((p) => p !== "no-preference");
         } else {
           newPreferences = ["no-preference"];
         }
-
       } else {
-
         const withoutNoPreference =
           prev.filter((p) => p !== "no-preference");
 
@@ -73,15 +85,18 @@ export function PreferencesProvider({ children }) {
           newPreferences =
             withoutNoPreference.filter((p) => p !== id);
         } else {
-          newPreferences =
-            [...withoutNoPreference, id];
+          newPreferences = [...withoutNoPreference, id];
         }
       }
 
+      // simpan ke localStorage (tetap sama behavior UI)
       localStorage.setItem(
         "selectedPreferences",
         JSON.stringify(newPreferences)
       );
+
+      // 🔥 FIX: pakai value terbaru customPreferences (bukan stale)
+      savePreferencesToDB(newPreferences, customPreferences);
 
       return newPreferences;
     });
@@ -89,7 +104,13 @@ export function PreferencesProvider({ children }) {
 
   return (
     <PreferencesContext.Provider
-      value={{ selectedPreferences, customPreferences, setPreferences, setCustomPreferences, togglePreference }}
+      value={{
+        selectedPreferences,
+        customPreferences,
+        setPreferences,
+        setCustomPreferences,
+        togglePreference
+      }}
     >
       {children}
     </PreferencesContext.Provider>
@@ -98,8 +119,10 @@ export function PreferencesProvider({ children }) {
 
 export function usePreferences() {
   const context = useContext(PreferencesContext);
+
   if (!context) {
     throw new Error("usePreferences must be used within a PreferencesProvider");
   }
+
   return context;
 }

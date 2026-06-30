@@ -12,9 +12,10 @@ import {
   ShieldCheck,
   MessageCircle,
 } from "lucide-react";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
-
-const faqData = [
+const faqContent = {
+  id: [
   {
     category: "Penggunaan Umum",
     icon: <ChefHat className="h-5 w-5" />,
@@ -69,23 +70,124 @@ const faqData = [
     question: "Bagaimana cara menghubungi customer support?",
     answer: "Anda bisa mengirim feedback melalui menu Akun > Kirim Feedback, atau email ke support@snapchef.ai. Tim kami siap membantu 24/7.",
   },
-];
+  ],
+  en: [
+    {
+      category: "General Use",
+      icon: <ChefHat className="h-5 w-5" />,
+      question: "How do I start using SnapChef AI?",
+      answer: "After signing up, you can start by adding your dietary preferences, then use the scan feature to detect food ingredients. Our AI will generate 3 recipe recommendations based on those ingredients.",
+    },
+    {
+      category: "Scan & AI",
+      icon: <Camera className="h-5 w-5" />,
+      question: "Can I add ingredients manually?",
+      answer: "Yes. After scanning, you can add or remove ingredients manually before the AI generates recipes. Type the ingredient name and tap add.",
+    },
+    {
+      category: "Scan & AI",
+      icon: <Camera className="h-5 w-5" />,
+      question: "How many ingredients can be scanned at once?",
+      answer: "There is no fixed ingredient limit. For best results, make sure the photo is clear and the ingredients are easy to see.",
+    },
+    {
+      category: "Recipes",
+      icon: <BookOpen className="h-5 w-5" />,
+      question: "How do I save favorite recipes?",
+      answer: "On the recipe detail page, tap the bookmark icon in the top right. The recipe will be saved to your Cookbook for easy access later.",
+    },
+    {
+      category: "Recipes",
+      icon: <BookOpen className="h-5 w-5" />,
+      question: "Do recipes consider my dietary preferences?",
+      answer: "Yes. Generated recipes automatically adapt to the dietary preferences you select, such as vegetarian, halal, gluten-free, and others.",
+    },
+    {
+      category: "Premium",
+      icon: <CreditCard className="h-5 w-5" />,
+      question: "What is the difference between free and premium accounts?",
+      answer: "Free accounts get 3 scans per day, can save 10 recipes, and rename once. Premium includes unlimited scans, unlimited saved recipes, unlimited renames, premium recipes, and priority customer support.",
+    },
+    {
+      category: "Premium",
+      icon: <CreditCard className="h-5 w-5" />,
+      question: "How do I upgrade to Premium?",
+      answer: "Open Account > Upgrade, choose the monthly or yearly plan, then follow the payment process.",
+    },
+    {
+      category: "Privacy & Security",
+      icon: <ShieldCheck className="h-5 w-5" />,
+      question: "Is my data safe?",
+      answer: "Yes. We use encryption to protect your data. Photos and personal data are not shared with third parties without your permission.",
+    },
+    {
+      category: "Support",
+      icon: <MessageCircle className="h-5 w-5" />,
+      question: "How do I contact customer support?",
+      answer: "You can send feedback from Account > Send Feedback, or email support@snapchef.ai. Our team is ready to help 24/7.",
+    },
+  ],
+};
+
+const labels = {
+  id: {
+    title: "Pusat Bantuan",
+    searchPlaceholder: "Cari pertanyaan...",
+    categories: "Kategori Bantuan",
+    noResults: "Tidak ada hasil ditemukan",
+    tryDifferent: "Coba kata kunci lain atau hubungi support",
+    cantFind: "Tidak menemukan jawaban?",
+    supportDesc: "Tim support kami siap membantu Anda 24/7",
+    sendFeedback: "Kirim Feedback",
+  },
+  en: {
+    title: "Help Center",
+    searchPlaceholder: "Search questions...",
+    categories: "Help Categories",
+    noResults: "No results found",
+    tryDifferent: "Try different keywords or contact support",
+    cantFind: "Can't find an answer?",
+    supportDesc: "Our support team is ready to help you 24/7",
+    sendFeedback: "Send Feedback",
+  },
+};
 
 export default function HelpCenterScreen() {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const faqData = faqContent[language] || faqContent.en;
+  const text = labels[language] || labels.en;
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const categories = Array.from(new Set(faqData.map((item) => item.category)));
 
-  const filteredFAQ = faqData.filter(
-    (item) =>
-      item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.answer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredFAQ = faqData.filter((item) => {
+    const query = searchQuery.trim().toLowerCase();
+    const matchesCategory = !selectedCategory || item.category === selectedCategory;
+    const matchesSearch =
+      !query ||
+      item.question.toLowerCase().includes(query) ||
+      item.answer.toLowerCase().includes(query) ||
+      item.category.toLowerCase().includes(query);
+
+    return matchesCategory && matchesSearch;
+  });
 
   const toggleExpand = (index) => {
     setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    setExpandedIndex(null);
+  };
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(selectedCategory === category ? null : category);
+    setSearchQuery("");
+    setExpandedIndex(null);
   };
 
   return (
@@ -102,7 +204,7 @@ export default function HelpCenterScreen() {
               <ArrowLeft className="h-5 w-5" />
             </motion.button>
             <h1 className="text-xl font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
-              Pusat Bantuan
+              {text.title}
             </h1>
           </div>
 
@@ -111,9 +213,9 @@ export default function HelpCenterScreen() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary-foreground/60" />
             <input
               type="text"
-              placeholder="Cari pertanyaan..."
+              placeholder={text.searchPlaceholder}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-card/20 border border-white/30 text-sm text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-white/50"
             />
           </div>
@@ -124,7 +226,7 @@ export default function HelpCenterScreen() {
       <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4 space-y-6">{/* Changed from -mt-4 to mt-4 */}
         {/* Quick Links */}
         <div className="bg-card rounded-3xl shadow-lg p-6 space-y-3">
-          <h3 className="font-medium mb-4">Kategori Bantuan</h3>
+          <h3 className="font-medium mb-4">{text.categories}</h3>
           <div className="grid grid-cols-2 gap-3">
             {categories.map((category) => {
               const icon = faqData.find((item) => item.category === category)?.icon;
@@ -132,8 +234,12 @@ export default function HelpCenterScreen() {
                 <motion.button
                   key={category}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setSearchQuery(category)}
-                  className="flex items-center gap-2 p-3 bg-primary/10 text-primary rounded-2xl hover:bg-primary/20 transition-colors"
+                  onClick={() => handleCategoryClick(category)}
+                  className={`flex items-center gap-2 p-3 rounded-2xl transition-colors ${
+                    selectedCategory === category
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-primary/10 text-primary hover:bg-primary/20"
+                  }`}
                 >
                   {icon}
                   <span className="text-sm font-medium">{category}</span>
@@ -195,9 +301,9 @@ export default function HelpCenterScreen() {
         {filteredFAQ.length === 0 && (
           <div className="bg-card rounded-3xl shadow-lg p-12 text-center">
             <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">Tidak ada hasil ditemukan</p>
+            <p className="text-muted-foreground">{text.noResults}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Coba kata kunci lain atau hubungi support
+              {text.tryDifferent}
             </p>
           </div>
         )}
@@ -205,16 +311,16 @@ export default function HelpCenterScreen() {
         {/* Contact Support */}
         <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-6 text-center space-y-4">
           <MessageCircle className="h-12 w-12 mx-auto text-primary" />
-          <h3 className="font-medium">Tidak menemukan jawaban?</h3>
+          <h3 className="font-medium">{text.cantFind}</h3>
           <p className="text-sm text-muted-foreground">
-            Tim support kami siap membantu Anda 24/7
+            {text.supportDesc}
           </p>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/account")}
             className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-medium hover:bg-primary/90 transition-colors"
           >
-            Kirim Feedback
+            {text.sendFeedback}
           </motion.button>
         </div>
       </div>

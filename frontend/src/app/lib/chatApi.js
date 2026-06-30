@@ -23,9 +23,9 @@ export const getCurrentUserId = (user) => {
 };
 
 export const fetchChatSummaries = async (token, userId) => {
-    console.log('TOKEN SUMMARY:', token);
+    // console.log('TOKEN SUMMARY:', token);
     const headers = jsonHeaders(token);
-    console.log("HEADERS:", headers);
+    // console.log("HEADERS:", headers);
     const res = await fetch(
         `${API_URL}/chats?userId=${userId}`,
         { headers }

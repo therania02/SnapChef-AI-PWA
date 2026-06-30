@@ -27,8 +27,24 @@ class RecipeController extends BaseController {
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             const prefText = preferences
-                ? `PENTING: Sesuaikan resep dengan preferensi pengguna berikut: ${preferences}.`
-                : `PENTING: Berikan resep rumahan yang praktis dan umum.`;
+                ? `PREFERENSI DIET PENGGUNA: ${preferences}
+                ATURAN WAJIB:
+                - Jika vegetarian: DILARANG menyertakan daging, ikan, atau produk hewani.
+                - Jika vegan: DILARANG menyertakan daging, ikan, produk hewani, susu, telur, atau madu.
+                - Jika bebas gluten: DILARANG menyertakan gandum, barley, rye, atau produk yang mengandung gluten.
+                - Jika bebas laktosa: DILARANG menyertakan susu, keju, yogurt, atau produk olahan susu.
+                - Jika bebas kacang: DILARANG menyertakan kacang tanah, almond, kenari, atau jenis kacang lainnya.
+                - Jika bebas seafood: DILARANG menyertakan ikan, udang, kepiting, kerang, atau produk laut lainnya.
+                - Jika bebas telur: DILARANG menyertakan telur ayam, telur bebek, atau produk yang mengandung telur.
+                - Jika bebas kedelai: DILARANG menyertakan tahu, tempe, kecap, atau produk yang mengandung kedelai.
+                - Jika bebas gula: DILARANG menyertakan gula pasir, sirup, madu, atau pemanis buatan.
+                - Jika bebas garam: DILARANG menyertakan garam, saus, atau produk yang mengandung natrium tinggi.
+                - Jika bebas MSG: DILARANG menyertakan monosodium glutamat atau produk yang mengandung MSG.
+                - Jika bebas alkohol: DILARANG menyertakan minuman beralkohol, saus, atau produk yang mengandung alkohol.
+                - Jika bebas susu: DILARANG menyertakan susu sapi, keju, yogurt, atau produk olahan susu.
+                - Jika halal: WAJIB menyertakan bahan-bahan yang bersertifikat halal dan menghindari bahan haram.
+                - Jangan pernah menyertakan bahan yang dilarang sesuai preferensi diet pengguna.`
+                : "";
 
             const prompt = `Analisis foto bahan makanan ini.
             ${prefText}

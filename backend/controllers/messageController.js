@@ -212,7 +212,20 @@ class MessageController extends BaseController {
             });
 
             const io = req.app.get('io');
-            if (io) io.to(`chat:${chatId}`).emit('message:new', message);
+            const pIds = getDirectParticipantIds(chatId);
+            const receiverId = pIds.find(id => id !== userId);
+            if (io) {
+                // chat room (ChatDetail.jsx)
+                io.to(`chat:${chatId}`).emit('message:new', message);
+
+                // chat list + unread badge (Message.jsx)
+                if (receiverId) {
+                    io.to(`user:${receiverId}`).emit('message:new', message);
+                }
+
+                // optional: update sender juga biar realtime
+                io.to(`user:${userId}`).emit('message:new', message);
+            }
 
             return this.sendSuccess(res, 201, 'Pesan berhasil dikirim', message);
         } catch (error) {

@@ -44,6 +44,7 @@ export default function MessageScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [onlineUserIds, setOnlineUserIds] = useState([]);
+    const [unreadChats, setUnreadChats] = useState({});
     const [error, setError] = useState(null);
 
     const { user } = useUser();
@@ -85,35 +86,84 @@ export default function MessageScreen() {
                 setLoading(false);
             });
 
-        // 3. Konfigurasi Socket IO dengan parameter yang valid
-        if (socket) {
-            socket.on('online:list', (users) => {
-                if (isMounted) setOnlineUserIds(users);
+        const handleOnlineList = (ids) => {
+            setOnlineUserIds(ids.map(Number));
+        };
+
+        const handleOnlineJoin = (id) => {
+            setOnlineUserIds((prev) => [
+                ...new Set([...prev, Number(id)])
+            ]);
+        };
+
+        const handleOnlineLeave = (id) => {
+            setOnlineUserIds((prev) =>
+                prev.filter((uid) => uid !== Number(id))
+            );
+        };
+
+        socket.on('online:list', handleOnlineList);
+        socket.on('online:join', handleOnlineJoin);
+        socket.on('online:leave', handleOnlineLeave);
+
+        const handleNewMessage = (msg) => {
+            if (!msg?.chatId) return;
+            setSummaries((prev) => {
+                const existing = prev.find(
+                    (c) => c.chatId === msg.chatId
+                );
+
+                if (!existing) {
+                    return [
+                        {
+                            chatId: msg.chatId,
+                            opponentId: msg.senderId,
+                            opponentName: msg.senderName,
+                            text: msg.text,
+                            lastMessageAt: msg.createdAt,
+                        },
+                        ...prev,
+                    ];
+                }
+
+                const updated = {
+                    ...existing,
+                    text: msg.text,
+                    lastMessageAt: msg.createdAt,
+                };
+
+                return [
+                    updated,
+                    ...prev.filter((c) => c.chatId !== msg.chatId),
+                ];
             });
-            socket.on('online:join', (id) => {
-                if (isMounted) setOnlineUserIds((prev) => [...new Set([...prev, id])]);
-            });
-            socket.on('online:leave', (id) => {
-                if (isMounted) setOnlineUserIds((prev) => prev.filter((uid) => uid !== id));
-            });
-        }
+
+            // unread badge
+            if (msg.senderId !== userId) {
+                setUnreadChats((prev) => ({
+                    ...prev,
+                    [msg.chatId]: (prev[msg.chatId] || 0) + 1,
+                }));
+            }
+        };
+
+        socket.on('message:new', handleNewMessage);
 
         return () => {
             isMounted = false;
-            if (socket) {
-                socket.off('online:list');
-                socket.off('online:join');
-                socket.off('online:leave');
-            }
+            socket.off('online:list', handleOnlineList);
+            socket.off('online:join', handleOnlineJoin);
+            socket.off('online:leave', handleOnlineLeave);
+            socket.off('message:new', handleNewMessage);
         };
-    }, [user]); // Memicu ulang fetch begitu objek user dari context berhasil di-load
+    }, [userId]);
 
     // Fungsi klik teman untuk memulai private chat dinamis
     const handleFriendClick = useCallback((friend) => {
         if (!userId || !friend?.id) return;
         // Gabungkan ID terkecil dan terbesar agar format konsisten, misal "1-2"
         const chatId = userId < friend.id ? `${userId}-${friend.id}` : `${friend.id}-${userId}`;
-        navigate(`/messages/${chatId}`);
+        navigate(`/messages/${chatId}`, { state: { friend } });
     }, [userId, navigate]);
 
     // Filter Pencarian Chat
@@ -212,7 +262,23 @@ export default function MessageScreen() {
                                 <motion.div
                                     key={summary.chatId}
                                     whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate(`/messages/${summary.chatId}`)}
+                                    onClick={() => {
+                                        setUnreadChats((prev) => {
+                                            const next = { ...prev };
+                                            delete next[summary.chatId];
+                                            return next;
+                                        });
+
+                                        navigate(`/messages/${summary.chatId}`, {
+                                            state: {
+                                                friend: {
+                                                    id: summary.opponentId,
+                                                    name: opponent.name,
+                                                    avatar: opponent.avatar
+                                                }
+                                            }
+                                        });
+                                    }}
                                     className="bg-card rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 cursor-pointer hover:bg-muted/50 transition-colors"
                                 >
                                     <div className="relative flex-shrink-0">
@@ -221,13 +287,25 @@ export default function MessageScreen() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">
-                                            <h3 className="font-semibold text-foreground text-base truncate">{opponent.name}</h3>
-                                            <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
-                                                {formatTime(summary.lastMessageAt || summary.createdAt)}
-                                            </span>
+                                            <h3 className="font-semibold text-foreground text-base truncate">
+                                                {opponent.name}
+                                            </h3>
+
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className="text-xs text-muted-foreground">
+                                                    {formatTime(summary.lastMessageAt || summary.createdAt)}
+                                                </span>
+
+                                                {unreadChats[summary.chatId] > 0 && (
+                                                    <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">
+                                                        {unreadChats[summary.chatId]}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
+
                                         <p className="text-sm text-muted-foreground truncate">
-                                            {summary.text || summary.lastMessage || 'Belum ada pesan'}
+                                            {summary.text || 'Belum ada pesan'}
                                         </p>
                                     </div>
                                 </motion.div>

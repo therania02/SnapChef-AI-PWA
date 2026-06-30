@@ -10,6 +10,7 @@ router.post('/scan', verifyToken, checkAndResetScanLimit, scanController.process
 
 // Route untuk Operasi Pengelolaan Riwayat Database
 router.get('/history', verifyToken, scanController.getScanHistory);
+router.get('/stats', verifyToken, scanController.getStats);
 router.delete('/history/:id', verifyToken, scanController.deleteScan);
 router.delete('/history', verifyToken, scanController.deleteAllScans);
 

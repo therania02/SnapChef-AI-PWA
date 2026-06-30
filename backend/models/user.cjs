@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Post, { foreignKey: 'userId' });
       User.hasMany(models.Comment, { foreignKey: 'userId' });
       User.hasMany(models.Message, { foreignKey: 'senderId' });
+      User.hasMany(models.CookingHistory, { foreignKey: 'userId' });
     }
   }
   User.init({
@@ -24,6 +25,11 @@ module.exports = (sequelize, DataTypes) => {
     scanLimit: DataTypes.INTEGER,
     lastScanDate: DataTypes.DATEONLY,
     premiumExpiresAt: DataTypes.DATE,
+    cookingCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
     dietPreferences: DataTypes.JSON
   }, {
     sequelize,

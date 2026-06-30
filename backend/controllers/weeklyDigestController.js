@@ -3,7 +3,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const db = require("../models/index.cjs");
 
-const { Scan, Recipe, Post } = db;
+const { Scan, Recipe, Post, CookingHistory } = db;
 
 class WeeklyDigestController {
     getStats = async (req, res) => {
@@ -14,7 +14,8 @@ class WeeklyDigestController {
             const now = new Date();
 
             const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - 7);
+            startOfWeek.setHours(0, 0, 0, 0);
+            startOfWeek.setDate(now.getDate() - 6);
 
             const startOfLastWeek = new Date(now);
             startOfLastWeek.setDate(now.getDate() - 14);
@@ -40,19 +41,104 @@ class WeeklyDigestController {
                 }
             });
 
-            const recipesThisWeek = await Recipe.count({
+            const weeklyScans = await Scan.findAll({
                 where: {
-                    userId
+                    userId,
+                    createdAt: {
+                        [db.Sequelize.Op.gte]: startOfWeek
+                    }
                 }
             });
 
-            const cookingsThisWeek = await Post.count({
+            let recipesThisWeek = 0;
+
+            weeklyScans.forEach(scan => {
+
+                try {
+
+                    const recipes =
+                        JSON.parse(
+                            scan.rawRecipes || "[]"
+                        );
+
+                    recipesThisWeek += recipes.length;
+
+                } catch {}
+
+            });
+
+            const cookingsThisWeek =
+            await CookingHistory.count({
                 where: {
-                    userId
+                    userId,
+                    createdAt: {
+                        [db.Sequelize.Op.gte]: startOfWeek
+                    }
                 }
             });
 
-            const savedRecipes = recipesThisWeek;
+            const cookingHistory =
+            await CookingHistory.findAll({
+                where: {
+                    userId,
+                    createdAt: {
+                        [db.Sequelize.Op.gte]: startOfWeek
+                    }
+                }
+            });
+
+            const ingredientCounter = {};
+            cookingHistory.forEach(item => {
+                const ingredients =
+                    item.ingredients || [];
+
+                ingredients.forEach(ingredient => {
+                    const name =
+                        ingredient.name
+                            ?.toLowerCase()
+                            ?.trim();
+
+                    if (!name) return;
+
+                    ingredientCounter[name] =
+                        (ingredientCounter[name] || 0) + 1;
+
+                });
+
+            });
+
+            const favoriteIngredient =
+            Object.entries(
+                ingredientCounter
+            )
+            .sort(
+                (a,b) => b[1] - a[1]
+            )[0];
+
+            const savedRecipes = await Recipe.count({
+                where: {
+                    userId,
+                    createdAt: {
+                        [db.Sequelize.Op.gte]: startOfWeek
+                    }
+                }
+            });
+
+            const achievements = [];
+
+            if(cookingsThisWeek >= 5) {
+                achievements.push({
+                    icon: "📚",
+                    title: "Kolektor Resep"
+                });
+            }
+
+            if(recipesThisWeek >= 50) {
+                achievements.push({
+                    icon: "🤖",
+                    title: "AI Explorer"
+                })
+            }
 
             const scanChange =
                 scansLastWeek === 0
@@ -68,7 +154,9 @@ class WeeklyDigestController {
                 recipes: recipesThisWeek,
                 cookings: cookingsThisWeek,
                 savedRecipes,
-                scanChange
+                scanChange,
+                favoriteIngredient: favoriteIngredient ? { name: favoriteIngredient[0], count: favoriteIngredient[1] } : null,
+                achievements
             });
 
         } catch (error) {

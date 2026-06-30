@@ -261,7 +261,10 @@ class AuthController extends BaseController {
 
     saveDietPreferences = async (req, res) => {
         try {
-            const { userId, selectedPreferences, customPreferences } = req.body;
+            console.log("REQ.USER =", req.user);
+            console.log("REQ.BODY =", req.body);
+            const userId = req.user.id;
+            const { selectedPreferences, customPreferences } = req.body;
 
             const user = await User.findByPk(userId);
 
@@ -276,7 +279,12 @@ class AuthController extends BaseController {
                 }
             });
 
-            return this.sendSuccess(res, 200, "Preferensi diet berhasil disimpan");
+            const userData = buildUserData(user);
+            const token = jwt.sign(userData, process.env.JWT_SECRET || 'rahasia_snapchef_2026', {
+                expiresIn: '7d'
+            });
+
+            return this.sendSuccess(res, 200, "Preferensi diet berhasil disimpan", { user: userData, token });
         } catch (error) {
             return this.sendError(res, 500, error.message);
         }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Send, Image as ImageIcon, Smile, Search, X } from 'lucide-react';
 import { fetchChatMessages, getCurrentUserId, postChatMessage, uploadImage } from '../../lib/chatApi';
 import { getChatSocket } from '../../lib/chatSocket';
@@ -48,6 +48,8 @@ export default function ChatDetailScreen() {
     const { user } = useUser();
     const { chatId } = useParams();
     const navigate   = useNavigate();
+    const location = useLocation();
+    const friend = location.state?.friend || null;
 
     const [messages,     setMessages]     = useState([]);
     const [loading,      setLoading]      = useState(true);
@@ -88,9 +90,8 @@ export default function ChatDetailScreen() {
         if (!chatId || chatId === GROUP_CHAT_ID || chatId.startsWith('group-')) {
             return { name: 'Grup Masak Bareng', avatar: GROUP_AVATAR, isGroup: true, opponentId: null };
         }
-        const name = ID_MAPPING[opponentId] || 'Teman Masak';
-        return { name, avatar: avatarByName(name), isGroup: false, opponentId };
-    }, [chatId, opponentId]);
+        return { name: friend?.name || ID_MAPPING[opponentId] || 'Teman Masak', avatar: friend?.avatar || avatarByName(friend?.name ||  ID_MAPPING[opponentId]) || DEFAULT_AVATAR, isGroup: false, opponentId: friend?.id || opponentId };
+    }, [chatId, opponentId, friend]);
 
     const isOnline = useMemo(() => {
         if (!chatMeta.opponentId) return false;
@@ -139,9 +140,30 @@ export default function ChatDetailScreen() {
             });
         });
 
-        socket.on('online:list', (ids) => { setOnlineUserIds(ids.map(Number)); });
+        socket.on('online:list', (ids) => { setOnlineUserIds((prev) => { const merged = new Set([...prev, ...ids.map(Number)]); return [...merged]; }); });
         socket.on('online:join', (id) => { setOnlineUserIds((prev) => [...new Set([...prev, Number(id)])]); });
         socket.on('online:leave', (id) => { setOnlineUserIds((prev) => prev.filter((uid) => uid !== Number(id))); });
+        socket.on('connect', () => {
+            socket.emit('online:request_list');
+
+            if (chatId) {
+                socket.emit('chat:join', { chatId });
+            }
+        });
+
+        const handleConnect = () => {
+            socket.emit('online:request_list');
+
+            if (chatId) {
+                socket.emit('chat:join', { chatId });
+            }
+        };
+
+        socket.on('connect', handleConnect);
+
+        return () => {
+            socket.off('connect', handleConnect);
+        };
 
         return () => {
             socket.emit('chat:leave', { chatId });

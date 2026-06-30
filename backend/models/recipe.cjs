@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
 
     detectedIngredients: {
       type: DataTypes.JSON,
-      allowNull: true,
+      allowNull: false,
       defaultValue: []
     },
     image_url: DataTypes.STRING,
@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: DataTypes.INTEGER,
     rating: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       defaultValue: 0
     }
   }, {

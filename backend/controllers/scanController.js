@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import BaseController from './baseController.js';
 import db from '../models/index.cjs';
 
-const { Scan } = db;
+const { Recipe, Scan, User } = db;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 class ScanController extends BaseController {
@@ -213,6 +213,35 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
       await Scan.destroy({ where: { userId: req.user.id } });
       return this.sendSuccess(res, 200, "Semua riwayat scan berhasil dibersihkan");
     } catch (error) {
+      return this.sendError(res, 500, error.message);
+    }
+  };
+
+  getStats = async (req, res) => {
+    try {
+      const totalScans = await Scan.count({
+        where: {
+          userId: req.user.id
+        }
+      });
+      
+      const totalRecipes = await Recipe.count({
+        where: {
+          userId: req.user.id
+        }
+      });
+
+      const user = await User.findByPk(req.user.id);;
+
+      return this.sendSuccess(res, 200, "Statistik berhasil diambil",
+        {
+          scan: totalScans,
+          recipe_generated: totalRecipes,
+          start_cooking: user.cookingCount || 0
+        }
+      );
+    } catch (error) {
+      console.error(error);
       return this.sendError(res, 500, error.message);
     }
   };

@@ -29,6 +29,8 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
   const weekRange =
     getWeekRange();
 
+  const [ topIngredients, setTopIngredients ] = useState([]);
+  const [ achievements, setAchievements ] = useState([]);
   const [stats, setStats] = useState({
     scans: { value: 0, change: 0, percentage: 0 },
     recipes: { value: 0, change: 0, percentage: 0 },
@@ -75,6 +77,25 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
           }
         });
 
+        if (data.favoriteIngredient) {
+          setTopIngredients([
+            {
+              name: data.favoriteIngredient.name,
+              count: data.favoriteIngredient.count,
+              emoji: "🍽️"
+            }
+          ]);
+
+        } else {
+
+          setTopIngredients([]);
+
+        }
+
+        setAchievements(
+          data.achievements || []
+        );
+
       } catch (err) {
         console.error(err);
       }
@@ -85,20 +106,6 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
     }
 
   }, [isOpen]);
-
-  const topIngredients = [
-    { name: "Ayam", count: 8, emoji: "🍗" },
-    { name: "Tomat", count: 6, emoji: "🍅" },
-    { name: "Bawang", count: 5, emoji: "🧅" },
-    { name: "Cabai", count: 4, emoji: "🌶️" },
-    { name: "Brokoli", count: 3, emoji: "🥦" },
-  ];
-
-  const achievements = [
-    { icon: "⭐", title: "Explorer", description: "Coba 10+ resep baru" },
-    { icon: "👨‍🍳", title: "Master Chef", description: "Selesaikan 5+ resep" },
-    { icon: "🎯", title: "Ingredient Pro", description: "Scan 15+ bahan berbeda" },
-  ];
 
   return (
     <AnimatePresence>
@@ -179,27 +186,42 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                     Bahan Paling Sering Digunakan
                   </h3>
                   <div className="space-y-2">
-                    {topIngredients.map((ingredient, index) => (
-                      <div
-                        key={ingredient.name}
-                        className="flex items-center justify-between p-3 bg-muted/50 rounded-2xl"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{ingredient.emoji}</span>
-                          <div>
-                            <p className="font-medium text-foreground">{ingredient.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Digunakan {ingredient.count}x
-                            </p>
+                    {topIngredients.length > 0 ? (
+                      topIngredients.map((ingredient, index) => (
+                        <div
+                          key={ingredient.name}
+                          className="flex items-center justify-between p-3 bg-muted/50 rounded-2xl"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">
+                              {ingredient.emoji}
+                            </span>
+
+                            <div>
+                              <p className="font-medium">
+                                {ingredient.name}
+                              </p>
+
+                              <p className="text-xs text-muted-foreground">
+                                Digunakan {ingredient.count}x
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right">
+
                           <span className="text-xs font-medium text-primary">
                             #{index + 1}
                           </span>
                         </div>
+
+                      ))
+
+                    ) : (
+
+                      <div className="text-center text-muted-foreground py-4">
+                        Belum ada riwayat memasak minggu ini
                       </div>
-                    ))}
+
+                    )}
                   </div>
                 </div>
 
@@ -210,20 +232,32 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                     Pencapaian Minggu Ini
                   </h3>
                   <div className="space-y-2">
-                    {achievements.map((achievement) => (
-                      <div
-                        key={achievement.title}
-                        className="flex items-center gap-3 p-3 bg-primary/10 rounded-2xl"
-                      >
-                        <span className="text-3xl">{achievement.icon}</span>
-                        <div>
-                          <p className="font-medium text-foreground">{achievement.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {achievement.description}
-                          </p>
+                    {achievements.length > 0 ? (
+                      achievements.map((achievement) => (
+                        <div
+                          key={achievement.title}
+                          className="flex items-center gap-3 p-3 bg-primary/10 rounded-2xl"
+                        >
+                          <span className="text-3xl">
+                            {achievement.icon}
+                          </span>
+
+                          <div>
+                            <p className="font-medium">
+                              {achievement.title}
+                            </p>
+                          </div>
                         </div>
+
+                      ))
+
+                    ) : (
+
+                      <div className="text-center text-muted-foreground py-4">
+                        Belum ada pencapaian minggu ini
                       </div>
-                    ))}
+
+                    )}
                   </div>
                 </div>
 

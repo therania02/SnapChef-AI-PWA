@@ -384,13 +384,46 @@ export default function RecipeDetailScreen() {
     }
   };
 
+  const handleStartCooking = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await fetch(
+        "http://localhost:3000/api/cooking/start",
+        {
+          method: "POST",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            recipeName: recipe.title,
+            ingredients: recipe.ingredients
+          })
+        }
+      );
+
+    } catch (error) {
+      console.error(error);
+    }
+
+    navigate(`/cooking/${recipe.id}`, {
+      state: {
+        ingredientSubstitutions,
+        recipeData: recipe
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Sticky Header Buttons */}
       <div className="sticky top-0 left-0 right-0 px-6 py-6 z-50 flex justify-between items-center">
         <button
           onClick={() => navigate("/cookbook")}
-          className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-foreground shadow-lg"
+          className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-white shadow-lg"
         >
           <ArrowLeft className="h-6 w-6" />
         </button>
@@ -398,14 +431,14 @@ export default function RecipeDetailScreen() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={handleShare}
-            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-foreground shadow-lg"
+            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-white shadow-lg"
           >
             <Share2 className="h-6 w-6" />
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={handleSave}
-            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-foreground shadow-lg"
+            className="p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/60 transition-colors text-white shadow-lg"
           >
             <Heart className={`h-6 w-6 ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
           </motion.button>
@@ -420,9 +453,9 @@ export default function RecipeDetailScreen() {
           <div className="flex flex-wrap gap-2 mb-2">
             {recipe.isHalal && <Badge className="bg-accent text-accent-foreground shadow-lg">Halal</Badge>}
             {recipe.isVegetarian && <Badge className="bg-primary text-primary-foreground shadow-lg">Vegetarian</Badge>}
-            <Badge className="bg-black/50 text-foreground backdrop-blur-sm shadow-lg">{recipe.type}</Badge>
+            <Badge className="bg-black/50 text-white backdrop-blur-sm shadow-lg">{recipe.type}</Badge>
           </div>
-          <h1 className="text-foreground text-3xl drop-shadow-lg" style={{ fontFamily: 'var(--font-family-display)' }}>
+          <h1 className="text-white text-3xl drop-shadow-lg" style={{ fontFamily: 'var(--font-family-display)' }}>
             {recipe.title}
           </h1>
         </div>
@@ -736,7 +769,7 @@ export default function RecipeDetailScreen() {
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-6">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0">
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button size="lg" className="w-full rounded-2xl" onClick={() => navigate(`/cooking/${recipe.id}`, { state: { ingredientSubstitutions, recipeData: recipe } })}>
+            <Button size="lg" className="w-full rounded-2xl" onClick={handleStartCooking}>
               Mulai Memasak
             </Button>
           </motion.div>

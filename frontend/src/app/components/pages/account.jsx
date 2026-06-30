@@ -1,6 +1,7 @@
+import { API_BASE_URL } from '../../../api/config.js';
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Crown,
   Moon,
@@ -50,8 +51,38 @@ export default function AccountScreen() {
   const [editedName, setEditedName] = useState(currentName);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [stats, setStats] = useState({ scan: 0, recipe_generated: 0, start_cooking: 0 });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    fetch(`http://localhost:3000/api/stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((result) => {
+        if (result.success) {
+          setStats({
+            scan: result.data.scan || 0,
+            recipe_generated: result.data.recipe_generated || 0,
+            start_cooking: result.data.start_cooking || 0,
+          });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Gagal mengambil statistik. Silakan coba lagi.");
+      });
+  }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
     toast.success("Berhasil keluar");
     setUser(null);
     navigate("/login");
@@ -248,15 +279,15 @@ export default function AccountScreen() {
           <h3 className="font-medium mb-4">Statistik Anda</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-medium text-primary">12</div>
+              <div className="text-2xl font-medium text-primary">{stats.scan}</div>
               <div className="text-xs text-muted-foreground">Scan</div>
             </div>
             <div>
-              <div className="text-2xl font-medium text-primary">8</div>
+              <div className="text-2xl font-medium text-primary">{stats.recipe_generated}</div>
               <div className="text-xs text-muted-foreground">Resep</div>
             </div>
             <div>
-              <div className="text-2xl font-medium text-primary">5</div>
+              <div className="text-2xl font-medium text-primary">{stats.start_cooking}</div>
               <div className="text-xs text-muted-foreground">Masakan</div>
             </div>
           </div>
@@ -297,7 +328,7 @@ export default function AccountScreen() {
           />
           <MenuItem
             icon={resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            label="Mode Gelap"
+            label={resolvedTheme === "dark" ? "Mode Terang" : "Mode Gelap"}
             action={
               <Switch
                 checked={resolvedTheme === "dark"}
