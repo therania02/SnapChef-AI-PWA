@@ -10,7 +10,8 @@ class IngredientController extends BaseController {
     // C - Create
     create = async (req, res) => {
         try {
-            const { name, amount, unit, userId } = req.body;
+            const { name, amount, unit } = req.body;
+            const userId = req.user.id;
             const newIngredient = await Ingredient.create({ name, amount, unit, userId });
             return this.sendSuccess(res, 201, "Bahan berhasil ditambahkan", newIngredient);
         } catch (error) {
@@ -28,6 +29,7 @@ class IngredientController extends BaseController {
 
             const ingredients = await Ingredient.findAndCountAll({
                 where: {
+                    userId: req.user.id,
                     name: { [Op.like]: `%${search}%` }
                 },
                 limit: limit,
@@ -61,6 +63,10 @@ class IngredientController extends BaseController {
         try {
             const ingredient = await Ingredient.findByPk(req.params.id);
             if (!ingredient) return this.sendError(res, 404, "Bahan tidak ditemukan");
+            
+            if (String(ingredient.userId) != String(req.user.id)) {
+                return this.sendError(res, 403, "Anda tidak memiliki izin untuk mengedit bahan")
+            }
 
             await ingredient.update(req.body);
             return this.sendSuccess(res, 200, "Bahan berhasil diupdate", ingredient);
@@ -74,6 +80,10 @@ class IngredientController extends BaseController {
         try {
             const ingredient = await Ingredient.findByPk(req.params.id);
             if (!ingredient) return this.sendError(res, 404, "Bahan tidak ditemukan");
+
+            if (String(ingredient.userId) != String(req.user.id)) {
+                return this.sendError(res, 403, "Anda tidak memiliki izin untuk menghapus bahan")
+            }
 
             await ingredient.destroy();
             return this.sendSuccess(res, 200, "Bahan berhasil dihapus");

@@ -19,16 +19,29 @@ export default function ShoppingListScreen() {
   
   // Ambil data user dari localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = user.id; // Pastikan ini sesuai dengan key ID di database Anda
+  const userId = user.id;
+  
+  // Ambil token dari localStorage
+  // Try 1: Check localStorage.token (stored separately in login.jsx)
+  // Try 2: Check localStorage.user.token (stored as part of user object)
+  const token = localStorage.getItem("token") || user.token || "";
 
   const API_URL = "http://localhost:3000/api/ingredients";
+
+  // Helper untuk membuat auth headers
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  });
 
   // --- R: READ (Hanya untuk User yang Login) ---
   const fetchIngredients = async () => {
     try {
       // Kita tambahkan query parameter q atau filter khusus jika API mendukung, 
       // namun cara paling umum adalah mengirim userId
-      const response = await fetch(`${API_URL}?userId=${userId}`);
+      const response = await fetch(`${API_URL}?userId=${userId}`, {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
       
       if (result.success) {
@@ -58,7 +71,7 @@ export default function ShoppingListScreen() {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         // Kirim field yang ingin diubah (sesuai database)
         body: JSON.stringify({ checked: newCheckedStatus }) 
       });
@@ -79,7 +92,7 @@ export default function ShoppingListScreen() {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           name,
           amount,
@@ -98,7 +111,7 @@ export default function ShoppingListScreen() {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ userId: userId }) 
       });
 

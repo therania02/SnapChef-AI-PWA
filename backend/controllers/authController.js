@@ -61,6 +61,14 @@ class AuthController extends BaseController {
             // Hash password
             const hashedPassword = await bcrypt.hash(password, 10);
 
+            const existingUser = await User.findOne({
+                where:{ email }
+            });
+
+            if(existingUser){
+                return this.sendError (res, 400, "Email sudah digunakan");
+            }
+            
             // Membuat data baru di database
             const newUser = await User.create({
                 name,
@@ -87,6 +95,10 @@ class AuthController extends BaseController {
 
             if (!user) {
                 return this.sendError(res, 401, "Email tidak terdaftar");
+            }
+
+            if (!user.password) {
+                return this.sendError(res, 401, "Silahkan login menggunakan Google");
             }
 
             // Bandingkan password
@@ -131,7 +143,9 @@ class AuthController extends BaseController {
                 });
             }
 
-            const userData = buildUserData(user);
+            const activeUser = await applyPremiumExpiry(user);
+            const dailyResetUser = await applyDailyScanReset(activeUser);
+            const userData = buildUserData(dailyResetUser);
 
             const token = jwt.sign(
                 userData,
@@ -218,6 +232,15 @@ class AuthController extends BaseController {
             const user = await User.findByPk(req.params.id, {
                 attributes: { exclude: ['password'] }
             });
+            if (req.user.id != req.params.id) {
+
+                return this.sendError(
+                    res,
+                    403,
+                    "Tidak memiliki akses"
+                );
+
+            }
             if (!user) return this.sendError(res, 404, "Pengguna tidak ditemukan");
 
             return this.sendSuccess(res, 200, "Berhasil", user);
@@ -232,9 +255,15 @@ class AuthController extends BaseController {
             const user = await User.findByPk(req.params.id);
             if (!user) return this.sendError(res, 404, "Pengguna tidak ditemukan");
 
-            // Hanya update nama (jangan update email/password lewat sini untuk keamanan)
-            const { name, role } = req.body;
-            await user.update({ name, role });
+            if (req.user.id != req.params.id) {
+                return this.sendError(res, 403, "Tidak memiliki akses");
+            }
+
+            const { name } = req.body;
+
+            await user.update({
+                name
+            });
 
             // Hapus password dari objek sebelum dikembalikan ke client
             const updatedUser = user.toJSON();
@@ -251,6 +280,16 @@ class AuthController extends BaseController {
         try {
             const user = await User.findByPk(req.params.id);
             if (!user) return this.sendError(res, 404, "Pengguna tidak ditemukan");
+
+            if (req.user.id != req.params.id) {
+
+                return this.sendError(
+                    res,
+                    403,
+                    "Tidak memiliki akses"
+                );
+
+            }
 
             await user.destroy();
             return this.sendSuccess(res, 200, "Pengguna berhasil dihapus");

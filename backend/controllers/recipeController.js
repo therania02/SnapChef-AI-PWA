@@ -18,7 +18,8 @@ class RecipeController extends BaseController {
 
     scanFood = async (req, res) => {
         try {
-            const { imageBase64, userId, preferences } = req.body;
+            const { imageBase64, preferences } = req.body;
+            const userId = req.user.id;
 
             if (!imageBase64) {
                 return this.sendError(res, 400, "Gambar tidak ditemukan");
@@ -109,9 +110,14 @@ class RecipeController extends BaseController {
             const text = response.text();
 
             const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-            const resultData = JSON.parse(cleanText);
-
-            return this.sendSuccess(res, 200, "Scan AI Berhasil!", resultData);
+            let resultData
+            try {
+                resultData = JSON.parse(cleanText);
+                return this.sendSuccess(res, 200, "Scan AI Berhasil!", resultData);
+            } catch (error) {
+                return this.sendError(res, 500, "Format respons AI tidak valid");
+            }
+            
 
         } catch (error) {
             console.error("Gemini Error:", error);
@@ -129,9 +135,10 @@ class RecipeController extends BaseController {
                 calories,
                 protein,
                 carbs,
-                prepTime,
-                userId
+                prepTime
             } = req.body;
+
+            const userId = req.user.id;
 
             const newRecipe = await Recipe.create({
                 title,
@@ -145,7 +152,7 @@ class RecipeController extends BaseController {
                 protein: protein || 0,
                 carbs: carbs || 0,
                 prepTime: prepTime || 0,
-                userId: userId || null
+                userId
             });
 
             return this.sendSuccess(res, 201, "Resep berhasil disimpan ke Cookbook!", newRecipe);
@@ -244,6 +251,8 @@ class RecipeController extends BaseController {
             const recipe = await Recipe.findByPk(id);
 
             if (!recipe) return this.sendError(res, 404, "Resep tidak ditemukan");
+
+            if (String(recipe.userId) != String(req.user.id)) return this.sendError(res, 403, "Tidak memiliki akses");
 
             await recipe.destroy();
             return this.sendSuccess(res, 200, "Resep berhasil dihapus");

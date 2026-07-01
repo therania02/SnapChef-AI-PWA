@@ -15,7 +15,7 @@ module.exports = {
         name: 'Pak Gilbert Fernando Situmorang',
         email: 'gilbert.situmorang@mikroskil.ac.id',
         password: passwordA,
-        role: 'admin',
+        role: 'premium',
         scanLimit: 3,
         lastScanDate: new Date(),
         createdAt: new Date(),

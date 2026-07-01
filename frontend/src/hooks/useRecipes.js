@@ -1,5 +1,38 @@
 import { useState } from 'react';
 
+// Helper function untuk mendapatkan auth token
+const getAuthToken = () => {
+    // Try 1: Check localStorage.token (stored separately in login.jsx)
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+        return storedToken;
+    }
+
+    // Try 2: Check localStorage.user.token (stored as part of user object)
+    const user = localStorage.getItem("user");
+    if (user) {
+        try {
+            const userData = JSON.parse(user);
+            if (userData.token) {
+                return userData.token;
+            }
+        } catch (error) {
+            console.warn("Error parsing user from localStorage:", error);
+        }
+    }
+
+    return "";
+};
+
+// Helper function untuk membuat headers dengan auth
+const getAuthHeaders = () => {
+    const token = getAuthToken();
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+};
+
 export const useRecipes = () => {
     const API_URL = "http://localhost:3000/api/recipes";
     const [loading, setLoading] = useState(false);
@@ -32,7 +65,7 @@ export const useRecipes = () => {
         try {
             const response = await fetch(`${API_URL}/save`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(recipeData),
             });
             const result = await response.json();
@@ -58,7 +91,9 @@ export const useRecipes = () => {
                 userId: userId
             });
 
-            const response = await fetch(`${API_URL}?${queryParams.toString()}`);
+            const response = await fetch(`${API_URL}?${queryParams.toString()}`, {
+                headers: getAuthHeaders()
+            });
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || "Gagal mengambil resep");
             return result.data; // Mengembalikan object { totalData, data, dll }
@@ -75,7 +110,7 @@ export const useRecipes = () => {
         try {
             const response = await fetch(`${API_URL}/${id}/rating`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ rating: ratingValue }),
             });
             const result = await response.json();
@@ -88,7 +123,10 @@ export const useRecipes = () => {
 
     const removeRecipe = async (id) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/recipes/${id}`, { method: 'DELETE' });
+            const response = await fetch(`http://localhost:3000/api/recipes/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
             if (!response.ok) throw new Error("Gagal menghapus resep");
             return true;
         } catch (err) {

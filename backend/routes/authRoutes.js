@@ -10,9 +10,9 @@ router.post('/google', authController.googleLogin);
 router.post('/upgrade-premium', authMiddleware, authController.upgradePremium);
 router.put('/diet-preferences', authMiddleware, authController.saveDietPreferences);
 
-router.get('/users', authController.getAll);           // READ ALL
-router.get('/users/:id', authController.getById);      // READ ONE
-router.put('/users/:id', authController.update);       // UPDATE
-router.delete('/users/:id', authController.delete);    // DELETE
+router.get('/users', authMiddleware, authController.getAll);           // READ ALL
+router.get('/users/:id', authMiddleware, authController.getById);      // READ ONE
+router.put('/users/:id', authMiddleware, authController.update);       // UPDATE
+router.delete('/users/:id', authMiddleware, authController.delete);    // DELETE
 
 export default router;

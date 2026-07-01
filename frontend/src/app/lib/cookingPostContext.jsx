@@ -7,6 +7,39 @@ const CookingPostsContext = createContext(null);
 // URL Backend kalian
 const API_URL = 'http://localhost:3000/api';
 
+// Helper function untuk mendapatkan auth token
+const getAuthToken = () => {
+  // Try 1: Check localStorage.token (stored separately in login.jsx)
+  const storedToken = localStorage.getItem("token");
+  if (storedToken) {
+    return storedToken;
+  }
+
+  // Try 2: Check localStorage.user.token (stored as part of user object)
+  const user = localStorage.getItem("user");
+  if (user) {
+    try {
+      const userData = JSON.parse(user);
+      if (userData.token) {
+        return userData.token;
+      }
+    } catch (error) {
+      console.warn("Error parsing user from localStorage:", error);
+    }
+  }
+
+  return "";
+};
+
+// Helper function untuk membuat headers dengan auth
+const getAuthHeaders = () => {
+  const token = getAuthToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
+
 // Mock data (tetap dibiarkan agar UI tidak kosong saat pertama kali load)
 const initialPosts = [
   {
@@ -40,7 +73,9 @@ export function CookingPostsProvider({ children }) {
   // FITUR 1: AMBIL POSTINGAN DARI BACKEND
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`${API_URL}/posts`);
+      const response = await fetch(`${API_URL}/posts`, {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
       
       // Pastikan mengambil properti 'data' dari dalam objek hasil respons
@@ -80,7 +115,7 @@ export function CookingPostsProvider({ children }) {
     try {
       const response = await fetch(`${API_URL}/posts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           recipeName: post.recipeName || "Masakan Baru",
           description: post.description || "",
@@ -121,7 +156,7 @@ export function CookingPostsProvider({ children }) {
     try {
       const response = await fetch(`${API_URL}/posts/${postId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ userId: userId }) // Mengirim userId untuk validasi kepemilikan
       });
       
@@ -141,7 +176,7 @@ export function CookingPostsProvider({ children }) {
     try {
       const response = await fetch(`${API_URL}/posts/${postId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ ...updatedData, userId: userId })
       });
 
@@ -169,7 +204,9 @@ export function CookingPostsProvider({ children }) {
   // FITUR 5: AMBIL KOMENTAR DARI BACKEND
   const fetchComments = async (postId) => {
     try {
-      const response = await fetch(`${API_URL}/comments?postId=${postId}`);
+      const response = await fetch(`${API_URL}/comments?postId=${postId}`, {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
 
       const commentData = result.data?.data || [];
@@ -195,7 +232,7 @@ export function CookingPostsProvider({ children }) {
     try {
       const response = await fetch(`${API_URL}/comments`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ 
           postId: postId, 
           text: text,
@@ -236,7 +273,7 @@ export function CookingPostsProvider({ children }) {
     try {
       const response = await fetch(`${API_URL}/comments/${commentId}`, { 
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ userId: userId }) 
       });
       
@@ -263,7 +300,7 @@ export function CookingPostsProvider({ children }) {
     try {
       const response = await fetch(`${API_URL}/comments/${commentId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ text: newText, userId: userId })
       });
 

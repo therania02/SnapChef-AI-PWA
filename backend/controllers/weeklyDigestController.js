@@ -3,13 +3,17 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const db = require("../models/index.cjs");
 
-const { Scan, Recipe, Post, CookingHistory } = db;
+const { Scan, Recipe, CookingHistory } = db;
 
 class WeeklyDigestController {
     getStats = async (req, res) => {
         try {
-
-            const { userId } = req.params;
+            if (String(req.user.id) !== String(req.params.userId)) {
+                return res.status(403).json({
+                    message: "Tidak memiliki akses"
+                });
+            }
+            const userId = req.user.id;
 
             const now = new Date();
 
@@ -18,6 +22,7 @@ class WeeklyDigestController {
             startOfWeek.setDate(now.getDate() - 6);
 
             const startOfLastWeek = new Date(now);
+            startOfLastWeek.setHours(0, 0, 0, 0);
             startOfLastWeek.setDate(now.getDate() - 14);
 
             const scansThisWeek = await Scan.count({
@@ -33,10 +38,8 @@ class WeeklyDigestController {
                 where: {
                     userId,
                     createdAt: {
-                        [db.Sequelize.Op.between]: [
-                            startOfLastWeek,
-                            startOfWeek
-                        ]
+                        [db.Sequelize.Op.gte]: startOfLastWeek,
+                        [db.Sequelize.Op.lt]: startOfWeek
                     }
                 }
             });

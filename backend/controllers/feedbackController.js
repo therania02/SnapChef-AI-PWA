@@ -11,9 +11,8 @@ class FeedbackController extends BaseController {
 
     create = async (req, res) => {
         try {
-
+            const userId = req.user.id;
             const {
-                userId,
                 rating,
                 category,
                 feedback

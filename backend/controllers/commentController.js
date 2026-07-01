@@ -9,7 +9,8 @@ import BaseController from './basecontroller.js';
 class CommentController extends BaseController {
     create = async (req, res) => {
         try {
-            const { text, postId, userId } = req.body;
+            const { text, postId } = req.body;
+            const userId = req.user.id;
             const newComment = await Comment.create({ text, postId, userId });
             return this.sendSuccess(res, 201, "Komentar berhasil ditambahkan", newComment);
         } catch (error) {
@@ -74,6 +75,9 @@ class CommentController extends BaseController {
         try {
             const comment = await Comment.findByPk(req.params.id);
             if (!comment) return this.sendError(res, 404, "Komentar tidak ditemukan");
+            if (String(comment.userId) !== String(req.user.id)) {
+                return this.sendError(res, 403, "Anda tidak memiliki izin untuk mengedit komentar ini");
+            }
 
             await comment.update(req.body);
             return this.sendSuccess(res, 200, "Komentar berhasil diupdate", comment);
@@ -86,6 +90,9 @@ class CommentController extends BaseController {
         try {
             const comment = await Comment.findByPk(req.params.id);
             if (!comment) return this.sendError(res, 404, "Komentar tidak ditemukan");
+            if (String(comment.userId) !== String(req.user.id)) {
+                return this.sendError(res, 403, "Anda tidak memiliki izin untuk menghapus komentar ini");
+            }
 
             await comment.destroy();
             return this.sendSuccess(res, 200, "Komentar berhasil dihapus");

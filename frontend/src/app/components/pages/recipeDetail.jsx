@@ -226,16 +226,33 @@ export default function RecipeDetailScreen() {
 
   const handleAddToShoppingList = async (ingredient) => {
     try {
+      // Try 1: Check localStorage.token (stored separately in login.jsx)
+      let token = localStorage.getItem("token");
+
+      // Try 2: Check localStorage.user.token (stored as part of user object)
+      if (!token) {
+        const currentUser = JSON.parse(
+          localStorage.getItem("user") || "{}"
+        );
+        token = currentUser.token || "";
+      }
+
+      if (!token) {
+        toast.error("Anda harus login terlebih dahulu");
+        return;
+      }
+
       const currentUser = JSON.parse(
-        localStorage.getItem("user")
+        localStorage.getItem("user") || "{}"
       );
 
-      await fetch(
+      const response = await fetch(
         "http://localhost:3000/api/ingredients",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({
             name: ingredient.name,
@@ -247,11 +264,17 @@ export default function RecipeDetailScreen() {
         }
       );
 
-      toast.success(
-        `${ingredient.name} ditambahkan ke keranjang`
-      );
+      const result = await response.json();
+      if (response.ok && result.success) {
+        toast.success(
+          `${ingredient.name} ditambahkan ke keranjang`
+        );
+      } else {
+        toast.error(result.message || "Gagal menambah ke daftar belanja");
+      }
 
     } catch (error) {
+      console.error("Error:", error);
       toast.error(
         "Gagal menambah ke daftar belanja"
       );

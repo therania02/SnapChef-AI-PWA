@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Loader2, Trash2 } from "lucide-react";
+import { Heart, Loader2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { BottomNav } from "../../../ui/bottomNav.jsx";
 import { useFavorites } from "../../lib/favoritesContext.jsx";
@@ -41,12 +41,23 @@ export default function CookbookScreen() {
 
   const [dbRecipes, setDbRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State untuk pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (page = 1) => {
     try {
       setIsLoading(true);
-      const response = await getRecipes(1, 50, '', user?.id);
+      const response = await getRecipes(page, ITEMS_PER_PAGE, '', user?.id);
+      
+      // Ambil data dari response
       const data = response?.data || [];
+      const totalPagesFromResponse = response?.totalPages || 1;
+      
+      setTotalPages(totalPagesFromResponse);
+      setCurrentPage(page);
 
       const formattedData = data.map(recipe => {
         const detectedTags = determineRecipeTags(recipe.title);
@@ -90,7 +101,7 @@ export default function CookbookScreen() {
   };
 
   useEffect(() => {
-    fetchRecipes();
+    fetchRecipes(1);
   }, [user]);
 
   const handleDelete = async (e, recipeId) => {
@@ -270,6 +281,37 @@ export default function CookbookScreen() {
           })
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {!isLoading && filteredRecipes.length > 0 && (
+        <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 py-6 flex items-center justify-center gap-4">
+          <Button
+            onClick={() => fetchRecipes(currentPage - 1)}
+            disabled={currentPage === 1}
+            variant="outline"
+            size="icon"
+            className="rounded-lg h-10 w-10"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <div className="text-center min-w-[100px]">
+            <span className="text-sm font-medium">
+              Page {currentPage} of {totalPages}
+            </span>
+          </div>
+          
+          <Button
+            onClick={() => fetchRecipes(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            variant="outline"
+            size="icon"
+            className="rounded-lg h-10 w-10"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       <BottomNav />
     </motion.div>

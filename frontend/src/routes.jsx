@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import Root from "./app/components/root";
+import { ProtectedRoute } from "./app/components/ProtectedRoute.jsx";
 import OnboardingScreen from "./app/components/pages/onboarding";
 import LoginScreen from "./app/components/pages/login";
 import RegisterScreen from "./app/components/pages/register";
@@ -30,23 +31,128 @@ export const router = createBrowserRouter([
       { index: true, Component: OnboardingScreen },
       { path: "login", Component: LoginScreen },
       { path: "register", Component: RegisterScreen },
-      { path: "dietary-profile", Component: DietaryProfileScreen },
-      { path: "home", Component: HomeScreen },
-      { path: "scan-result", Component: ScanResultScreen },
-      { path: "recipe/:id", Component: RecipeDetailScreen },
-      { path: "cooking/:id", Component: CookingModeScreen },
-      { path: "cookbook", Component: CookbookScreen },
-      { path: "shopping-list", Component: ShoppingListScreen },
-      { path: "account", Component: AccountScreen },
-      { path: "settings", Component: SettingsScreen },
-      { path: "scan-history", Component: ScanHistoryScreen },
-      { path: "help-center", Component: HelpCenterScreen },
+      {
+        path: "dietary-profile",
+        Component: () => (
+          <ProtectedRoute>
+            <DietaryProfileScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "home",
+        Component: () => (
+          <ProtectedRoute>
+            <HomeScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "scan-result",
+        Component: () => (
+          <ProtectedRoute>
+            <ScanResultScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "recipe/:id",
+        Component: () => (
+          <ProtectedRoute>
+            <RecipeDetailScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cooking/:id",
+        Component: () => (
+          <ProtectedRoute>
+            <CookingModeScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cookbook",
+        Component: () => (
+          <ProtectedRoute>
+            <CookbookScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "shopping-list",
+        Component: () => (
+          <ProtectedRoute>
+            <ShoppingListScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "account",
+        Component: () => (
+          <ProtectedRoute>
+            <AccountScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "settings",
+        Component: () => (
+          <ProtectedRoute>
+            <SettingsScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "scan-history",
+        Component: () => (
+          <ProtectedRoute>
+            <ScanHistoryScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "help-center",
+        Component: () => (
+          <ProtectedRoute>
+            <HelpCenterScreen />
+          </ProtectedRoute>
+        ),
+      },
       { path: "terms", Component: TermsScreen },
       { path: "privacy", Component: PrivacyScreen },
-      { path: "premium", Component: PremiumScreen },
-      { path: "payment-success", Component: PaymentSuccessScreen },
-      { path: "messages", Component: MessageScreen },
-      { path: "messages/:chatId", Component: ChatDetailScreen },
+      {
+        path: "premium",
+        Component: () => (
+          <ProtectedRoute>
+            <PremiumScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "payment-success",
+        Component: () => (
+          <ProtectedRoute>
+            <PaymentSuccessScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "messages",
+        Component: () => (
+          <ProtectedRoute>
+            <MessageScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "messages/:chatId",
+        Component: () => (
+          <ProtectedRoute>
+            <ChatDetailScreen />
+          </ProtectedRoute>
+        ),
+      },
       { path: "*", Component: NotFoundScreen },
     ],
   },
