@@ -3,6 +3,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, User } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -13,6 +14,7 @@ const Register = () => {
 
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -23,7 +25,7 @@ const Register = () => {
       await register(email, password, name);
       navigate("/login");
     } catch (err) {
-      setError(err.message || "Gagal terhubung ke server");
+      setError(err.message || t("auth.server_failed"));
       console.error("Detail Error:", err);
     } finally {
       setLoading(false);
@@ -48,10 +50,10 @@ const Register = () => {
         </motion.div>
 
         <h1 className="text-2xl font-serif text-gray-800">
-          Daftar Akun Baru
+          {t("auth.register_title")}
         </h1>
         <p className="text-gray-500 mb-6 text-sm">
-          Mulai petualangan kuliner Anda
+          {t("auth.register_subtitle")}
         </p>
 
         {/* CARD */}
@@ -65,12 +67,12 @@ const Register = () => {
 
             {/* NAME */}
             <div>
-              <label className="text-sm text-gray-700">Nama Lengkap</label>
+              <label className="text-sm text-gray-700">{t("auth.full_name")}</label>
               <div className="relative mt-1">
                 <User className="absolute left-3 top-3 text-gray-400 w-4" />
                 <input
                   type="text"
-                  placeholder="Nama Anda"
+                  placeholder={t("auth.name_placeholder")}
                   className="w-full pl-10 pr-3 py-2 rounded-full border bg-gray-100 outline-none focus:ring-2 focus:ring-[#5E87A6]"
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -80,7 +82,7 @@ const Register = () => {
 
             {/* EMAIL */}
             <div>
-              <label className="text-sm text-gray-700">Email</label>
+              <label className="text-sm text-gray-700">{t("common.email")}</label>
               <div className="relative mt-1">
                 <Mail className="absolute left-3 top-3 text-gray-400 w-4" />
                 <input
@@ -95,12 +97,12 @@ const Register = () => {
 
             {/* PASSWORD */}
             <div>
-              <label className="text-sm text-gray-700">Password</label>
+              <label className="text-sm text-gray-700">{t("common.password")}</label>
               <div className="relative mt-1">
                 <Lock className="absolute left-3 top-3 text-gray-400 w-4" />
                 <input
                   type="password"
-                  placeholder="Min. 8 karakter"
+                  placeholder={t("auth.password_placeholder")}
                   className="w-full pl-10 pr-3 py-2 rounded-full border bg-gray-100 outline-none focus:ring-2 focus:ring-[#5E87A6]"
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -120,7 +122,7 @@ const Register = () => {
               disabled={loading}
               className="w-full py-2 bg-[#5E87A6] text-foreground rounded-full font-semibold"
             >
-              {loading ? "Loading..." : "Daftar"}
+              {loading ? t("common.loading") : t("common.register")}
             </motion.button>
           </form>
 
@@ -138,27 +140,27 @@ const Register = () => {
                 await loginWithGoogle();
                 navigate("/home");
               } catch (err) {
-                setError(err.message || "Gagal terhubung ke server");
+                setError(err.message || t("auth.server_failed"));
                 console.error("Detail Error:", err);
               }
             }}
             className="w-full py-2 border rounded-full flex items-center justify-center gap-2"
           >
             <span className="font-bold">G</span>
-            Daftar dengan Google
+            {t("auth.register_google")}
           </motion.button>
 
           <p className="text-xs text-gray-400 text-center mt-2">
-            Dengan mendaftar, Anda menyetujui{" "}
-            <span className="text-[#5E87A6]">Syarat & Ketentuan</span> kami
+            {t("auth.agree_prefix")}{" "}
+            <span className="text-[#5E87A6]">{t("settings.terms")}</span> {t("auth.agree_suffix")}
           </p>
         </motion.div>
 
         {/* LOGIN LINK */}
         <p className="mt-4 text-sm text-gray-600">
-          Sudah punya akun?{" "}
+          {t("auth.have_account")}{" "}
           <Link to="/login" className="text-[#5E87A6]">
-            Masuk
+            {t("common.login")}
           </Link>
         </p>
       </motion.div>

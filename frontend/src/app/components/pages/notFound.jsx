@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home } from "lucide-react";
 import { Button } from "../../../ui/button";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 export default function NotFoundScreen() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
@@ -35,9 +37,9 @@ export default function NotFoundScreen() {
           >
             404
           </h1>
-          <h2 className="text-2xl">Halaman Tidak Ditemukan</h2>
+          <h2 className="text-2xl">{t("not_found.title")}</h2>
           <p className="text-muted-foreground">
-            Ups! Sepertinya resep yang Anda cari tidak ada di dapur kami.
+            {t("not_found.desc")}
           </p>
         </div>
 
@@ -48,7 +50,7 @@ export default function NotFoundScreen() {
             className="rounded-2xl"
           >
             <Home className="h-5 w-5 mr-2" />
-            Kembali ke Home
+            {t("cooking.back_home")}
           </Button>
         </motion.div>
       </motion.div>

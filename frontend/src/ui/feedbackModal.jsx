@@ -3,6 +3,7 @@ import { useState } from "react";
 import { X, Send, Star } from "lucide-react";
 import { Button } from "./button";
 import { toast } from "sonner";
+import { useLanguage } from "../app/lib/languageContext.jsx";
 
 
 export function FeedbackModal({ isOpen, onClose }) {
@@ -10,6 +11,7 @@ export function FeedbackModal({ isOpen, onClose }) {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [category, setCategory] = useState("");
+  const { t } = useLanguage();
 
   const categories = [
     { id: "bug", label: "🐛 Bug Report" },
@@ -22,12 +24,12 @@ export function FeedbackModal({ isOpen, onClose }) {
     e.preventDefault();
 
     if (!category) {
-      toast.error("Pilih kategori feedback");
+      toast.error(t("feedback.choose_category"));
       return;
     }
 
     if (!feedback.trim()) {
-      toast.error("Tulis feedback Anda");
+      toast.error(t("feedback.write_feedback"));
       return;
     }
 
@@ -88,7 +90,7 @@ export function FeedbackModal({ isOpen, onClose }) {
               {/* Header */}
               <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between rounded-t-[32px] sm:rounded-t-[32px]">
                 <h2 className="text-xl font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
-                  Kirim Feedback
+                  {t("feedback.title")}
                 </h2>
                 <button
                   onClick={onClose}
@@ -103,7 +105,7 @@ export function FeedbackModal({ isOpen, onClose }) {
                 {/* Rating */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium">
-                    Bagaimana pengalaman Anda?
+                    {t("feedback.experience")}
                   </label>
                   <div className="flex gap-2 justify-center">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -131,7 +133,7 @@ export function FeedbackModal({ isOpen, onClose }) {
                 {/* Category */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium">
-                    Kategori
+                    {t("feedback.category")}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {categories.map((cat) => (
@@ -145,7 +147,7 @@ export function FeedbackModal({ isOpen, onClose }) {
                           : "border-border hover:border-primary/50"
                           }`}
                       >
-                        <span className="text-sm font-medium">{cat.label}</span>
+                        <span className="text-sm font-medium">{t(`feedback.${cat.id}`)}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -154,17 +156,17 @@ export function FeedbackModal({ isOpen, onClose }) {
                 {/* Feedback Text */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium">
-                    Ceritakan lebih detail
+                    {t("feedback.detail")}
                   </label>
                   <textarea
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
-                    placeholder="Tulis feedback, saran, atau laporan bug Anda di sini..."
+                    placeholder={t("feedback.placeholder")}
                     rows={5}
                     className="w-full px-4 py-3 rounded-2xl border-2 border-border focus:border-primary focus:outline-none resize-none bg-background transition-colors"
                   />
                   <p className="text-xs text-muted-foreground">
-                    {feedback.length}/500 karakter
+                    {t("feedback.characters", { count: feedback.length })}
                   </p>
                 </div>
 
@@ -176,14 +178,14 @@ export function FeedbackModal({ isOpen, onClose }) {
                     onClick={onClose}
                     className="flex-1 rounded-full"
                   >
-                    Batal
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     type="submit"
                     className="flex-1 rounded-full"
                   >
                     <Send className="h-4 w-4 mr-2" />
-                    Kirim
+                    {t("feedback.title")}
                   </Button>
                 </div>
               </form>

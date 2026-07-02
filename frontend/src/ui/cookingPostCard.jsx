@@ -9,12 +9,14 @@ import {
 } from "./dropdownMenu";
 import { CommentsModal } from "./commentsModal";
 import { useCookingPosts } from "../app/lib/cookingPostContext.jsx";
+import { useLanguage } from "../app/lib/languageContext.jsx";
  
 export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePrivacy }) {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [showComments, setShowComments] = useState(false);
   const { getComments } = useCookingPosts(); // Ambil dari context
+  const { language, t } = useLanguage();
   
   // Gunakan jumlah komentar dari database, atau fallback ke jumlah di context (real-time)
   const displayCommentCount = getComments(post.id).length || post.comments || 0;
@@ -40,13 +42,13 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
   const getPrivacyLabel = (privacy) => {
     switch (privacy) {
       case "public":
-        return "Publik";
+        return t("home.public");
       case "friends":
-        return "Teman";
+        return t("home.friends");
       case "private":
-        return "Privat";
+        return t("post.private");
       default:
-        return "Publik";
+        return t("home.public");
     }
   };
  
@@ -58,11 +60,11 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
  
-    if (diffMins < 1) return "Baru saja";
-    if (diffMins < 60) return `${diffMins} menit lalu`;
-    if (diffHours < 24) return `${diffHours} jam lalu`;
-    if (diffDays < 7) return `${diffDays} hari lalu`;
-    return postDate.toLocaleDateString("id-ID", {
+    if (diffMins < 1) return language === "id" ? "Baru saja" : "Just now";
+    if (diffMins < 60) return language === "id" ? `${diffMins} menit lalu` : `${diffMins} minutes ago`;
+    if (diffHours < 24) return language === "id" ? `${diffHours} jam lalu` : `${diffHours} hours ago`;
+    if (diffDays < 7) return language === "id" ? `${diffDays} hari lalu` : `${diffDays} days ago`;
+    return postDate.toLocaleDateString(language === "id" ? "id-ID" : "en-US", {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -92,7 +94,7 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
             )}
           </div>
           <div>
-            <p className="font-medium text-sm text-foreground">{post.userName || "Guest"}</p>
+            <p className="font-medium text-sm text-foreground">{post.userName || t("home.guest")}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{getTimeAgo(post.createdAt)}</span>
               <span>•</span>
@@ -114,22 +116,22 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
             <DropdownMenuContent align="end" className="bg-card text-foreground shadow-lg rounded-xl border border-border">
               <DropdownMenuItem onClick={() => onUpdatePrivacy?.(post.id, "public")}>
                 <Globe className="h-4 w-4 mr-2" />
-                Ubah ke Publik
+                {t("home.public")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onUpdatePrivacy?.(post.id, "friends")}>
                 <Users className="h-4 w-4 mr-2" />
-                Ubah ke Teman
+                {t("home.friends")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onUpdatePrivacy?.(post.id, "private")}>
                 <Lock className="h-4 w-4 mr-2" />
-                Ubah ke Privat
+                {t("post.private")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete?.(post.id)}
                 className="text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Hapus
+                {t("common.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

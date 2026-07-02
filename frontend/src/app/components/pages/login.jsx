@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUser } from "../../lib/userContext.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ const Login = () => {
 
   const { login, loginWithGoogle } = useAuth();
   const { setUser } = useUser();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -44,7 +46,7 @@ const Login = () => {
         navigate("/home");
       }
     } catch (err) {
-      setError(err.message || "Login gagal");
+      setError(err.message || t("auth.login_failed"));
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ const Login = () => {
 
       navigate("/home");
     } catch (err) {
-      setError(err.message || "Login Google gagal");
+      setError(err.message || t("auth.google_login_failed"));
     } finally {
       setLoading(false);
     }
@@ -96,13 +98,13 @@ const Login = () => {
           SnapChef AI
         </h1>
         <p className="text-gray-500 mb-6 text-sm">
-          Masuk ke akun Anda
+          {t("auth.login_subtitle")}
         </p>
 
         <div className="bg-card rounded-2xl shadow-md p-6 text-left space-y-4">
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-sm text-gray-700">Email</label>
+              <label className="text-sm text-gray-700">{t("common.email")}</label>
               <div className="relative mt-1">
                 <Mail className="absolute left-3 top-3 text-gray-400 w-4" />
                 <input
@@ -115,7 +117,7 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="text-sm text-gray-700">Password</label>
+              <label className="text-sm text-gray-700">{t("common.password")}</label>
               <div className="relative mt-1">
                 <Lock className="absolute left-3 top-3 text-gray-400 w-4" />
                 <input
@@ -126,7 +128,7 @@ const Login = () => {
                 />
               </div>
               <div className="text-right mt-1 text-xs text-[#5E87A6] cursor-pointer">
-                Lupa Password?
+                {t("auth.forgot_password")}
               </div>
             </div>
 
@@ -140,7 +142,7 @@ const Login = () => {
               disabled={loading}
               className="w-full py-2 bg-[#5E87A6] text-foreground rounded-full font-semibold"
             >
-              {loading ? "Loading..." : "Masuk"}
+              {loading ? t("common.loading") : t("common.login")}
             </motion.button>
           </form>
 
@@ -155,14 +157,14 @@ const Login = () => {
             className="w-full py-2 border rounded-full flex items-center justify-center gap-2"
           >
             <span className="font-bold">G</span>
-            Masuk dengan Google
+            {t("auth.login_google")}
           </motion.button>
         </div>
 
         <p className="mt-4 text-sm text-gray-600">
-          Belum punya akun?{" "}
+          {t("auth.no_account")}{" "}
           <Link to="/register" className="text-[#5E87A6]">
-            Daftar Sekarang
+            {t("auth.register_now")}
           </Link>
         </p>
       </motion.div>

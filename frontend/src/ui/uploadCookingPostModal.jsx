@@ -5,6 +5,7 @@ import { Button } from "./button";
 import { Textarea } from "./textarea";
 import { Input } from "./input";
 import { toast } from "sonner";
+import { useLanguage } from "../app/lib/languageContext.jsx";
 
 export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
   const [image, setImage] = useState(null);
@@ -12,24 +13,25 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
   const [recipeName, setRecipeName] = useState("");
   const [description, setDescription] = useState("");
   const [privacy, setPrivacy] = useState("public");
+  const { t } = useLanguage();
 
   const privacyOptions = [
     {
       value: "public",
-      label: "Publik",
-      description: "Semua orang bisa lihat",
+      label: t("home.public"),
+      description: t("post.public_desc"),
       icon: Globe,
     },
     {
       value: "friends",
-      label: "Teman",
-      description: "Hanya teman yang bisa lihat",
+      label: t("home.friends"),
+      description: t("post.friends_desc"),
       icon: Users,
     },
     {
       value: "private",
-      label: "Privat",
-      description: "Hanya saya yang bisa lihat",
+      label: t("post.private"),
+      description: t("post.private_desc"),
       icon: Lock,
     },
   ];
@@ -48,7 +50,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
 
   const handleSubmit = () => {
     if (!recipeName || !imagePreview) {
-      toast.error("Nama resep dan foto wajib diisi!");
+      toast.error(t("post.required"));
       return;
     }
 
@@ -94,7 +96,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
                 className="text-xl"
                 style={{ fontFamily: "var(--font-family-display)" }}
               >
-                Bagikan Masakan Anda
+                {t("post.share_title")}
               </h2>
               <button
                 onClick={onClose}
@@ -108,7 +110,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Image Upload */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Foto Masakan *</label>
+                <label className="text-sm font-medium">{t("post.photo")}</label>
                 {imagePreview ? (
                   <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
                     <img
@@ -139,7 +141,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
                         <Camera className="h-8 w-8" />
                       </div>
                       <div className="text-center">
-                        <p className="font-medium text-foreground">Ambil atau Upload Foto</p>
+                        <p className="font-medium text-foreground">{t("post.upload_photo")}</p>
                         <p className="text-xs mt-1">JPG, PNG (Max 5MB)</p>
                       </div>
                     </div>
@@ -149,9 +151,9 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
 
               {/* Recipe Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Nama Masakan *</label>
+                <label className="text-sm font-medium">{t("post.recipe_name")}</label>
                 <Input
-                  placeholder="Contoh: Nasi Goreng Special"
+                  placeholder={t("post.recipe_placeholder")}
                   value={recipeName}
                   onChange={(e) => setRecipeName(e.target.value)}
                   className="rounded-xl"
@@ -161,10 +163,10 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
               {/* Description */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  Deskripsi (Opsional)
+                  {t("post.description")}
                 </label>
                 <Textarea
-                  placeholder="Ceritakan tentang masakan ini..."
+                  placeholder={t("post.description_placeholder")}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="rounded-xl min-h-[100px]"
@@ -173,7 +175,7 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
 
               {/* Privacy Settings */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Siapa yang bisa lihat?</label>
+                <label className="text-sm font-medium">{t("post.who_can_see")}</label>
                 <div className="space-y-2">
                   {privacyOptions.map((option) => {
                     const Icon = option.icon;
@@ -223,11 +225,11 @@ export function UploadCookingPostModal({ isOpen, onClose, onSubmit }) {
                 onClick={onClose}
                 className="flex-1 rounded-xl"
               >
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button onClick={handleSubmit} className="flex-1 rounded-xl">
                 <Upload className="h-4 w-4 mr-2" />
-                Bagikan
+                {t("home.share")}
               </Button>
             </div>
           </motion.div>

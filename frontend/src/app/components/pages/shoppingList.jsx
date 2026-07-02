@@ -50,7 +50,7 @@ export default function ShoppingListScreen() {
         setItems(myItems);
       }
     } catch (error) {
-      toast.error("Gagal memuat daftar belanja");
+      toast.error(t("shopping.load_error"));
     }
   };
 
@@ -58,7 +58,7 @@ export default function ShoppingListScreen() {
     if (userId) {
       fetchIngredients();
     } else {
-      toast.error("Silahkan login terlebih dahulu");
+      toast.error(t("shopping.login_first"));
       navigate("/login");
     }
   }, [userId]);
@@ -82,7 +82,7 @@ export default function ShoppingListScreen() {
         ));
       }
     } catch (error) {
-      toast.error("Gagal memperbarui");
+      toast.error(t("shopping.update_error"));
     }
   };
 
@@ -102,7 +102,7 @@ export default function ShoppingListScreen() {
       });
       if (response.ok) fetchIngredients(); // Refresh daftar
     } catch (error) {
-      toast.error("Gagal menambah bahan");
+      toast.error(t("shopping.add_error"));
     }
   };
 
@@ -120,13 +120,13 @@ export default function ShoppingListScreen() {
       if (result.success) {
         // Hapus dari state lokal agar UI langsung terupdate
         setItems(items.filter((item) => item.id !== id));
-        toast.success("Item dihapus dari daftar belanja");
+        toast.success(t("shopping.deleted"));
       } else {
-        toast.error("Gagal menghapus: " + result.message);
+        toast.error(t("shopping.delete_error", { message: result.message }));
       }
     } catch (error) {
       console.error("Gagal menghapus dari database:", error);
-      toast.error("Kesalahan koneksi ke server");
+      toast.error(t("shopping.connection_error"));
     }
   };
 
@@ -166,7 +166,7 @@ export default function ShoppingListScreen() {
             <ShoppingCart className="h-6 w-6" />
           </div>
           <div className="text-sm opacity-90">
-            {uncheckedCount} item belum dibeli
+            {t("shopping.unchecked_count", { count: uncheckedCount })}
           </div>
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function ShoppingListScreen() {
                 {t("shopping.add_ingredients")}
               </p>
               <Button onClick={() => navigate("/home")} className="rounded-2xl">
-                Cari Resep
+                {t("shopping.find_recipe")}
               </Button>
             </div>
           </motion.div>
@@ -231,7 +231,7 @@ export default function ShoppingListScreen() {
                         onClick={() => openShopeeApp(item.shopeeKeyword || item.ingredientName || item.name)}
                         className="px-3 py-1 bg-[#EE4D2D] hover:bg-[#D73211] text-foreground rounded-full text-xs font-medium transition-colors"
                       >
-                        Beli
+                        {t("shopping.buy")}
                       </motion.button>
                     )}
                     <motion.button
@@ -261,10 +261,10 @@ export default function ShoppingListScreen() {
               <div className="text-3xl">🛍️</div>
               <div className="flex-1">
                 <h4 className="font-medium text-red-900 dark:text-brown-100 mb-1">
-                  Belanja Mudah di Shopee
+                  {t("shopping.shopee_info_title")}
                 </h4>
                 <p className="text-sm light:text-blue-700 dark:text-red-600">
-                  Klik tombol "Beli" untuk langsung mencari produk di aplikasi Shopee.
+                  {t("shopping.shopee_info_short")}
                 </p>
               </div>
             </div>

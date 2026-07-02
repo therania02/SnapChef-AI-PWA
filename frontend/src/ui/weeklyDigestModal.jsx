@@ -2,8 +2,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { X, TrendingUp, ChefHat, Clock, Star, Calendar } from "lucide-react";
 import { Button } from "./button";
+import { useLanguage } from "../app/lib/languageContext.jsx";
 
 export function WeeklyDigestModal({ isOpen, onClose }) {
+  const { language, t } = useLanguage();
   const getWeekRange = () => {
 
     const today = new Date();
@@ -15,10 +17,11 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
       today.getDate() - 6
     );
 
-    return `${first.toLocaleDateString("id-ID", {
+    const locale = language === "id" ? "id-ID" : "en-US";
+    return `${first.toLocaleDateString(locale, {
       day: "numeric",
       month: "short"
-    })} - ${today.toLocaleDateString("id-ID", {
+    })} - ${today.toLocaleDateString(locale, {
       day: "numeric",
       month: "short",
       year: "numeric"
@@ -136,7 +139,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                   <div className="flex items-center gap-2">
                     <Calendar className="h-5 w-5" />
                     <h2 className="text-xl font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
-                      Ringkasan Mingguan
+                      {t("weekly.title")}
                     </h2>
                   </div>
                   <button
@@ -154,25 +157,25 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-3">
                   <StatCard
-                    label="Scan"
+                    label={t("account.scan")}
                     value={stats.scans.value}
                     change={stats.scans.change}
                     percentage={stats.scans.percentage}
                   />
                   <StatCard
-                    label="Resep Dibuat"
+                    label={t("weekly.recipes_made")}
                     value={stats.recipes.value}
                     change={stats.recipes.change}
                     percentage={stats.recipes.percentage}
                   />
                   <StatCard
-                    label="Masakan"
+                    label={t("account.cooking")}
                     value={stats.cookings.value}
                     change={stats.cookings.change}
                     percentage={stats.cookings.percentage}
                   />
                   <StatCard
-                    label="Resep Disimpan"
+                    label={t("weekly.saved_recipes")}
                     value={stats.savedRecipes.value}
                     change={stats.savedRecipes.change}
                     percentage={stats.savedRecipes.percentage}
@@ -183,7 +186,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                 <div className="space-y-3">
                   <h3 className="font-medium flex items-center gap-2">
                     <ChefHat className="h-4 w-4 text-primary" />
-                    Bahan Paling Sering Digunakan
+                    {t("weekly.top_ingredients")}
                   </h3>
                   <div className="space-y-2">
                     {topIngredients.length > 0 ? (
@@ -203,7 +206,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                               </p>
 
                               <p className="text-xs text-muted-foreground">
-                                Digunakan {ingredient.count}x
+                                {t("weekly.used_count", { count: ingredient.count })}
                               </p>
                             </div>
                           </div>
@@ -218,7 +221,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                     ) : (
 
                       <div className="text-center text-muted-foreground py-4">
-                        Belum ada riwayat memasak minggu ini
+                        {t("weekly.no_cooking")}
                       </div>
 
                     )}
@@ -229,7 +232,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                 <div className="space-y-3">
                   <h3 className="font-medium flex items-center gap-2">
                     <Star className="h-4 w-4 text-primary" />
-                    Pencapaian Minggu Ini
+                    {t("weekly.achievements")}
                   </h3>
                   <div className="space-y-2">
                     {achievements.length > 0 ? (
@@ -254,7 +257,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                     ) : (
 
                       <div className="text-center text-muted-foreground py-4">
-                        Belum ada pencapaian minggu ini
+                        {t("weekly.no_achievements")}
                       </div>
 
                     )}
@@ -267,7 +270,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
                     onClick={onClose}
                     className="w-full rounded-full"
                   >
-                    Tutup
+                    {t("common.close")}
                   </Button>
                 </div>
               </div>

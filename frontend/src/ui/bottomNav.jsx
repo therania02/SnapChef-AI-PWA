@@ -12,7 +12,7 @@ export function BottomNav() {
     { path: "/home", icon: <Sparkles className="h-6 w-6" />, label: t("nav.home") },
     { path: "/cookbook", icon: <BookOpen className="h-6 w-6" />, label: t("nav.cookbook") },
     { path: "/shopping-list", icon: <ShoppingCart className="h-6 w-6" />, label: t("nav.shopping") },
-    { path: "/messages", icon: <MessageCircle className="h-6 w-6" />, label: "Pesan" },
+    { path: "/messages", icon: <MessageCircle className="h-6 w-6" />, label: t("nav.messages") },
     { path: "/account", icon: <User className="h-6 w-6" />, label: t("nav.account") },
   ];
 

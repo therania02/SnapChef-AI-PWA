@@ -14,16 +14,18 @@ import {
 import { Button } from "../../../ui/button.jsx";
 import { toast } from "sonner";
 import { useUser } from "../../lib/userContext.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 export default function PremiumScreen() {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { language, t } = useLanguage();
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const formatExpiryDate = (dateValue) => {
     if (!dateValue) return "-";
 
-    return new Date(dateValue).toLocaleDateString("id-ID", {
+    return new Date(dateValue).toLocaleDateString(language === "id" ? "id-ID" : "en-US", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -32,10 +34,10 @@ export default function PremiumScreen() {
 
   const handleUpgrade = async () => {
     if (!user) {
-      toast.error("Anda harus login terlebih dahulu!", {
+      toast.error(t("premium.login_required"), {
         duration: 3000,
         action: {
-          label: "Login",
+          label: t("common.login"),
           onClick: () => navigate("/login"),
         },
       });
@@ -55,12 +57,12 @@ export default function PremiumScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Gagal membuat transaksi");
+        throw new Error(data.message || t("premium.transaction_failed"));
       }
 
       window.location.href = data.redirect_url;
     } catch (error) {
-      toast.error(error.message || "Gagal membuka pembayaran Midtrans");
+      toast.error(error.message || t("premium.payment_open_failed"));
     } finally {
       setIsUpgrading(false);
     }
@@ -103,11 +105,11 @@ export default function PremiumScreen() {
             </motion.div>
 
             <h1 className="text-3xl" style={{ fontFamily: 'var(--font-family-display)' }}>
-              SnapChef Premium
+              {t("premium.hero_title")}
             </h1>
 
             <p className="text-foreground/90 text-lg">
-              Nikmati pengalaman memasak tanpa batas dengan AI yang lebih pintar
+              {t("premium.hero_desc")}
             </p>
 
             {/* Current Status Indicator */}
@@ -116,7 +118,7 @@ export default function PremiumScreen() {
                 <p className="text-sm font-medium">✅ Anda sudah Premium!</p>
                 {user?.premiumExpiresAt && (
                   <p className="text-xs mt-1 text-foreground/90">
-                    Aktif sampai {formatExpiryDate(user.premiumExpiresAt)}
+                    {t("account.active_until", { date: formatExpiryDate(user.premiumExpiresAt) })}
                   </p>
                 )}
               </div>
@@ -140,11 +142,11 @@ export default function PremiumScreen() {
         >
           <div className="text-center mb-6">
             <div className="flex items-baseline justify-center gap-2">
-              <span className="text-5xl font-bold text-primary">Rp 49.000</span>
-              <span className="text-muted-foreground">/bulan</span>
+              <span className="text-5xl font-bold text-primary">{t("premium.price")}</span>
+              <span className="text-muted-foreground">{t("premium.per_month")}</span>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Bayar mudah via Midtrans
+              {t("premium.payment_via")}
             </p>
           </div>
 
@@ -152,32 +154,32 @@ export default function PremiumScreen() {
           <div className="space-y-4 mb-8">
             <Feature
               icon={<Infinity className="h-5 w-5 text-[#D4AF37]" />}
-              title="Scan Unlimited"
-              description="Tidak ada batasan scan harian"
+              title={t("premium.feature.scans")}
+              description={t("premium.no_daily_limit")}
               delay={0.1}
             />
             <Feature
               icon={<MessageCircle className="h-5 w-5 text-[#D4AF37]" />}
-              title="AI Chat Sous-Chef Premium"
-              description="Tanya jawab tidak terbatas dengan AI"
+              title={t("premium.chat_title")}
+              description={t("premium.chat_desc")}
               delay={0.2}
             />
             <Feature
               icon={<Flame className="h-5 w-5 text-[#D4AF37]" />}
-              title="AI Taste Tweaker"
-              description="Ubah resep sesuai selera (pedas, diet, dll)"
+              title={t("premium.taste_title")}
+              description={t("premium.taste_desc")}
               delay={0.3}
             />
             <Feature
               icon={<Sparkles className="h-5 w-5 text-[#D4AF37]" />}
-              title="AI Vision Advanced"
-              description="Deteksi bahan lebih akurat & cepat"
+              title={t("premium.vision_title")}
+              description={t("premium.vision_desc")}
               delay={0.4}
             />
             <Feature
               icon={<ChefHat className="h-5 w-5 text-[#D4AF37]" />}
-              title="Resep Eksklusif"
-              description="Akses ribuan resep premium"
+              title={t("premium.exclusive_recipes")}
+              description={t("premium.exclusive_recipes_desc")}
               delay={0.5}
             />
           </div>
@@ -203,7 +205,7 @@ export default function PremiumScreen() {
 
         {/* Payment Methods */}
         <div className="bg-card rounded-3xl p-6 shadow-lg">
-          <h3 className="font-medium mb-4 text-center">Metode Pembayaran</h3>
+          <h3 className="font-medium mb-4 text-center">{t("premium.payment_methods")}</h3>
           <div className="flex justify-center items-center gap-3 flex-wrap">
             <PaymentBadge label="GoPay" onClick={handleUpgrade} />
             <PaymentBadge label="OVO" onClick={handleUpgrade} />
@@ -221,17 +223,17 @@ export default function PremiumScreen() {
 
         {/* Free vs Premium Comparison */}
         <div className="bg-card rounded-3xl p-6 shadow-lg">
-          <h3 className="font-medium mb-4 text-center">Perbandingan Paket</h3>
+          <h3 className="font-medium mb-4 text-center">{t("premium.package_comparison")}</h3>
           <div className="space-y-3">
             <ComparisonRow
-              feature="Scan Harian"
-              free="3 scan/hari"
-              premium="Unlimited"
+              feature={t("premium.daily_scan")}
+              free={t("premium.free_scan")}
+              premium={t("common.unlimited")}
             />
             <ComparisonRow
               feature="AI Chat"
-              free="Terbatas"
-              premium="Unlimited"
+              free={t("premium.limited")}
+              premium={t("common.unlimited")}
             />
             <ComparisonRow
               feature="Taste Tweaker"
@@ -249,13 +251,13 @@ export default function PremiumScreen() {
         {/* Disclaimer */}
         <div className="text-center text-xs text-muted-foreground space-y-2 pb-6">
           <p>
-            Dengan melakukan upgrade, Anda menyetujui{" "}
+            {t("premium.disclaimer_1")}{" "}
             <a href="#" className="text-primary hover:underline">
-              Syarat & Ketentuan
+              {t("settings.terms")}
             </a>{" "}
-            kami
+            {t("premium.disclaimer_2")}
           </p>
-          <p>Berlangganan dapat dibatalkan kapan saja</p>
+          <p>{t("premium.cancel_anytime")}</p>
         </div>
       </div>
 

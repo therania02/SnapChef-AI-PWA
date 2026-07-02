@@ -11,6 +11,7 @@ import { toast } from "sonner";
 // IMPORT CUSTOM HOOKS BACKEND NODE.JS
 import { useRecipes } from "../../../hooks/useRecipes.js";
 import { useUser } from "../../lib/userContext.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 const determineRecipeTags = (title = "") => {
   const t = title.toLowerCase();
@@ -31,6 +32,7 @@ const determineRecipeTags = (title = "") => {
 export default function CookbookScreen() {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { t } = useLanguage();
   const { favorites } = useFavorites();
   const { selectedPreferences } = usePreferences();
 
@@ -107,13 +109,13 @@ export default function CookbookScreen() {
   const handleDelete = async (e, recipeId) => {
     e.stopPropagation();
 
-    if (window.confirm("Yakin ingin menghapus resep ini dari Cookbook?")) {
+    if (window.confirm(t("cookbook.confirm_delete"))) {
       try {
         await removeRecipe(recipeId);
-        toast.success("Resep berhasil dihapus!");
+        toast.success(t("cookbook.delete_success"));
         fetchRecipes();
       } catch (err) {
-        toast.error("Gagal menghapus resep.");
+        toast.error(t("cookbook.delete_error"));
       }
     }
   };
@@ -160,22 +162,22 @@ export default function CookbookScreen() {
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl flex-1" style={{ fontFamily: 'var(--font-family-display)' }}>
-              Cookbook Saya
+              {t("cookbook.my_title")}
             </h1>
             <Heart className="h-6 w-6 fill-current" />
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-            <FilterChip label="Semua" active={filter === "all"} onClick={() => setFilter("all")} />
-            <FilterChip label="Halal" active={filter === "halal"} onClick={() => setFilter("halal")} />
-            <FilterChip label="Vegetarian" active={filter === "vegetarian"} onClick={() => setFilter("vegetarian")} />
-            <FilterChip label="Vegan" active={filter === "vegan"} onClick={() => setFilter("vegan")} />
+            <FilterChip label={t("cookbook.all")} active={filter === "all"} onClick={() => setFilter("all")} />
+            <FilterChip label={t("cookbook.halal")} active={filter === "halal"} onClick={() => setFilter("halal")} />
+            <FilterChip label={t("cookbook.vegetarian")} active={filter === "vegetarian"} onClick={() => setFilter("vegetarian")} />
+            <FilterChip label={t("cookbook.vegan")} active={filter === "vegan"} onClick={() => setFilter("vegan")} />
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-            <SortChip label="Semua" active={sortBy === "all"} onClick={() => setSortBy("all")} />
-            <SortChip label="Favorit" active={sortBy === "favorites"} onClick={() => setSortBy("favorites")} />
-            <SortChip label="Terbaru" active={sortBy === "newest"} onClick={() => setSortBy("newest")} />
+            <SortChip label={t("cookbook.all")} active={sortBy === "all"} onClick={() => setSortBy("all")} />
+            <SortChip label={t("cookbook.favorite")} active={sortBy === "favorites"} onClick={() => setSortBy("favorites")} />
+            <SortChip label={t("cookbook.newest")} active={sortBy === "newest"} onClick={() => setSortBy("newest")} />
           </div>
         </div>
       </div>
@@ -190,12 +192,12 @@ export default function CookbookScreen() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 space-y-4">
             <div className="text-6xl">📖</div>
             <div>
-              <h3 className="font-medium mb-2">Cookbook Masih Kosong</h3>
+              <h3 className="font-medium mb-2">{t("cookbook.empty_title")}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Simpan resep favorit Anda di sini
+                {t("cookbook.empty_desc")}
               </p>
               <Button onClick={() => navigate("/home")} className="rounded-2xl">
-                Mulai Scan Sekarang
+                {t("cookbook.start_scan")}
               </Button>
             </div>
           </motion.div>
@@ -259,19 +261,19 @@ export default function CookbookScreen() {
                     <div className="grid grid-cols-4 gap-2 text-center mt-3 pt-3 border-t border-border">
                       <div>
                         <div className="text-sm font-bold text-primary">{recipe.calories}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Kalori</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("recipe.calories")}</div>
                       </div>
                       <div>
                         <div className="text-sm font-bold text-primary">{recipe.protein}g</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Protein</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("recipe.protein")}</div>
                       </div>
                       <div>
                         <div className="text-sm font-bold text-primary">{recipe.carbs}g</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Karbo</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("recipe.carbs")}</div>
                       </div>
                       <div>
                         <div className="text-sm font-bold text-primary">{recipe.prepTime}m</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Waktu</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("recipe.time")}</div>
                       </div>
                     </div>
                   </div>
@@ -297,7 +299,7 @@ export default function CookbookScreen() {
           
           <div className="text-center min-w-[100px]">
             <span className="text-sm font-medium">
-              Page {currentPage} of {totalPages}
+              {t("common.page_of", { current: currentPage, total: totalPages })}
             </span>
           </div>
           

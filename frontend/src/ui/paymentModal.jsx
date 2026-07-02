@@ -13,6 +13,7 @@ import {
 import { Button } from "./button";
 import { Input } from "./input";
 import { toast } from "sonner";
+import { useLanguage } from "../app/lib/languageContext.jsx";
 
 
 const PAYMENT_METHODS = [
@@ -76,6 +77,7 @@ const PAYMENT_METHODS = [
 
 
 export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
+  const { t } = useLanguage();
   const [step, setStep] = useState("method");
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -99,7 +101,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
   const handlePay = () => {
     // Validate based on payment method
     if (selectedMethod?.type === "ewallet" && !phoneNumber) {
-      toast.error("Masukkan nomor telepon Anda");
+      toast.error(t("payment.phone_required"));
       return;
     }
 
@@ -404,7 +406,7 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                           className="rounded-xl"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Notifikasi pembayaran akan dikirim ke nomor ini
+                          {t("payment.notification_phone")}
                         </p>
                       </div>
 
@@ -444,10 +446,10 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                           <li>
                             Buka mobile banking atau ATM {selectedMethod.name.split(" ")[0]}
                           </li>
-                          <li>Pilih menu Transfer ke Virtual Account</li>
-                          <li>Masukkan nomor VA di atas</li>
-                          <li>Transfer sejumlah {formatPrice(amount)}</li>
-                          <li>Simpan bukti transfer</li>
+                          <li>{t("payment.select_va_transfer")}</li>
+                          <li>{t("payment.enter_va")}</li>
+                          <li>{t("payment.transfer_amount", { amount: formatPrice(amount) })}</li>
+                          <li>{t("payment.save_proof")}</li>
                         </ol>
                       </div>
 
@@ -557,9 +559,9 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                   </Button>
 
                   <p className="text-xs text-muted-foreground text-center">
-                    Dengan melanjutkan, Anda menyetujui{" "}
+                    {t("payment.continue_agree")}{" "}
                     <a href="#" className="text-primary hover:underline">
-                      Syarat & Ketentuan
+                      {t("settings.terms")}
                     </a>{" "}
                     SnapChef Premium
                   </p>
@@ -603,9 +605,9 @@ export function PaymentModal({ isOpen, onClose, onSuccess, amount = 49000 }) {
                   <div className="bg-gradient-to-br from-[#D4AF37]/20 to-[#E8C968]/20 border border-[#D4AF37]/30 rounded-2xl p-6 space-y-3">
                     <Crown className="h-10 w-10 text-[#D4AF37] mx-auto" />
                     <div className="space-y-1">
-                      <p className="font-medium text-foreground">Paket Premium Aktif</p>
+                      <p className="font-medium text-foreground">{t("payment.premium_active_package")}</p>
                       <p className="text-sm text-muted-foreground">
-                        Berlaku hingga 10 Mei 2026
+                        {t("payment.valid_until")}
                       </p>
                     </div>
                   </div>

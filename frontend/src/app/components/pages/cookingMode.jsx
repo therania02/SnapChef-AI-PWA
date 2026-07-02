@@ -6,11 +6,13 @@ import { Button } from "../../../ui/button.jsx";
 import { Progress } from "../../../ui/progress.jsx";
 import { mockRecipes } from "../../lib/data.js";
 import { toast } from "sonner";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 export default function CookingModeScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
 
   // --- LOGIKA PENYELAMAT DATA AI ---
   // Menangkap data resep riil yang dikirim dari tombol "Mulai Memasak"
@@ -89,7 +91,7 @@ export default function CookingModeScreen() {
     if (currentStep < recipe.steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      toast.success("Selamat! Masakan Anda selesai! 🎉");
+      toast.success(t("cooking.completed_toast"));
       navigate("/home");
     }
   };
@@ -122,8 +124,8 @@ export default function CookingModeScreen() {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             setIsTimerRunning(false);
-            toast.success("Timer selesai! ⏰", {
-              description: "Lanjut ke langkah berikutnya",
+            toast.success(t("cooking.timer_done"), {
+              description: t("cooking.timer_done_desc"),
             });
             return 0;
           }
@@ -152,14 +154,14 @@ export default function CookingModeScreen() {
             >
               <ArrowLeft className="h-6 w-6" />
             </button>
-            <h1 className="text-lg font-medium">Mode Memasak</h1>
+            <h1 className="text-lg font-medium">{t("cooking.mode")}</h1>
             <div className="w-10" />
           </div>
 
           {/* Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Langkah {currentStep + 1} dari {recipe.steps.length}</span>
+              <span>{t("cooking.step_of", { current: currentStep + 1, total: recipe.steps.length })}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
@@ -189,7 +191,7 @@ export default function CookingModeScreen() {
                 >
                   <img
                     src={currentStepData.image}
-                    alt={`Langkah ${currentStep + 1}`}
+                    alt={t("cooking.step_of", { current: currentStep + 1, total: recipe.steps.length })}
                     className="w-full h-full object-cover"
                   />
                   {/* Step Number Overlay */}
@@ -218,7 +220,7 @@ export default function CookingModeScreen() {
                     <RotateCcwIcon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <div className="flex-1 space-y-2">
                       <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                        🔄 Gunakan bahan pengganti untuk langkah ini:
+                        {t("cooking.substitution_notice")}
                       </p>
                       {stepSubstitutions.map((sub, subIdx) => (
                         <div
@@ -236,7 +238,7 @@ export default function CookingModeScreen() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs px-2 py-0.5 bg-green-600/20 text-green-700 dark:text-green-400 rounded-full font-medium">
-                              Rasio {sub.ratio}
+                              {t("cooking.ratio", { ratio: sub.ratio })}
                             </span>
                           </div>
                           {sub.note && (
@@ -261,7 +263,7 @@ export default function CookingModeScreen() {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <ShoppingBag className="h-5 w-5 text-accent" />
-                    <h3 className="font-medium">Bahan untuk Langkah Ini:</h3>
+                    <h3 className="font-medium">{t("cooking.ingredients_for_step")}</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {currentStepData.ingredients.map((ing, idx) => (
@@ -300,7 +302,7 @@ export default function CookingModeScreen() {
                     <Lightbulb className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-primary mb-1">
-                        💡 Tips untuk Pemula:
+                        {t("cooking.beginner_tips")}
                       </p>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         {currentStepData.tips}
@@ -318,7 +320,7 @@ export default function CookingModeScreen() {
                   className="flex items-center justify-center gap-2 text-primary py-3 bg-primary/5 rounded-2xl"
                 >
                   <Check className="h-5 w-5" />
-                  <span className="text-sm font-medium">Langkah selesai!</span>
+                  <span className="text-sm font-medium">{t("cooking.step_done")}</span>
                 </motion.div>
               )}
             </motion.div>
@@ -338,7 +340,7 @@ export default function CookingModeScreen() {
               className="rounded-2xl"
             >
               <ChevronLeft className="h-5 w-5 mr-1" />
-              Kembali
+              {t("cooking.previous")}
             </Button>
 
             <Button
@@ -347,10 +349,10 @@ export default function CookingModeScreen() {
               className="flex-1 rounded-2xl"
             >
               {currentStep === recipe.steps.length - 1 ? (
-                "Selesai! 🎉"
+                t("cooking.finish")
               ) : (
                 <>
-                  Lanjut
+                  {t("cooking.continue")}
                   <ChevronRight className="h-5 w-5 ml-1" />
                 </>
               )}
@@ -402,14 +404,14 @@ export default function CookingModeScreen() {
           >
             <h3 className="font-medium mb-2">AI Sous-Chef 🧑‍🍳</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              Ada yang ingin ditanyakan tentang langkah ini?
+              {t("cooking.ask_about_step")}
             </p>
             <div className="space-y-2">
               <button className="w-full text-left text-sm p-2 bg-muted rounded-xl hover:bg-muted/80">
-                "Berapa lama harus ditumis?"
+                {t("cooking.question_time")}
               </button>
               <button className="w-full text-left text-sm p-2 bg-muted rounded-xl hover:bg-muted/80">
-                "Bisa ganti bahan ini?"
+                {t("cooking.question_substitute")}
               </button>
             </div>
           </motion.div>

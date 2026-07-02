@@ -6,6 +6,7 @@ import { BottomNav } from '../../../ui/bottomNav';
 import { fetchChatSummaries, getCurrentUserId } from '../../lib/chatApi';
 import { getChatSocket } from '../../lib/chatSocket';
 import { useUser } from '../../lib/userContext.jsx';
+import { useLanguage } from '../../lib/languageContext.jsx';
 
 /* ── Avatar lookup ─────────────────────────────────────────────────────── */
 const AVATAR_MAP = {
@@ -25,10 +26,10 @@ const avatarByName = (name = '') => {
     return key ? AVATAR_MAP[key] : DEFAULT_AVATAR;
 };
 
-const formatTime = (isoString) => {
+const formatTime = (isoString, language = 'id') => {
     if (!isoString) return '';
     try {
-        return new Date(isoString).toLocaleTimeString('id-ID', {
+        return new Date(isoString).toLocaleTimeString(language === 'id' ? 'id-ID' : 'en-US', {
             hour: '2-digit',
             minute: '2-digit',
         });
@@ -48,6 +49,7 @@ export default function MessageScreen() {
     const [error, setError] = useState(null);
 
     const { user } = useUser();
+    const { language, t } = useLanguage();
     
     const [chats, setChats] = useState([]);
     const userId = useMemo(() => getCurrentUserId(user), [user]);
@@ -185,12 +187,12 @@ export default function MessageScreen() {
         >
             {/* Header */}
             <div className="bg-primary text-primary-foreground px-6 pt-8 pb-6 rounded-b-[32px] shadow-md">
-                <h1 className="text-2xl font-bold mb-4">Pesan</h1>
+                <h1 className="text-2xl font-bold mb-4">{t("messages.title")}</h1>
                 <div className="relative flex items-center bg-background/20 rounded-2xl px-4 py-2.5 backdrop-blur-md">
                     <Search className="text-foreground/70 mr-3 h-5 w-5" />
                     <input
                         type="text"
-                        placeholder="Cari obrolan..."
+                        placeholder={t("messages.search")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="bg-transparent text-foreground placeholder:text-foreground/60 focus:outline-none w-full text-sm"
@@ -201,13 +203,13 @@ export default function MessageScreen() {
             <div className="px-6 mt-6">
                 {/* Daftar Teman */}
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                    Teman Memasak
+                    {t("messages.cooking_friends")}
                 </h2>
                 <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
                     {loading ? (
-                        <div className="text-xs text-muted-foreground py-2">Memuat teman...</div>
+                        <div className="text-xs text-muted-foreground py-2">{t("messages.loading_friends")}</div>
                     ) : friends.length === 0 ? (
-                        <div className="text-xs text-muted-foreground py-2 italic">Tidak ada teman lain</div>
+                        <div className="text-xs text-muted-foreground py-2 italic">{t("messages.no_other_friends")}</div>
                     ) : (
                         friends.map((friend) => {
                             const isOnline = onlineUserIds.includes(Number(friend.id));
@@ -239,14 +241,14 @@ export default function MessageScreen() {
 
                 {/* Riwayat Obrolan */}
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mt-5 mb-3">
-                    Obrolan Terakhir
+                    {t("messages.recent_chats")}
                 </h2>
                 <div className="space-y-3">
                     {loading ? (
-                        <div className="text-center text-sm text-muted-foreground py-8">Memuat obrolan...</div>
+                        <div className="text-center text-sm text-muted-foreground py-8">{t("messages.loading_chats")}</div>
                     ) : filteredSummaries.length === 0 ? (
                         <div className="text-center text-xs text-muted-foreground py-12 italic bg-card rounded-2xl border border-gray-100">
-                            Belum ada riwayat pesan.
+                            {t("messages.no_history")}
                         </div>
                     ) : (
                         filteredSummaries.map((summary) => {
@@ -254,7 +256,7 @@ export default function MessageScreen() {
                             const online  = !isGroup && onlineUserIds.includes(Number(summary.opponentId));
 
                             const opponent = {
-                                name: summary.opponentName || 'Teman Masak',
+                                name: summary.opponentName || t("messages.cooking_friend"),
                                 avatar: summary.opponentAvatar || (isGroup ? GROUP_AVATAR : avatarByName(summary.opponentName)),
                             };
 
@@ -293,7 +295,7 @@ export default function MessageScreen() {
 
                                             <div className="flex flex-col items-end gap-1">
                                                 <span className="text-xs text-muted-foreground">
-                                                    {formatTime(summary.lastMessageAt || summary.createdAt)}
+                                                    {formatTime(summary.lastMessageAt || summary.createdAt, language)}
                                                 </span>
 
                                                 {unreadChats[summary.chatId] > 0 && (
@@ -305,7 +307,7 @@ export default function MessageScreen() {
                                         </div>
 
                                         <p className="text-sm text-muted-foreground truncate">
-                                            {summary.text || 'Belum ada pesan'}
+                                            {summary.text || t("messages.no_message")}
                                         </p>
                                     </div>
                                 </motion.div>

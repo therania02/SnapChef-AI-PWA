@@ -16,6 +16,7 @@ import {
   tweakRecipeWithAI
 }
   from "../../lib/geminiVision";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 // --- FUNGSI PARSER CERDAS UNTUK BAHAN ---
 const parseIngredientLine = (line) => {
@@ -74,6 +75,7 @@ export default function RecipeDetailScreen() {
   // 👇 PINDAHKAN KETIGA HOOK INI KE SINI 👇
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useUser();
+  const { t } = useLanguage();
   console.log(user);
   const { rateRecipe } = useRecipes();
 
@@ -100,7 +102,7 @@ export default function RecipeDetailScreen() {
     id: incomingRecipe.id || id,
     title: incomingRecipe.title,
     image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
-    type: "AI Recommendation",
+    type: t("recipe.ai_recommendation"),
     isHalal: true,
     isVegetarian: false,
     calories:
@@ -204,8 +206,8 @@ export default function RecipeDetailScreen() {
       delete newSubs[ingredientName];
       return newSubs;
     });
-    toast.success(`Batal mengganti ${ingredientName}`, {
-      description: "Kembali ke bahan asli"
+    toast.success(t("recipe.removed_substitution", { name: ingredientName }), {
+      description: t("recipe.back_original")
     });
   };
 
@@ -217,11 +219,11 @@ export default function RecipeDetailScreen() {
 
   const handleSave = () => {
     toggleFavorite(recipe.id);
-    toast.success(isSaved ? "Dihapus dari Cookbook" : "Disimpan ke Cookbook! ❤️");
+    toast.success(isSaved ? t("recipe.removed_cookbook") : t("recipe.saved_cookbook"));
   };
 
   const handleShare = () => {
-    toast.success("Link resep disalin! Bagikan ke WhatsApp 📱");
+    toast.success(t("recipe.share_success"));
   };
 
   const handleAddToShoppingList = async (ingredient) => {
@@ -238,7 +240,7 @@ export default function RecipeDetailScreen() {
       }
 
       if (!token) {
-        toast.error("Anda harus login terlebih dahulu");
+        toast.error(t("recipe.login_first"));
         return;
       }
 
@@ -267,25 +269,25 @@ export default function RecipeDetailScreen() {
       const result = await response.json();
       if (response.ok && result.success) {
         toast.success(
-          `${ingredient.name} ditambahkan ke keranjang`
+          t("recipe.added_cart", { name: ingredient.name })
         );
       } else {
-        toast.error(result.message || "Gagal menambah ke daftar belanja");
+        toast.error(result.message || t("recipe.add_shopping_failed"));
       }
 
     } catch (error) {
       console.error("Error:", error);
       toast.error(
-        "Gagal menambah ke daftar belanja"
+        t("recipe.add_shopping_failed")
       );
     }
   };
 
   const handleTweakerClick = () => {
     if (!user?.isPremium) {
-      toast.error("AI Taste Tweaker adalah fitur Premium! Upgrade untuk mengakses.", {
+      toast.error(t("recipe.tweaker_premium"), {
         duration: 4000,
-        action: { label: "Upgrade", onClick: () => navigate("/premium") },
+        action: { label: t("common.upgrade"), onClick: () => navigate("/premium") },
       });
       return;
     }
@@ -297,7 +299,7 @@ export default function RecipeDetailScreen() {
 
       if (!user?.isPremium) {
         toast.error(
-          "Premium only"
+          t("recipe.premium_only")
         );
         return;
       }
@@ -338,7 +340,7 @@ export default function RecipeDetailScreen() {
       }
 
       toast.loading(
-        "AI sedang mengubah resep..."
+        t("recipe.tweaking")
       );
 
       const result =
@@ -351,7 +353,7 @@ export default function RecipeDetailScreen() {
 
       if (!result) {
         toast.error(
-          "AI gagal memproses"
+          t("recipe.tweak_failed")
         );
         return;
       }
@@ -379,9 +381,9 @@ export default function RecipeDetailScreen() {
 
       setIsRatingSaved(true);
       setShowRatingConfirm(false);
-      toast.success(`Rating ${rating} bintang berhasil disimpan ke database!`);
+      toast.success(t("recipe.rating_saved_db", { rating }));
     } catch (error) {
-      toast.error("Gagal menyimpan rating ke database: " + error.message);
+      toast.error(t("recipe.rating_save_failed", { message: error.message }));
     }
   };
 
@@ -492,19 +494,19 @@ export default function RecipeDetailScreen() {
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-2xl font-medium text-primary">{Math.round((recipe.calories || 0) * servingMultiplier)}</div>
-              <div className="text-xs text-muted-foreground">Kalori</div>
+              <div className="text-xs text-muted-foreground">{t("recipe.calories")}</div>
             </div>
             <div>
               <div className="text-2xl font-medium text-primary">{Math.round((recipe.protein || 0) * servingMultiplier)}g</div>
-              <div className="text-xs text-muted-foreground">Protein</div>
+              <div className="text-xs text-muted-foreground">{t("recipe.protein")}</div>
             </div>
             <div>
               <div className="text-2xl font-medium text-primary">{Math.round((recipe.carbs || 0) * servingMultiplier)}g</div>
-              <div className="text-xs text-muted-foreground">Karbo</div>
+              <div className="text-xs text-muted-foreground">{t("recipe.carbs")}</div>
             </div>
             <div>
               <div className="text-2xl font-medium text-primary">{displayPrepTime}m</div>
-              <div className="text-xs text-muted-foreground">Waktu</div>
+              <div className="text-xs text-muted-foreground">{t("recipe.time")}</div>
             </div>
           </div>
         </div>
@@ -512,7 +514,7 @@ export default function RecipeDetailScreen() {
         {/* Portion Scaler */}
         <div className="bg-card rounded-3xl p-6 shadow-lg">
           <div className="flex justify-between items-center">
-            <h3 className="font-medium">Porsi</h3>
+            <h3 className="font-medium">{t("recipe.servings")}</h3>
             <div className="flex items-center gap-4">
               <motion.button whileTap={{ scale: 0.9 }} onClick={() => setServings(Math.max(1, servings - 1))} className="p-2 bg-muted rounded-full hover:bg-muted/80">
                 <Minus className="h-4 w-4" />
@@ -552,8 +554,8 @@ export default function RecipeDetailScreen() {
               </div>
               <p className="text-xs text-muted-foreground">
                 {user?.isPremium
-                  ? "Ubah resep sesuai selera Anda"
-                  : "Premium - Ubah resep sesuai selera Anda"}
+                  ? t("recipe.tweaker_desc")
+                  : t("recipe.tweaker_desc_locked")}
               </p>
             </div>
           </div>
@@ -563,10 +565,10 @@ export default function RecipeDetailScreen() {
               animate={{ opacity: 1, height: "auto" }}
               className="mt-4 space-y-2"
             >
-              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("spicy")}>🌶️ Bikin Lebih Pedas</Button>
-              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("less-sugar")}>🍬 Bikin Versi Rendah Gula</Button>
-              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("healthier")}>🥗 Bikin Lebih Sehat</Button>
-              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("no-chili")}>🧊 Bikin Tanpa Cabai</Button>
+              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("spicy")}>{t("recipe.spicier")}</Button>
+              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("less-sugar")}>{t("recipe.less_sugar")}</Button>
+              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("healthier")}>{t("recipe.healthier")}</Button>
+              <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("no-chili")}>{t("recipe.no_chili")}</Button>
               <Button variant="outline" className="w-full rounded-2xl justify-start" onClick={() => handleTweakRequest("less-spicy")}>🌶️↓ Kurangi Pedasnya</Button>
 
               <div className="relative py-2">
@@ -574,7 +576,7 @@ export default function RecipeDetailScreen() {
                   <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="bg-gradient-to-r from-accent/10 to-primary/10 px-2 text-muted-foreground">Atau tulis preferensi sendiri</span>
+                  <span className="bg-gradient-to-r from-accent/10 to-primary/10 px-2 text-muted-foreground">{t("recipe.custom_pref")}</span>
                 </div>
               </div>
 
@@ -584,7 +586,7 @@ export default function RecipeDetailScreen() {
                   value={customRequest}
                   onChange={(e) => setCustomRequest(e.target.value)}
                   onKeyPress={(e) => { if (e.key === 'Enter') handleTweakRequest("custom"); }}
-                  placeholder="Contoh: Bikin versi tanpa MSG"
+                  placeholder={t("recipe.custom_placeholder")}
                   className="w-full rounded-2xl px-4 py-3 bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
                 <Button
@@ -602,7 +604,7 @@ export default function RecipeDetailScreen() {
 
         {/* Ingredients */}
         <div className="space-y-4">
-          <h2 className="text-xl font-medium">Bahan-Bahan</h2>
+          <h2 className="text-xl font-medium">{t("recipe.ingredients")}</h2>
           <div className="space-y-3">
             {(recipe.ingredients || []).map((ingredient, index) => {
               const substitution = ingredientSubstitutions[ingredient.name];
@@ -631,7 +633,7 @@ export default function RecipeDetailScreen() {
                         <motion.button whileHover={{ scale: 1.1 }} animate={{ x: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} onClick={() =>
                           handleAddToShoppingList(ingredient)
                         } className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-xs">
-                          Beli
+                          {t("shopping.buy")}
                         </motion.button>
                       )}
                     </div>
@@ -644,7 +646,7 @@ export default function RecipeDetailScreen() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <ArrowRight className="h-4 w-4 text-green-600" />
-                              <span className="text-xs font-medium text-green-700 dark:text-green-400">Diganti dengan:</span>
+                              <span className="text-xs font-medium text-green-700 dark:text-green-400">{t("recipe.replaced_with")}</span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-green-900 dark:text-green-100">{substitution.substitute.name}</span>
@@ -654,7 +656,7 @@ export default function RecipeDetailScreen() {
                             </div>
                             <div className="mt-2 space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs px-2 py-0.5 bg-green-600/20 text-green-700 dark:text-green-400 rounded-full font-medium">Rasio {substitution.substitute.ratio}</span>
+                                <span className="text-xs px-2 py-0.5 bg-green-600/20 text-green-700 dark:text-green-400 rounded-full font-medium">{t("recipe.ratio", { ratio: substitution.substitute.ratio })}</span>
                               </div>
                               {substitution.substitute.note && <p className="text-xs text-muted-foreground italic">💡 {substitution.substitute.note}</p>}
                             </div>
@@ -680,7 +682,7 @@ export default function RecipeDetailScreen() {
 
         {/* Steps (Tanpa Timer) */}
         <div className="space-y-4">
-          <h2 className="text-xl font-medium">Cara Memasak</h2>
+          <h2 className="text-xl font-medium">{t("recipe.cooking_steps")}</h2>
           <div className="space-y-4">
             {(recipe.steps || []).map((step, index) => {
               return (
@@ -691,7 +693,7 @@ export default function RecipeDetailScreen() {
                         {index + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium">Langkah {index + 1}</p>
+                        <p className="text-sm font-medium">{t("recipe.step", { count: index + 1 })}</p>
                       </div>
                     </div>
                   </div>
@@ -720,8 +722,8 @@ export default function RecipeDetailScreen() {
           <div className="flex items-center gap-3">
             <MessageCircle className="h-6 w-6 text-primary" />
             <div className="flex-1">
-              <h3 className="font-medium">Tanya AI Sous-Chef</h3>
-              <p className="text-xs text-muted-foreground">"Kalau gak ada saus tiram, bisa diganti apa?"</p>
+              <h3 className="font-medium">{t("recipe.ask_ai")}</h3>
+              <p className="text-xs text-muted-foreground">{t("recipe.ask_example")}</p>
             </div>
           </div>
           {showChat && (
@@ -743,9 +745,9 @@ export default function RecipeDetailScreen() {
                   ))}
                 </div>
               )}
-              <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter') handleChatSubmit(); }} placeholder="Tulis pertanyaan Anda..." className="w-full rounded-2xl px-4 py-3 bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter') handleChatSubmit(); }} placeholder={t("recipe.question_placeholder")} className="w-full rounded-2xl px-4 py-3 bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
               <Button size="sm" variant="default" className="w-full rounded-2xl" onClick={handleChatSubmit} disabled={!chatInput.trim()}>
-                <Send className="h-4 w-4 mr-1" /> Kirim
+                <Send className="h-4 w-4 mr-1" /> {t("recipe.send")}
               </Button>
             </motion.div>
           )}
@@ -753,7 +755,7 @@ export default function RecipeDetailScreen() {
 
         {/* Rating */}
         <div className="bg-card rounded-3xl p-6 shadow-lg">
-          <h3 className="font-medium mb-3">Beri Rating</h3>
+          <h3 className="font-medium mb-3">{t("cooking.rate_recipe")}</h3>
           <div className="flex gap-2 mb-3">
             {[1, 2, 3, 4, 5].map((star) => (
               <motion.button key={star} whileHover={!isRatingSaved ? { scale: 1.2 } : {}} whileTap={!isRatingSaved ? { scale: 0.9 } : {}} className={`text-2xl ${isRatingSaved ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`} onClick={() => handleRating(star)} onMouseEnter={() => !isRatingSaved && setHoveredStar(star)} onMouseLeave={() => !isRatingSaved && setHoveredStar(0)} disabled={isRatingSaved}>
@@ -764,15 +766,15 @@ export default function RecipeDetailScreen() {
 
           {rating > 0 && !isRatingSaved && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-              <p className="text-sm text-muted-foreground">Anda memilih rating {rating} bintang</p>
+              <p className="text-sm text-muted-foreground">{t("recipe.selected_rating", { rating })}</p>
               {!showRatingConfirm ? (
-                <Button size="sm" variant="default" className="w-full rounded-2xl" onClick={handleSaveRating}>Simpan Rating</Button>
+                <Button size="sm" variant="default" className="w-full rounded-2xl" onClick={handleSaveRating}>{t("recipe.save_rating")}</Button>
               ) : (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="bg-accent/10 rounded-2xl p-4 space-y-3">
-                  <p className="text-sm font-medium">Apakah Anda yakin memberi rating {rating} bintang?</p>
+                  <p className="text-sm font-medium">{t("recipe.confirm_rating", { rating })}</p>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="default" className="flex-1 rounded-2xl" onClick={confirmSaveRating}>Ya, Simpan</Button>
-                    <Button size="sm" variant="outline" className="flex-1 rounded-2xl" onClick={cancelSaveRating}>Batal</Button>
+                    <Button size="sm" variant="default" className="flex-1 rounded-2xl" onClick={confirmSaveRating}>{t("recipe.yes_save")}</Button>
+                    <Button size="sm" variant="outline" className="flex-1 rounded-2xl" onClick={cancelSaveRating}>{t("common.cancel")}</Button>
                   </div>
                 </motion.div>
               )}
@@ -782,7 +784,7 @@ export default function RecipeDetailScreen() {
           {isRatingSaved && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-primary/10 rounded-2xl p-3 border-2 border-primary/20">
               <p className="text-sm font-medium text-primary">✓ Rating {rating} bintang tersimpan</p>
-              <p className="text-xs text-muted-foreground mt-1">Terima kasih atas feedback Anda!</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("recipe.thanks_feedback")}</p>
             </motion.div>
           )}
         </div>
@@ -793,7 +795,7 @@ export default function RecipeDetailScreen() {
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0">
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button size="lg" className="w-full rounded-2xl" onClick={handleStartCooking}>
-              Mulai Memasak
+              {t("recipe.start_cooking")}
             </Button>
           </motion.div>
         </div>

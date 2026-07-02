@@ -174,13 +174,13 @@ export default function HomeScreen() {
     } catch (err) {
       console.error("Camera error:", err);
       if (err.name === "NotAllowedError") {
-        toast.error("Izin kamera ditolak");
+        toast.error(t("home.camera_permission_denied"));
       } else if (err.name === "NotFoundError") {
-        toast.error("Kamera tidak ditemukan");
+        toast.error(t("home.camera_not_found"));
       } else if (err.name === "NotReadableError") {
-        toast.error("Kamera sedang digunakan aplikasi lain");
+        toast.error(t("home.camera_busy"));
       } else {
-        toast.error("Tidak bisa akses kamera");
+        toast.error(t("home.camera_access_error"));
       }
     }
   };
@@ -202,7 +202,7 @@ export default function HomeScreen() {
     if (loadingScan) return;
 
     setLoadingScan(true);
-    toast.loading("Menganalisis masakan...", { id: "scan-loading" });
+    toast.loading(t("home.analyzing_food"), { id: "scan-loading" });
     try {
       const resized = await resizeImage(base64Image);
 
@@ -227,14 +227,14 @@ export default function HomeScreen() {
       } catch (parseError) {
         const rawText = await response.text();
         console.error("Backend returned invalid JSON:", rawText, parseError);
-        throw new Error("Respons backend tidak valid. Silakan coba lagi.");
+        throw new Error(t("home.invalid_backend_response"));
       }
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Gagal memproses gambar");
       }
 
-      toast.success("Scan selesai!", { id: "scan-loading" });
+      toast.success(t("home.scan_done"), { id: "scan-loading" });
 
       if (!user?.isPremium && typeof result.data.scanLimit === "number") {
         const remaining = Math.max(result.data.scanLimit, 0);
@@ -262,7 +262,7 @@ export default function HomeScreen() {
 
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Terjadi kesalahan saat memproses gambar", { id: "scan-loading" });
+      toast.error(error.message || t("home.process_image_error"), { id: "scan-loading" });
     } finally {
       setLoadingScan(false);
     }
@@ -272,14 +272,14 @@ export default function HomeScreen() {
     if (loadingScan) return;
 
     if (!canScan()) {
-      toast.error("Limit scan harian tercapai!", {
-        action: { label: "Upgrade", onClick: () => navigate("/premium") },
+      toast.error(t("home.daily_limit_reached"), {
+        action: { label: t("common.upgrade"), onClick: () => navigate("/premium") },
       });
       return;
     }
 
     if (!videoRef.current || videoRef.current.videoWidth === 0) {
-      toast.error("Kamera belum siap");
+      toast.error(t("home.camera_not_ready"));
       return;
     }
 
@@ -302,8 +302,8 @@ export default function HomeScreen() {
     if (loadingScan) return;
 
     if (!canScan()) {
-      toast.error("Limit scan harian tercapai!", {
-        action: { label: "Upgrade", onClick: () => navigate("/premium") },
+      toast.error(t("home.daily_limit_reached"), {
+        action: { label: t("common.upgrade"), onClick: () => navigate("/premium") },
       });
       return;
     }
@@ -312,7 +312,7 @@ export default function HomeScreen() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("File harus berupa gambar");
+      toast.error(t("home.image_only"));
       return;
     }
 
@@ -332,18 +332,18 @@ export default function HomeScreen() {
     addPost(postData);
     setMainTab("gallery");
     setGalleryTab("my");
-    toast.success("Masakan berhasil dibagikan!");
+    toast.success(t("home.post_shared"));
   };
 
   const handleDeletePost = (postId) => {
     deletePost(postId);
-    toast.success("Masakan berhasil dihapus!");
+    toast.success(t("home.post_deleted"));
   };
 
   const handleUpdatePrivacy = (postId, newPrivacy) => {
     updatePostPrivacy(postId, newPrivacy);
-    const privacyLabel = newPrivacy === "public" ? "Publik" : newPrivacy === "friends" ? "Teman" : "Privat";
-    toast.success(`Privacy diubah ke ${privacyLabel}`);
+    const privacyLabel = newPrivacy === "public" ? t("home.public") : newPrivacy === "friends" ? t("home.friends") : t("post.private");
+    toast.success(t("home.privacy_changed", { label: privacyLabel }));
   };
 
   const getGreeting = () => {
@@ -389,7 +389,7 @@ export default function HomeScreen() {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl" style={{ fontFamily: 'var(--font-family-display)' }}>
                   {/* 👇 PENGECEKAN NAMA: user.name atau user.nama 👇 */}
-                  {user?.name || user?.nama || "Guest"}
+                  {user?.name || user?.nama || t("home.guest")}
                 </h1>
                 {user?.isPremium && (
                   <motion.div animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}>
@@ -406,11 +406,11 @@ export default function HomeScreen() {
           {/* Daily Scan Limit */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 space-y-2 text-foreground">
             <div className="flex justify-between items-center">
-              <span className="text-sm opacity-90">Pencarian hari ini</span>
+              <span className="text-sm opacity-90">{t("home.daily_search")}</span>
               {user?.isPremium ? (
                 <div className="flex items-center gap-1 text-sm font-medium">
                   <Crown className="h-3.5 w-3.5 text-yellow-300" />
-                  <span>Unlimited</span>
+                  <span>{t("common.unlimited")}</span>
                 </div>
               ) : (
                 <span className="text-sm font-medium">
@@ -422,7 +422,7 @@ export default function HomeScreen() {
               <>
                 <Progress value={(scansToday / maxScans) * 100} className="h-2" />
                 <button onClick={() => navigate("/premium")} className="text-xs flex items-center gap-1 hover:underline">
-                  <Crown className="h-3 w-3" /> Upgrade untuk scan unlimited
+                  <Crown className="h-3 w-3" /> {t("home.upgrade_unlimited")}
                 </button>
               </>
             )}
@@ -447,9 +447,9 @@ export default function HomeScreen() {
             </motion.div>
 
             <div className="space-y-2">
-              <h2 className="text-xl" style={{ fontFamily: 'var(--font-family-display)' }}>Foto Bahan Dapur Anda</h2>
+              <h2 className="text-xl" style={{ fontFamily: 'var(--font-family-display)' }}>{t("home.scan_card_title")}</h2>
               <p className="text-sm text-muted-foreground">
-                {loadingScan ? "Mengirim gambar ke server..." : "AI akan mengenali bahan dan membuat resep untuk Anda"}
+                {loadingScan ? t("home.sending_image") : t("home.scan_card_desc")}
               </p>
             </div>
 
@@ -460,9 +460,9 @@ export default function HomeScreen() {
                 </div>
               )}
               <div className="flex gap-3 text-foreground">
-                <Button onClick={startCamera} className="flex-1" disabled={loadingScan}>Buka Kamera</Button>
-                {cameraOn && <Button onClick={handleTakePhoto} className="flex-1" disabled={loadingScan}>📸 Jepret</Button>}
-                <Button variant="outline" onClick={() => !loadingScan && fileInputRef.current?.click()} disabled={loadingScan}>Upload</Button>
+                <Button onClick={startCamera} className="flex-1" disabled={loadingScan}>{t("home.open_camera")}</Button>
+                {cameraOn && <Button onClick={handleTakePhoto} className="flex-1" disabled={loadingScan}>{t("home.take_photo")}</Button>}
+                <Button variant="outline" onClick={() => !loadingScan && fileInputRef.current?.click()} disabled={loadingScan}>{t("home.upload")}</Button>
               </div>
             </div>
           </div>
@@ -473,10 +473,10 @@ export default function HomeScreen() {
           <div className="relative">
             <motion.div className="flex gap-2 p-1 bg-muted rounded-xl" drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={handleTabSwipe}>
               <button onClick={() => setMainTab("gallery")} className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "gallery" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                <ImagePlus className="h-4 w-4" /> Galeri Masakan
+                <ImagePlus className="h-4 w-4" /> {t("home.cooking_gallery")}
               </button>
               <button onClick={() => setMainTab("scan")} className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mainTab === "scan" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                <History className="h-4 w-4" /> Riwayat
+                <History className="h-4 w-4" /> {t("home.history")}
               </button>
             </motion.div>
 
@@ -490,11 +490,11 @@ export default function HomeScreen() {
             {mainTab === "scan" ? (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium text-sm text-muted-foreground">{scanHistory.length} hasil terakhir</h3>
-                  <button onClick={() => navigate("/scan-history")} className="text-sm text-primary hover:underline">Lihat Semua</button>
+                  <h3 className="font-medium text-sm text-muted-foreground">{t("home.latest_results", { count: scanHistory.length })}</h3>
+                  <button onClick={() => navigate("/scan-history")} className="text-sm text-primary hover:underline">{t("home.view_all")}</button>
                 </div>
                 <div className="space-y-3">
-                  {scanHistory.length === 0 && <p className="text-center text-sm text-muted-foreground">Belum ada riwayat scan</p>}
+                  {scanHistory.length === 0 && <p className="text-center text-sm text-muted-foreground">{t("home.no_scan_history")}</p>}
                   {scanHistory.map((scan, index) => (
                     <motion.div key={scan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => handleViewScanFromHome(scan)} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
@@ -503,7 +503,7 @@ export default function HomeScreen() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-muted-foreground">{new Date(scan.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
                         <p className="font-medium truncate">{scan.ingredients.join(", ")}</p>
-                        <p className="text-sm text-primary">{scan.recipesGenerated} resep dihasilkan</p>
+                        <p className="text-sm text-primary">{t("home.recipes_generated", { count: scan.recipesGenerated })}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -513,17 +513,17 @@ export default function HomeScreen() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="font-medium text-sm text-muted-foreground">
-                    {galleryTab === "public" ? `${getPublicPosts().length} masakan publik` : galleryTab === "friends" ? `${getFriendsPosts().length} masakan dari teman` : `${myPosts.length} masakan Anda`}
+                    {galleryTab === "public" ? t("home.public_cooking_count", { count: getPublicPosts().length }) : galleryTab === "friends" ? t("home.friends_cooking_count", { count: getFriendsPosts().length }) : t("home.my_cooking_count", { count: myPosts.length })}
                   </h3>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowUploadModal(true)} className="flex items-center gap-1 text-sm text-primary hover:underline">
-                    <Plus className="h-4 w-4" /> Bagikan
+                    <Plus className="h-4 w-4" /> {t("home.share")}
                   </motion.button>
                 </div>
 
                 <div className="flex gap-2 p-1 bg-card border border-border rounded-xl">
-                  <button onClick={() => setGalleryTab("public")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "public" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Publik</button>
-                  <button onClick={() => setGalleryTab("friends")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "friends" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Teman</button>
-                  <button onClick={() => setGalleryTab("my")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "my" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Saya ({myPosts.length})</button>
+                  <button onClick={() => setGalleryTab("public")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "public" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>{t("home.public")}</button>
+                  <button onClick={() => setGalleryTab("friends")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "friends" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>{t("home.friends")}</button>
+                  <button onClick={() => setGalleryTab("my")} className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${galleryTab === "my" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>{t("home.me")} ({myPosts.length})</button>
                 </div>
 
                 <motion.div
@@ -549,7 +549,7 @@ export default function HomeScreen() {
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
                         <ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">Belum ada masakan yang dibagikan</p>
+                        <p className="text-sm">{t("home.no_shared_cooking")}</p>
                       </div>
                     )
                   ) : galleryTab === "friends" ? (
@@ -562,7 +562,7 @@ export default function HomeScreen() {
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
                         <ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">Belum ada masakan dari teman</p>
+                        <p className="text-sm">{t("home.no_friends_cooking")}</p>
                       </div>
                     )
                   ) : myPosts.length > 0 ? (
@@ -580,9 +580,9 @@ export default function HomeScreen() {
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
                       <ImagePlus className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm mb-4">Belum ada masakan yang Anda bagikan</p>
+                      <p className="text-sm mb-4">{t("home.no_my_cooking")}</p>
                       <Button onClick={() => setShowUploadModal(true)} className="rounded-xl">
-                        <Plus className="h-4 w-4 mr-2" /> Bagikan Masakan Pertama
+                        <Plus className="h-4 w-4 mr-2" /> {t("home.share_first_cooking")}
                       </Button>
                     </div>
                   )}

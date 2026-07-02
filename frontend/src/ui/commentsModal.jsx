@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { useCookingPosts } from "../app/lib/cookingPostContext";
 import { useUser } from "../app/lib/userContext.jsx"; 
 import { toast } from "sonner";
+import { useLanguage } from "../app/lib/languageContext.jsx";
 
 export function CommentsModal({ isOpen, onClose, post }) {
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const { user } = useUser(); // Sekarang useUser sudah terdefinisi dan tidak error lagi
   const { getComments, fetchComments, addComment, deleteComment, updateComment } = useCookingPosts(); // Ambil updateComment dari context
+  const { language, t } = useLanguage();
   const comments = getComments(post?.id);
   const commentsEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -44,7 +46,7 @@ export function CommentsModal({ isOpen, onClose, post }) {
     } else {
       // Logic untuk TAMBAH KOMENTAR BARU ke Backend
       await addComment(post.id, commentText.trim());
-      toast.success("Komentar berhasil ditambahkan!");
+      toast.success(t("comments.added"));
     }
 
     setCommentText("");
@@ -59,9 +61,9 @@ export function CommentsModal({ isOpen, onClose, post }) {
   };
 
   const handleDelete = (commentId) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus komentar ini?")) {
+    if (window.confirm(t("comments.confirm_delete"))) {
       deleteComment(post.id, commentId);
-      toast.success("Komentar berhasil dihapus!");
+      toast.success(t("comments.deleted"));
     }
   };
 
@@ -73,11 +75,11 @@ export function CommentsModal({ isOpen, onClose, post }) {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "Baru saja";
-    if (diffMins < 60) return `${diffMins} menit lalu`;
-    if (diffHours < 24) return `${diffHours} jam lalu`;
-    if (diffDays < 7) return `${diffDays} hari lalu`;
-    return commentDate.toLocaleDateString("id-ID", {
+    if (diffMins < 1) return t("comments.just_now");
+    if (diffMins < 60) return t("comments.minutes_ago", { count: diffMins });
+    if (diffHours < 24) return t("comments.hours_ago", { count: diffHours });
+    if (diffDays < 7) return t("comments.days_ago", { count: diffDays });
+    return commentDate.toLocaleDateString(language === "id" ? "id-ID" : "en-US", {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -115,7 +117,7 @@ export function CommentsModal({ isOpen, onClose, post }) {
             {/* Header */}
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-semibold">
-                Komentar ({comments.length})
+                {t("comments.title")} ({comments.length})
               </h3>
               <button
                 onClick={onClose}
@@ -156,7 +158,7 @@ export function CommentsModal({ isOpen, onClose, post }) {
                       <div className="flex-1 min-w-0">
                         <div className="bg-muted rounded-2xl px-4 py-3 relative group">
                           <p className="font-bold text-xs text-primary">
-                            {comment.userName || "Guest"}
+                            {comment.userName || t("home.guest")}
                           </p>
                           
                           {/* Teks Komentar */}
@@ -183,14 +185,14 @@ export function CommentsModal({ isOpen, onClose, post }) {
                                 className="text-[10px] font-medium text-primary hover:underline flex items-center gap-1"
                               >
                                 <Edit2 className="h-3 w-3" />
-                                Edit
+                                {t("common.edit")}
                               </button>
                               <button
                                 onClick={() => handleDelete(comment.id)}
                                 className="text-[10px] font-medium text-destructive hover:underline flex items-center gap-1"
                               >
                                 <Trash2 className="h-3 w-3" />
-                                Hapus
+                                {t("common.delete")}
                               </button>
                             </div>
                           )}
@@ -201,8 +203,8 @@ export function CommentsModal({ isOpen, onClose, post }) {
                 </div>
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
-                  <p className="text-sm">Belum ada komentar</p>
-                  <p className="text-xs mt-1">Jadilah yang pertama berkomentar!</p>
+                  <p className="text-sm">{t("comments.empty")}</p>
+                  <p className="text-xs mt-1">{t("comments.be_first")}</p>
                 </div>
               )}
               <div ref={commentsEndRef} />
@@ -216,7 +218,7 @@ export function CommentsModal({ isOpen, onClose, post }) {
                     ref={textareaRef}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder={editingCommentId ? "Edit komentar Anda..." : "Tulis komentar..."}
+                    placeholder={editingCommentId ? t("comments.edit_placeholder") : t("comments.write_placeholder")}
                     rows={1}
                     maxLength={500}
                     className="w-full px-4 py-3 bg-muted rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-primary text-sm max-h-32"
@@ -243,7 +245,7 @@ export function CommentsModal({ isOpen, onClose, post }) {
                     }}
                     className="text-xs text-muted-foreground px-2 py-3 hover:underline"
                   >
-                    Batal
+                    {t("common.cancel")}
                   </button>
                 )}
 

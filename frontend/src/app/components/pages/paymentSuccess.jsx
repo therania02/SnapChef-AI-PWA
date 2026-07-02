@@ -3,13 +3,15 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { useUser } from "../../lib/userContext.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 export default function PaymentSuccessScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setUser } = useUser();
+  const { t } = useLanguage();
   const [status, setStatus] = useState("loading");
-  const [message, setMessage] = useState("Memverifikasi pembayaran...");
+  const [message, setMessage] = useState(t("payment.verifying"));
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -18,11 +20,11 @@ export default function PaymentSuccessScreen() {
         const token = localStorage.getItem("token");
 
         if (!orderId) {
-          throw new Error("Order ID tidak ditemukan");
+          throw new Error(t("payment.order_missing"));
         }
 
         if (!token) {
-          throw new Error("Token login tidak ditemukan. Silakan login ulang.");
+          throw new Error(t("payment.token_missing"));
         }
 
         const response = await fetch(
@@ -36,21 +38,21 @@ export default function PaymentSuccessScreen() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Pembayaran belum berhasil");
+          throw new Error(data.message || t("payment.not_success"));
         }
 
         localStorage.setItem("token", data.token);
         setUser(data.user);
         setStatus("success");
-        setMessage("Pembayaran berhasil! Akun Premium sudah aktif.");
+        setMessage(t("payment.success_message"));
       } catch (error) {
         setStatus("error");
-        setMessage(error.message || "Gagal memverifikasi pembayaran");
+        setMessage(error.message || t("payment.verify_failed"));
       }
     };
 
     verifyPayment();
-  }, [searchParams, setUser]);
+  }, [searchParams, setUser, t]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background px-6">
@@ -58,7 +60,7 @@ export default function PaymentSuccessScreen() {
         {status === "loading" && (
           <>
             <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin text-primary" />
-            <h1 className="text-2xl font-bold mb-2">Mohon Tunggu</h1>
+            <h1 className="text-2xl font-bold mb-2">{t("payment.wait")}</h1>
             <p className="text-muted-foreground">{message}</p>
           </>
         )}
@@ -66,10 +68,10 @@ export default function PaymentSuccessScreen() {
         {status === "success" && (
           <>
             <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-green-500" />
-            <h1 className="text-2xl font-bold mb-2">Premium Aktif</h1>
+            <h1 className="text-2xl font-bold mb-2">{t("payment.active")}</h1>
             <p className="text-muted-foreground mb-6">{message}</p>
             <Button onClick={() => navigate("/account")} className="w-full">
-              Lihat Akun
+              {t("payment.view_account")}
             </Button>
           </>
         )}
@@ -77,10 +79,10 @@ export default function PaymentSuccessScreen() {
         {status === "error" && (
           <>
             <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <h1 className="text-2xl font-bold mb-2">Verifikasi Gagal</h1>
+            <h1 className="text-2xl font-bold mb-2">{t("payment.failed")}</h1>
             <p className="text-muted-foreground mb-6">{message}</p>
             <Button onClick={() => navigate("/premium")} className="w-full">
-              Kembali ke Premium
+              {t("payment.back_premium")}
             </Button>
           </>
         )}

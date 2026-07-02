@@ -6,6 +6,7 @@ import { Button } from "../../../ui/button.jsx";
 
 import { useRecipes } from "../../../hooks/useRecipes.js";
 import { useUser } from "../../lib/userContext.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 export default function ScanResultScreen() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function ScanResultScreen() {
 
   const { user } = useUser();
   const { saveRecipe } = useRecipes();
+  const { t } = useLanguage();
 
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [showIngredients, setShowIngredients] = useState(false);
@@ -27,7 +29,7 @@ export default function ScanResultScreen() {
   useEffect(() => {
     // Jika tidak ada data resep yang diterima, tampilkan error
     if (!data) {
-      setError("Tidak ada data resep yang diterima. Silakan kembali ke Home.");
+      setError(t("scan.no_data"));
       setIsAnalyzing(false);
       return;
     }
@@ -84,14 +86,14 @@ export default function ScanResultScreen() {
             carbs,
             prepTime: prepTime,
             image: "https://source.unsplash.com/400x300/?food",
-            type: "AI Recipe"
+            type: t("scan.ai_recipe")
           };
         })
       );
 
       setShowRecipes(true);
     }, 2500);
-  }, [data]);
+  }, [data, t]);
 
   return (
     <div className="min-h-screen bg-background pb-6">
@@ -105,7 +107,7 @@ export default function ScanResultScreen() {
             <ArrowLeft className="h-6 w-6" />
           </button>
           <h1 className="text-xl" style={{ fontFamily: 'var(--font-family-display)' }}>
-            Hasil Scan
+            {t("scan.title")}
           </h1>
         </div>
       </div>
@@ -138,9 +140,9 @@ export default function ScanResultScreen() {
                 🍳
               </motion.div>
               <div className="text-center space-y-2">
-                <h3 className="font-medium">AI sedang menganalisis...</h3>
+                <h3 className="font-medium">{t("scan.analyzing")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Mengenali bahan dan meracik resep terbaik
+                  {t("scan.analyzing_desc")}
                 </p>
               </div>
             </div>
@@ -157,7 +159,7 @@ export default function ScanResultScreen() {
           >
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="font-medium">Bahan Terdeteksi</h2>
+              <h2 className="font-medium">{t("scan.detected_ingredients")}</h2>
             </div>
             {ingredients.length > 0 ? (
               <div className="flex flex-wrap gap-2">
@@ -177,7 +179,7 @@ export default function ScanResultScreen() {
               /* Tampilan ketika array kosong agar UI tidak hilang */
               <div className="py-4 px-2 border-2 border-dashed border-gray-100 rounded-2xl text-center">
                 <p className="text-sm text-muted-foreground italic">
-                  Tidak ada bahan spesifik yang terdeteksi secara otomatis.
+                  {t("scan.no_specific_ingredients")}
                 </p>
               </div>
             )}
@@ -191,7 +193,7 @@ export default function ScanResultScreen() {
               animate={{ opacity: 1 }}
               className="font-medium text-lg"
             >
-              Beberapa Pilihan Resep Untukmu
+              {t("scan.recipe_options")}
             </motion.h2>
 
             {recipes.map((recipe, index) => (
@@ -229,19 +231,19 @@ export default function ScanResultScreen() {
                   <div className="flex justify-around text-center">
                     <div>
                       <p className="text-2xl font-medium text-primary">{recipe.calories}</p>
-                      <p className="text-xs text-muted-foreground">Kalori</p>
+                      <p className="text-xs text-muted-foreground">{t("scan.calories")}</p>
                     </div>
                     <div>
                       <p className="text-2xl font-medium text-primary">{recipe.protein}g</p>
-                      <p className="text-xs text-muted-foreground">Protein</p>
+                      <p className="text-xs text-muted-foreground">{t("scan.protein")}</p>
                     </div>
                     <div>
                       <p className="text-2xl font-medium text-primary">{recipe.carbs}g</p>
-                      <p className="text-xs text-muted-foreground">Karbo</p>
+                      <p className="text-xs text-muted-foreground">{t("scan.carbs")}</p>
                     </div>
                     <div>
                       <p className="text-2xl font-medium text-primary">{recipe.prepTime}m</p>
-                      <p className="text-xs text-muted-foreground">Waktu</p>
+                      <p className="text-xs text-muted-foreground">{t("scan.time")}</p>
                     </div>
                   </div>
 
@@ -250,7 +252,7 @@ export default function ScanResultScreen() {
                     onClick={async (e) => {
                       try {
                         const btn = e.currentTarget;
-                        btn.innerText = "Menyiapkan Resep...";
+                        btn.innerText = t("scan.preparing_recipe");
                         btn.disabled = true;
 
                         // Menggabungkan array bahan & instruksi menjadi string sebelum masuk database
@@ -286,13 +288,13 @@ export default function ScanResultScreen() {
                         });
 
                       } catch (err) {
-                        alert("Gagal menyimpan resep: " + err.message);
-                        e.currentTarget.innerText = "Simpan & Lihat Resep";
+                        alert(t("scan.save_failed", { message: err.message }));
+                        e.currentTarget.innerText = t("scan.save_view_recipe");
                         e.currentTarget.disabled = false;
                       }
                     }}
                   >
-                    Simpan & Lihat Resep
+                    {t("scan.save_view_recipe")}
                   </Button>
                 </div>
               </motion.div>

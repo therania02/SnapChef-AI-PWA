@@ -26,21 +26,23 @@ import { Input } from "../../../ui/input.jsx";
 import { ConfirmDialog } from "../../../ui/confirmDialog.jsx";
 import { FeedbackModal } from "../../../ui/feedbackModal.jsx";
 import { BottomNav } from "../../../ui/bottomNav.jsx";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 export default function AccountScreen() {
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
   const { user, updateUserName, setUser, canChangeName } = useUser();
   const { selectedPreferences, customPreferences } = usePreferences();
+  const { language, t } = useLanguage();
 
   // Mengambil nama user, entah dari property name atau nama
-  const currentName = user?.name || user?.nama || "Guest";
+  const currentName = user?.name || user?.nama || t("account.guest");
   const currentEmail = user?.email || "guest@example.com";
 
   const formatExpiryDate = (dateValue) => {
     if (!dateValue) return "-";
 
-    return new Date(dateValue).toLocaleDateString("id-ID", {
+    return new Date(dateValue).toLocaleDateString(language === "id" ? "id-ID" : "en-US", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -77,13 +79,13 @@ export default function AccountScreen() {
       })
       .catch((err) => {
         console.error(err);
-        toast.error("Gagal mengambil statistik. Silakan coba lagi.");
+        toast.error(t("account.stats_error"));
       });
-  }, []);
+  }, [t]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    toast.success("Berhasil keluar");
+    toast.success(t("account.logout_success"));
     setUser(null);
     navigate("/login");
   };
@@ -91,11 +93,11 @@ export default function AccountScreen() {
   const handleEditNameClick = () => {
     if (!canChangeName()) {
       toast.error(
-        "Anda sudah mengubah nama sekali. Upgrade ke Premium untuk ubah nama tanpa batas!",
+        t("account.name_limit_error"),
         {
           duration: 4000,
           action: {
-            label: "Upgrade",
+            label: t("common.upgrade"),
             onClick: () => navigate("/premium"),
           },
         }
@@ -108,7 +110,7 @@ export default function AccountScreen() {
 
   const handleAttemptSave = () => {
     if (!editedName.trim()) {
-      toast.error("Nama tidak boleh kosong");
+      toast.error(t("account.name_empty"));
       return;
     }
     if (editedName.trim() === currentName) {
@@ -123,10 +125,10 @@ export default function AccountScreen() {
     setIsEditingName(false);
 
     if (user?.isPremium) {
-      toast.success("Nama berhasil diubah");
+      toast.success(t("account.name_changed"));
     } else {
       toast.success(
-        "Nama berhasil diubah. Anda tidak dapat mengubah nama lagi kecuali upgrade ke Premium."
+        t("account.name_changed_free")
       );
     }
   };
@@ -183,7 +185,7 @@ export default function AccountScreen() {
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
                     className="bg-card border-border text-foreground rounded-2xl"
-                    placeholder="Nama Anda"
+                    placeholder={t("account.name_placeholder")}
                   />
                   <div className="flex gap-2">
                     <button
@@ -239,20 +241,20 @@ export default function AccountScreen() {
           {/* Plan Badge */}
           <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border shadow-sm">
             <div>
-              <div className="text-sm text-muted-foreground">Paket Saat Ini</div>
+              <div className="text-sm text-muted-foreground">{t("account.current_plan")}</div>
               <div className="font-medium flex items-center gap-2 text-foreground">
                 {user?.isPremium ? (
                   <>
                     <Crown className="h-4 w-4 text-yellow-500" />
-                    <span>Premium</span>
+                    <span>{t("account.premium_plan")}</span>
                   </>
                 ) : (
-                  "Free Tier"
+                  t("account.free_plan")
                 )}
               </div>
               {user?.isPremium && user?.premiumExpiresAt && (
                 <div className="text-xs text-muted-foreground mt-1">
-                  Aktif sampai {formatExpiryDate(user.premiumExpiresAt)}
+                  {t("account.active_until", { date: formatExpiryDate(user.premiumExpiresAt) })}
                 </div>
               )}
             </div>
@@ -264,7 +266,7 @@ export default function AccountScreen() {
                   onClick={() => navigate("/premium")}
                 >
                   <Crown className="h-4 w-4 mr-1" />
-                  Upgrade
+                  {t("common.upgrade")}
                 </Button>
               </motion.div>
             )}
@@ -276,26 +278,26 @@ export default function AccountScreen() {
       <div className="max-w-md mx-auto px-6 mt-6 space-y-6">
         {/* Stats Card */}
         <div className="bg-card rounded-3xl p-6 shadow-lg border border-border">
-          <h3 className="font-medium mb-4">Statistik Anda</h3>
+          <h3 className="font-medium mb-4">{t("account.your_stats")}</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-medium text-primary">{stats.scan}</div>
-              <div className="text-xs text-muted-foreground">Scan</div>
+              <div className="text-xs text-muted-foreground">{t("account.scan")}</div>
             </div>
             <div>
               <div className="text-2xl font-medium text-primary">{stats.recipe_generated}</div>
-              <div className="text-xs text-muted-foreground">Resep</div>
+              <div className="text-xs text-muted-foreground">{t("account.recipes")}</div>
             </div>
             <div>
               <div className="text-2xl font-medium text-primary">{stats.start_cooking}</div>
-              <div className="text-xs text-muted-foreground">Masakan</div>
+              <div className="text-xs text-muted-foreground">{t("account.cooking")}</div>
             </div>
           </div>
         </div>
 
         {/* Preferences */}
         <div className="bg-card rounded-3xl p-6 shadow-lg space-y-4 border border-border">
-          <h3 className="font-medium">Preferensi Diet</h3>
+          <h3 className="font-medium">{t("account.dietary_preferences")}</h3>
           <div className="flex flex-wrap gap-2">
             {selectedPrefLabels.map((pref) => (
               <Badge key={pref.label} icon={pref.icon} label={pref.label} />
@@ -310,7 +312,7 @@ export default function AccountScreen() {
             onClick={() => navigate("/dietary-profile", { state: { from: 'account' } })}
             className="text-sm text-primary hover:underline"
           >
-            Ubah Preferensi
+            {t("account.change_preferences")}
           </button>
         </div>
 
@@ -318,17 +320,17 @@ export default function AccountScreen() {
         <div className="bg-card rounded-3xl shadow-lg overflow-hidden border border-border">
           <MenuItem
             icon={<ChefHat className="h-5 w-5" />}
-            label="Riwayat Scan"
+            label={t("account.scan_history")}
             onClick={() => navigate("/scan-history")}
           />
           <MenuItem
             icon={<Settings className="h-5 w-5" />}
-            label="Pengaturan"
+            label={t("account.settings")}
             onClick={() => navigate("/settings")}
           />
           <MenuItem
             icon={resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            label={resolvedTheme === "dark" ? "Mode Terang" : "Mode Gelap"}
+            label={resolvedTheme === "dark" ? t("account.light_mode") : t("account.dark_mode")}
             action={
               <Switch
                 checked={resolvedTheme === "dark"}
@@ -338,12 +340,12 @@ export default function AccountScreen() {
           />
           <MenuItem
             icon={<MessageSquare className="h-5 w-5" />}
-            label="Kirim Feedback"
+            label={t("account.send_feedback")}
             onClick={() => setShowFeedbackModal(true)}
           />
           <MenuItem
             icon={<LogOut className="h-5 w-5" />}
-            label="Keluar"
+            label={t("account.logout")}
             onClick={handleLogout}
             danger
           />
@@ -363,14 +365,14 @@ export default function AccountScreen() {
         isOpen={showConfirmDialog}
         onClose={() => setShowConfirmDialog(false)}
         onConfirm={handleConfirmSave}
-        title="Konfirmasi Perubahan Nama"
+        title={t("account.confirm_name_title")}
         description={
           user?.isPremium
-            ? "Apakah Anda yakin ingin mengubah nama Anda?"
-            : "Apakah Anda yakin ingin mengubah nama Anda? Sebagai pengguna gratis, Anda hanya dapat mengubah nama sekali."
+            ? t("account.confirm_name_premium")
+            : t("account.confirm_name_free")
         }
-        confirmText="Ya, Ubah"
-        cancelText="Batal"
+        confirmText={t("account.confirm_change")}
+        cancelText={t("common.cancel")}
         variant="warning"
       />
 

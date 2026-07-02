@@ -2,27 +2,25 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
+import { useLanguage } from "../../lib/languageContext.jsx";
 
 const slides = [
   {
-    title: "Foto Bahan Masakanmu",
-    description:
-      "Kamu bingung mau makan apa hari ini? Foto saja bahan masakanmu, biar kami siapkan resepnya!",
+    title: "onboarding.slide1.title",
+    description: "onboarding.slide1.desc",
     image:
       "https://images.unsplash.com/photo-1604835070732-aec3563c26c3",
   },
   {
-    title: "Dapatkan Resep Instan",
-    description:
-      "Dapatkan beberapa pilihan resep praktis, lengkap dengan kalori & nutrisi.",
+    title: "onboarding.slide2.title",
+    description: "onboarding.slide2.desc",
     image:
       "https://images.unsplash.com/photo-1710389205434-1ecc531d364d",
     highlight: "Sup • Tumis • Goreng",
   },
   {
-    title: "Masak & Belanja Pintar",
-    description:
-      "Ikuti langkah masaknya, beli bahan yang kurang lewat link Shopee.",
+    title: "onboarding.slide3.title",
+    description: "onboarding.slide3.desc",
     image:
       "https://images.unsplash.com/photo-1758874960025-85d40fde6252",
   },
@@ -31,6 +29,7 @@ const slides = [
 export default function OnboardingScreen() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const next = () => {
     if (currentSlide < slides.length - 1) {
@@ -52,7 +51,7 @@ export default function OnboardingScreen() {
       {/* TOP BAR */}
       <div className="flex justify-end p-4 text-sm text-gray-500">
         <button onClick={() => navigate("/login")}>
-          Lewati →
+          {t("onboarding.skip")} →
         </button>
       </div>
 
@@ -63,7 +62,7 @@ export default function OnboardingScreen() {
 
           {/* SWIPE TEXT */}
           <div className="flex justify-end items-center gap-2 text-gray-400 text-xs mb-2">
-            Geser untuk lanjut
+            {t("onboarding.swipe")}
             <MoveRight size={14} />
           </div>
 
@@ -87,16 +86,16 @@ export default function OnboardingScreen() {
               {/* TEXT */}
               <div className="text-center mt-6 space-y-3">
                 <h1 className="text-2xl font-serif text-gray-800">
-                  {slides[currentSlide].title}
+                  {t(slides[currentSlide].title)}
                 </h1>
 
                 <p className="text-gray-600 text-sm leading-relaxed px-2">
-                  {slides[currentSlide].description}
+                  {t(slides[currentSlide].description)}
                 </p>
 
                 {slides[currentSlide].highlight && (
                   <div className="inline-block bg-[#5E87A6] text-foreground px-4 py-1 rounded-full text-sm">
-                    {slides[currentSlide].highlight}
+                    {currentSlide === 1 ? t("onboarding.slide2.highlight") : t(slides[currentSlide].highlight)}
                   </div>
                 )}
               </div>
@@ -127,7 +126,7 @@ export default function OnboardingScreen() {
             className="text-gray-500 flex items-center gap-1"
           >
             <ChevronLeft size={18} />
-            Kembali
+            {t("common.back")}
           </button>
         ) : (
           <div />
@@ -138,8 +137,8 @@ export default function OnboardingScreen() {
           className="bg-[#5E87A6] text-foreground px-6 py-2 rounded-full flex items-center gap-1 shadow-md"
         >
           {currentSlide === slides.length - 1
-            ? "Mulai"
-            : "Lanjut"}
+            ? t("onboarding.start")
+            : t("cooking.continue")}
           <ChevronRight size={18} />
         </button>
       </div>

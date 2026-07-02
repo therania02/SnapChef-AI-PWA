@@ -5,6 +5,7 @@ import { fetchChatMessages, getCurrentUserId, postChatMessage, uploadImage } fro
 import { getChatSocket } from '../../lib/chatSocket';
 import { useUser } from '../../lib/userContext.jsx';
 import { toast } from 'sonner';
+import { useLanguage } from '../../lib/languageContext.jsx';
 
 /* ── Konstanta ─────────────────────────────────────────────────────────── */
 const AVATAR_MAP = {
@@ -38,14 +39,15 @@ const avatarByName = (name = '') => {
     return key ? AVATAR_MAP[key] : DEFAULT_AVATAR;
 };
 
-const fmtTime = (v) =>
-    v ? new Date(v).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
+const fmtTime = (v, language = 'id') =>
+    v ? new Date(v).toLocaleTimeString(language === 'id' ? 'id-ID' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '';
 
 const diffMin = (a, b) =>
     Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 60000;
 
 export default function ChatDetailScreen() {
     const { user } = useUser();
+    const { language, t } = useLanguage();
     const { chatId } = useParams();
     const navigate   = useNavigate();
     const location = useLocation();
@@ -88,10 +90,10 @@ export default function ChatDetailScreen() {
 
     const chatMeta = useMemo(() => {
         if (!chatId || chatId === GROUP_CHAT_ID || chatId.startsWith('group-')) {
-            return { name: 'Grup Masak Bareng', avatar: GROUP_AVATAR, isGroup: true, opponentId: null };
+            return { name: t("chat.group_name"), avatar: GROUP_AVATAR, isGroup: true, opponentId: null };
         }
-        return { name: friend?.name || ID_MAPPING[opponentId] || 'Teman Masak', avatar: friend?.avatar || avatarByName(friend?.name ||  ID_MAPPING[opponentId]) || DEFAULT_AVATAR, isGroup: false, opponentId: friend?.id || opponentId };
-    }, [chatId, opponentId, friend]);
+        return { name: friend?.name || ID_MAPPING[opponentId] || t("messages.cooking_friend"), avatar: friend?.avatar || avatarByName(friend?.name ||  ID_MAPPING[opponentId]) || DEFAULT_AVATAR, isGroup: false, opponentId: friend?.id || opponentId };
+    }, [chatId, opponentId, friend, t]);
 
     const isOnline = useMemo(() => {
         if (!chatMeta.opponentId) return false;
@@ -197,7 +199,7 @@ export default function ChatDetailScreen() {
                     token
                 );
             } catch (err) {
-                toast.error('Gagal upload gambar');
+                toast.error(t("chat.upload_failed"));
                 setSending(false);
                 return;
             }
@@ -225,7 +227,7 @@ export default function ChatDetailScreen() {
             );
         } catch (err) {
             setMessages((prev) => prev.filter((m) => m.id !== tempId));
-            toast.error('Gagal mengirim pesan');
+            toast.error(t("chat.send_failed"));
         } finally {
             setSending(false);
         }
@@ -234,7 +236,7 @@ export default function ChatDetailScreen() {
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (!file.type.startsWith('image/')) { toast.error('Hanya file gambar'); return; }
+        if (!file.type.startsWith('image/')) { toast.error(t("chat.image_only")); return; }
         setImagePreview({ file, url: URL.createObjectURL(file) });
         e.target.value = '';
     };
@@ -257,7 +259,7 @@ export default function ChatDetailScreen() {
         })
     , [filtered]);
 
-    const statusLabel = chatMeta.isGroup ? 'Grup' : isOnline ? 'Online' : 'Offline';
+    const statusLabel = chatMeta.isGroup ? t("chat.group") : isOnline ? t("chat.online") : t("chat.offline");
     const statusDot   = chatMeta.isGroup ? 'bg-blue-400' : isOnline ? 'bg-green-400' : 'bg-red-400';
     const canSend     = (inputText.trim().length > 0 || imagePreview !== null) && !sending;
 
@@ -286,21 +288,21 @@ export default function ChatDetailScreen() {
             {/* Search bar */}
             {showSearch && (
                 <div className="bg-card p-2 shrink-0 shadow-sm border-b border-border flex gap-2">
-                    <input type="text" placeholder="Cari pesan..." value={searchQuery}
+                    <input type="text" placeholder={t("chat.search_messages")} value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="flex-1 bg-muted px-3 py-1.5 rounded-xl text-sm focus:outline-none" />
                     <button onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-                        className="text-xs text-muted-foreground px-2">Batal</button>
+                        className="text-xs text-muted-foreground px-2">{t("common.cancel")}</button>
                 </div>
             )}
 
             {/* Area pesan */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-0.5">
                 {loading ? (
-                    <div className="text-center text-gray-400 text-sm py-8">Memuat chat...</div>
+                    <div className="text-center text-gray-400 text-sm py-8">{t("chat.loading")}</div>
                 ) : annotated.length === 0 ? (
                     <div className="text-center text-gray-400 text-xs py-12 italic">
-                        Belum ada riwayat obrolan.
+                        {t("chat.no_history")}
                     </div>
                 ) : (
                     annotated.map((msg) => {
@@ -329,7 +331,7 @@ export default function ChatDetailScreen() {
                                         <p className="leading-relaxed break-words">{msg.text}</p>
                                     ) : null}
                                     <span className={`text-[9px] block text-right mt-1 ${mine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                        {fmtTime(msg.createdAt)}
+                                        {fmtTime(msg.createdAt, language)}
                                         {String(msg.id).startsWith('temp-') && <span className="ml-1 opacity-50">⏳</span>}
                                     </span>
                                 </div>
@@ -352,7 +354,7 @@ export default function ChatDetailScreen() {
                         </button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        {inputText.trim() ? `+ "${inputText.trim()}"` : 'Siap dikirim'}
+                        {inputText.trim() ? `+ "${inputText.trim()}"` : t("chat.ready_to_send")}
                     </p>
                 </div>
             )}
@@ -382,7 +384,7 @@ export default function ChatDetailScreen() {
 
                 <input
                     type="text"
-                    placeholder={imagePreview ? 'Tambahkan keterangan... (opsional)' : 'Ketik pesan...'}
+                    placeholder={imagePreview ? t("chat.caption_placeholder") : t("chat.message_placeholder")}
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) handleSend(e); }}

@@ -1,13 +1,59 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Shield, Eye, Lock, Database, Users, Bell } from "lucide-react";
+import { useLanguage } from "../../lib/languageContext.jsx";
+
+const content = {
+  id: {
+    updated: "Terakhir diperbarui: 30 Maret 2026",
+    intro: "SnapChef AI berkomitmen untuk melindungi privasi dan keamanan data pribadi Anda.",
+    sections: [
+      ["database", "1. Informasi yang Kami Kumpulkan", "Kami mengumpulkan informasi yang Anda berikan secara langsung seperti nama, email, foto profil, preferensi diet, foto bahan makanan, riwayat scan, resep tersimpan, dan data penggunaan aplikasi."],
+      ["eye", "2. Bagaimana Kami Menggunakan Informasi", "Informasi digunakan untuk menyediakan layanan AI, mempersonalisasi rekomendasi resep, mengirim notifikasi jika diaktifkan, memproses pembayaran, dan meningkatkan fitur aplikasi."],
+      ["lock", "3. Keamanan Data", "Kami menggunakan enkripsi dan kontrol akses untuk melindungi data Anda. Foto yang diunggah diproses otomatis dan tidak diakses manual tanpa izin Anda."],
+      ["users", "4. Berbagi Informasi", "Kami tidak menjual data pribadi Anda. Data hanya dibagikan dengan penyedia layanan yang diperlukan, penyedia pembayaran, atau pihak berwenang jika diwajibkan hukum."],
+      ["bell", "5. Hak Anda", "Anda dapat mengakses, mengunduh, memperbarui, atau menghapus data pribadi Anda, serta menarik persetujuan pemrosesan data tertentu."],
+      ["shield", "6. Penyimpanan Data", "Data disimpan selama akun aktif atau selama diperlukan untuk menyediakan layanan. Setelah akun dihapus, data akan dihapus permanen dalam waktu 30 hari kecuali diwajibkan hukum."],
+      ["lock", "7. Cookies dan Pelacakan", "Kami menggunakan cookies dan teknologi serupa untuk mengingat preferensi dan menganalisis penggunaan aplikasi."],
+      ["users", "8. Privasi Anak-anak", "SnapChef AI tidak ditujukan untuk anak-anak di bawah 13 tahun dan tidak secara sengaja mengumpulkan data pribadi dari anak-anak."],
+      ["bell", "9. Perubahan Kebijakan", "Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Perubahan material akan diberitahukan melalui email atau notifikasi aplikasi."],
+      ["shield", "10. Hubungi Kami", "Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini, hubungi privacy@snapchef.ai atau support@snapchef.ai."],
+    ],
+  },
+  en: {
+    updated: "Last updated: March 30, 2026",
+    intro: "SnapChef AI is committed to protecting your privacy and personal data security.",
+    sections: [
+      ["database", "1. Information We Collect", "We collect information you provide directly, such as name, email, profile photo, dietary preferences, ingredient photos, scan history, saved recipes, and app usage data."],
+      ["eye", "2. How We Use Information", "Information is used to provide AI services, personalize recipe recommendations, send notifications when enabled, process payments, and improve app features."],
+      ["lock", "3. Data Security", "We use encryption and access controls to protect your data. Uploaded photos are processed automatically and are not manually accessed without your permission."],
+      ["users", "4. Information Sharing", "We do not sell your personal data. Data is only shared with required service providers, payment providers, or authorities when required by law."],
+      ["bell", "5. Your Rights", "You may access, download, update, or delete your personal data, and withdraw consent for certain data processing."],
+      ["shield", "6. Data Retention", "Data is stored while your account is active or as needed to provide services. After account deletion, data is permanently deleted within 30 days unless legally required otherwise."],
+      ["lock", "7. Cookies and Tracking", "We use cookies and similar technologies to remember preferences and analyze app usage."],
+      ["users", "8. Children's Privacy", "SnapChef AI is not intended for children under 13 and does not knowingly collect personal data from children."],
+      ["bell", "9. Policy Changes", "We may update this Privacy Policy from time to time. Material changes will be communicated by email or in-app notification."],
+      ["shield", "10. Contact Us", "If you have questions about this Privacy Policy, contact privacy@snapchef.ai or support@snapchef.ai."],
+    ],
+  },
+};
+
+const icons = {
+  database: <Database className="h-5 w-5" />,
+  eye: <Eye className="h-5 w-5" />,
+  lock: <Lock className="h-5 w-5" />,
+  users: <Users className="h-5 w-5" />,
+  bell: <Bell className="h-5 w-5" />,
+  shield: <Shield className="h-5 w-5" />,
+};
 
 export default function PrivacyScreen() {
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
+  const current = content[language] || content.id;
 
   return (
     <div className="min-h-screen bg-background pb-6">
-      {/* Sticky Header - Compact with Glass Effect */}
       <div className="sticky top-0 z-50 bg-primary/70 backdrop-blur-lg text-primary-foreground px-6 pt-6 pb-4 shadow-lg border-b border-white/10">
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0">
           <div className="flex items-center gap-3">
@@ -19,95 +65,32 @@ export default function PrivacyScreen() {
               <ArrowLeft className="h-5 w-5" />
             </motion.button>
             <div>
-              <h1 className="text-xl font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
-                Kebijakan Privasi
+              <h1 className="text-xl font-medium" style={{ fontFamily: "var(--font-family-display)" }}>
+                {t("settings.privacy")}
               </h1>
-              <p className="text-xs opacity-80 mt-0.5">Terakhir diperbarui: 30 Maret 2026</p>
+              <p className="text-xs opacity-80 mt-0.5">{current.updated}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4">{/* Changed from -mt-4 to mt-4 */}
+      <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 mt-4">
         <div className="bg-card rounded-3xl shadow-lg p-6 space-y-6">
           <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-2xl">
             <Shield className="h-6 w-6 text-primary" />
-            <p className="text-sm">
-              SnapChef AI berkomitmen untuk melindungi privasi dan keamanan data pribadi Anda.
-            </p>
+            <p className="text-sm">{current.intro}</p>
           </div>
 
-          <Section
-            icon={<Database className="h-5 w-5" />}
-            title="1. Informasi yang Kami Kumpulkan"
-            content="Kami mengumpulkan informasi yang Anda berikan secara langsung seperti nama, email, foto profil, dan preferensi diet. Kami juga mengumpulkan foto bahan makanan yang Anda unggah untuk pemrosesan AI, riwayat scan, resep yang disimpan, dan data penggunaan aplikasi untuk meningkatkan layanan kami."
-          />
-
-          <Section
-            icon={<Eye className="h-5 w-5" />}
-            title="2. Bagaimana Kami Menggunakan Informasi"
-            content="Informasi yang dikumpulkan digunakan untuk: menyediakan dan meningkatkan layanan AI kami, mempersonalisasi rekomendasi resep berdasarkan preferensi Anda, mengirim notifikasi terkait layanan (jika diaktifkan), memproses pembayaran untuk langganan premium, dan menganalisis penggunaan aplikasi untuk pengembangan fitur baru."
-          />
-
-          <Section
-            icon={<Lock className="h-5 w-5" />}
-            title="3. Keamanan Data"
-            content="Kami menggunakan enkripsi end-to-end untuk melindungi data Anda selama transmisi. Data disimpan di server yang aman dengan akses terbatas. Kami menerapkan kontrol akses ketat untuk melindungi informasi pribadi Anda. Foto yang diunggah diproses secara otomatis dan tidak diakses secara manual tanpa izin Anda."
-          />
-
-          <Section
-            icon={<Users className="h-5 w-5" />}
-            title="4. Berbagi Informasi"
-            content="Kami tidak menjual data pribadi Anda kepada pihak ketiga. Informasi hanya dibagikan dengan: penyedia layanan AI untuk pemrosesan gambar (dengan enkripsi), penyedia layanan pembayaran untuk transaksi premium (data minimal yang diperlukan), dan pihak berwenang jika diwajibkan oleh hukum."
-          />
-
-          <Section
-            icon={<Bell className="h-5 w-5" />}
-            title="5. Hak Anda"
-            content="Anda memiliki hak untuk: mengakses dan mengunduh data pribadi Anda kapan saja, mengoreksi atau memperbarui informasi yang tidak akurat, menghapus akun dan data terkait, menarik persetujuan untuk pemrosesan data tertentu, dan mengajukan keluhan tentang praktik privasi kami."
-          />
-
-          <Section
-            icon={<Shield className="h-5 w-5" />}
-            title="6. Penyimpanan Data"
-            content="Data Anda disimpan selama akun Anda aktif atau sepanjang diperlukan untuk menyediakan layanan. Setelah penghapusan akun, data akan dihapus secara permanen dalam waktu 30 hari, kecuali kami diwajibkan oleh hukum untuk menyimpannya lebih lama. Foto bahan makanan dihapus otomatis setelah pemrosesan selesai."
-          />
-
-          <Section
-            icon={<Lock className="h-5 w-5" />}
-            title="7. Cookies dan Teknologi Pelacakan"
-            content="Kami menggunakan cookies dan teknologi serupa untuk meningkatkan pengalaman Anda, mengingat preferensi Anda, dan menganalisis penggunaan aplikasi. Anda dapat mengelola preferensi cookies melalui pengaturan browser Anda."
-          />
-
-          <Section
-            icon={<Users className="h-5 w-5" />}
-            title="8. Privasi Anak-anak"
-            content="SnapChef AI tidak ditujukan untuk anak-anak di bawah 13 tahun. Kami tidak secara sengaja mengumpulkan informasi pribadi dari anak-anak. Jika Anda percaya bahwa kami memiliki informasi dari anak di bawah 13 tahun, silakan hubungi kami."
-          />
-
-          <Section
-            icon={<Bell className="h-5 w-5" />}
-            title="9. Perubahan Kebijakan"
-            content="Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Perubahan material akan diberitahukan melalui email atau notifikasi dalam aplikasi. Tanggal 'Terakhir diperbarui' di bagian atas menunjukkan kapan kebijakan ini terakhir direvisi."
-          />
-
-          <Section
-            icon={<Shield className="h-5 w-5" />}
-            title="10. Hubungi Kami"
-            content="Jika Anda memiliki pertanyaan atau kekhawatiran tentang Kebijakan Privasi ini atau praktik privasi kami, silakan hubungi kami di: privacy@snapchef.ai atau support@snapchef.ai"
-          />
+          {current.sections.map(([icon, title, sectionContent]) => (
+            <Section key={title} icon={icons[icon]} title={title} content={sectionContent} />
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function Section({
-  icon,
-  title,
-  content,
-}) {
+function Section({ icon, title, content }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">

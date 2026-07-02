@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "./button";
+import { useLanguage } from "../app/lib/languageContext.jsx";
 
 
 export function ConfirmDialog({
@@ -9,10 +10,12 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmText = "Konfirmasi",
-  cancelText = "Batal",
+  confirmText,
+  cancelText,
   variant = "default",
 }) {
+  const { t } = useLanguage();
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -62,7 +65,7 @@ export function ConfirmDialog({
                   onClick={onClose}
                   className="flex-1 rounded-2xl"
                 >
-                  {cancelText}
+                  {cancelText || t("common.cancel")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -72,7 +75,7 @@ export function ConfirmDialog({
                   className="flex-1 rounded-2xl"
                   variant={variant === "destructive" ? "destructive" : "default"}
                 >
-                  {confirmText}
+                  {confirmText || t("common.confirm")}
                 </Button>
               </div>
             </motion.div>

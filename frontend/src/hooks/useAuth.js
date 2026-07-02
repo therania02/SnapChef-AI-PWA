@@ -1,5 +1,5 @@
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../api/firebase";
+import { auth, provider, isFirebaseConfigured } from "../api/firebase";
 
 export const useAuth = () => {
   // Alamat server backend Node.js kamu
@@ -69,6 +69,10 @@ export const useAuth = () => {
   // 3. Login dengan Google (Tetap simpan untuk fungsionalitas Figma)
   const loginWithGoogle = async () => {
     try {
+      if (!isFirebaseConfigured || !auth || !provider) {
+        throw new Error("Firebase belum dikonfigurasi. Isi VITE_FIREBASE_API_KEY di frontend/.env untuk memakai Google Login.");
+      }
+
       const result = await signInWithPopup(auth, provider);
       const googleUser = result.user;
       const response = await fetch(`${API_URL}/google`, {
