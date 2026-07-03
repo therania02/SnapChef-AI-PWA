@@ -14,7 +14,7 @@ import commentRoutes from './routes/commentRoutes.js';
 import scanRoutes from './routes/scanRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
-import { DEFAULT_CHAT_AVATAR } from './controllers/messageController.js';
+import { DEFAULT_CHAT_AVATAR, createChatMessage } from './controllers/messageController.js';
 import { setupSocket } from './sockets/socketHandler.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import weeklyDigestRoutes from "./routes/weeklyDigestRoutes.js";
@@ -26,7 +26,8 @@ const httpServer = createServer(app);
 app.use(cors({
     origin: [
         "http://localhost:5173",
-        "https://localhost:5173"
+        "https://localhost:5173",
+        process.env.FRONTEND_URL
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
