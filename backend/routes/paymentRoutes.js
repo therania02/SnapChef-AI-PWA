@@ -10,6 +10,26 @@ const { User } = db;
 
 const router = express.Router();
 
+const resolveFrontendUrl = () => {
+  const fallback = "http://localhost:5173";
+  const raw = process.env.FRONTEND_URL || fallback;
+
+  try {
+    const parsed = new URL(raw);
+
+    if (
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") &&
+      parsed.protocol === "https:"
+    ) {
+      parsed.protocol = "http:";
+    }
+
+    return parsed.toString().replace(/\/$/, "");
+  } catch {
+    return fallback;
+  }
+};
+
 const buildUserData = (user) => ({
   id: user.id,
   name: user.name,
@@ -44,6 +64,8 @@ router.post("/create", authMiddleware, async (req, res) => {
 
     const orderId = `SC-${user.id}-${Date.now()}`;
 
+    const frontendUrl = resolveFrontendUrl();
+
     const parameter = {
       transaction_details: {
         order_id: orderId,
@@ -62,9 +84,9 @@ router.post("/create", authMiddleware, async (req, res) => {
         email: user.email,
       },
       callbacks: {
-        finish: `${process.env.FRONTEND_URL}/payment-success?order_id=${orderId}`,
-        error: `${process.env.FRONTEND_URL}/premium`,
-        pending: `${process.env.FRONTEND_URL}/premium`,
+        finish: `${frontendUrl}/payment-success?order_id=${orderId}`,
+        error: `${frontendUrl}/premium`,
+        pending: `${frontendUrl}/premium`,
       },
     };
 

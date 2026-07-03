@@ -21,7 +21,7 @@ export default function ScanHistoryScreen() {
   const fetchHistory = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:3000/api/history", {
+      const response = await fetch(`http://localhost:3000/api/history?language=${language}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "X-User-Premium": user?.isPremium ? "true" : "false"
@@ -41,7 +41,7 @@ export default function ScanHistoryScreen() {
 
   useEffect(() => {
     fetchHistory();
-  }, [t]);
+  }, [t, language]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);

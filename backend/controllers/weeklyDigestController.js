@@ -70,12 +70,41 @@ class WeeklyDigestController {
 
             });
 
+            const lastWeekScans = await Scan.findAll({
+                where: {
+                    userId,
+                    createdAt: {
+                        [db.Sequelize.Op.gte]: startOfLastWeek,
+                        [db.Sequelize.Op.lt]: startOfWeek
+                    }
+                }
+            });
+
+            let recipesLastWeek = 0;
+            lastWeekScans.forEach(scan => {
+                try {
+                    const recipes = JSON.parse(scan.rawRecipes || '[]');
+                    recipesLastWeek += recipes.length;
+                } catch {}
+            });
+
             const cookingsThisWeek =
             await CookingHistory.count({
                 where: {
                     userId,
                     createdAt: {
                         [db.Sequelize.Op.gte]: startOfWeek
+                    }
+                }
+            });
+
+            const cookingsLastWeek =
+            await CookingHistory.count({
+                where: {
+                    userId,
+                    createdAt: {
+                        [db.Sequelize.Op.gte]: startOfLastWeek,
+                        [db.Sequelize.Op.lt]: startOfWeek
                     }
                 }
             });
@@ -127,6 +156,16 @@ class WeeklyDigestController {
                 }
             });
 
+            const savedRecipesLastWeek = await Recipe.count({
+                where: {
+                    userId,
+                    createdAt: {
+                        [db.Sequelize.Op.gte]: startOfLastWeek,
+                        [db.Sequelize.Op.lt]: startOfWeek
+                    }
+                }
+            });
+
             const achievements = [];
 
             if(cookingsThisWeek >= 5) {
@@ -143,14 +182,18 @@ class WeeklyDigestController {
                 })
             }
 
-            const scanChange =
-                scansLastWeek === 0
-                    ? 100
-                    : Math.round(
-                        ((scansThisWeek - scansLastWeek) /
-                            scansLastWeek) *
-                        100
-                    );
+            const calculateChange = (currentValue, previousValue) => {
+                if (previousValue === 0) {
+                    return currentValue === 0 ? 0 : 100;
+                }
+
+                return Math.round(((currentValue - previousValue) / previousValue) * 100);
+            };
+
+            const scanChange = calculateChange(scansThisWeek, scansLastWeek);
+            const recipeChange = calculateChange(recipesThisWeek, recipesLastWeek);
+            const cookingChange = calculateChange(cookingsThisWeek, cookingsLastWeek);
+            const savedRecipeChange = calculateChange(savedRecipes, savedRecipesLastWeek);
 
             res.json({
                 scans: scansThisWeek,
@@ -158,6 +201,9 @@ class WeeklyDigestController {
                 cookings: cookingsThisWeek,
                 savedRecipes,
                 scanChange,
+                recipeChange,
+                cookingChange,
+                savedRecipeChange,
                 favoriteIngredient: favoriteIngredient ? { name: favoriteIngredient[0], count: favoriteIngredient[1] } : null,
                 achievements
             });

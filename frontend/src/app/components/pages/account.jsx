@@ -163,11 +163,11 @@ export default function AccountScreen() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-6 pt-12 pb-6 rounded-b-3xl">
-        <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 space-y-6">
+      <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-4 sm:px-6 pt-12 pb-6 rounded-b-3xl">
+        <div className="max-w-5xl mx-auto space-y-6">
           {/* Profile */}
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-secondary dark:bg-secondary/50 border border-border flex items-center justify-center text-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="w-20 h-20 rounded-full bg-secondary dark:bg-secondary/50 border border-border flex items-center justify-center text-foreground mx-auto sm:mx-0">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -178,7 +178,7 @@ export default function AccountScreen() {
                 <User className="h-10 w-10 text-muted-foreground" />
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 w-full text-center sm:text-left">
               {isEditingName ? (
                 <div className="space-y-2">
                   <Input
@@ -187,7 +187,7 @@ export default function AccountScreen() {
                     className="bg-card border-border text-foreground rounded-2xl"
                     placeholder={t("account.name_placeholder")}
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-center sm:justify-start">
                     <button
                       onClick={handleAttemptSave}
                       className="p-2 bg-primary/10 rounded-full hover:bg-primary/20 transition-colors"
@@ -204,7 +204,7 @@ export default function AccountScreen() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-foreground">
+                  <div className="flex items-center gap-2 text-foreground justify-center sm:justify-start">
                     <h1 className="text-2xl text-foreground font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
                       {/* 👇 NAMA USER DIREnder DI SINI 👇 */}
                       {currentName}
@@ -239,7 +239,7 @@ export default function AccountScreen() {
           </div>
 
           {/* Plan Badge */}
-          <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border shadow-sm">
+          <div className="bg-card rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-border shadow-sm">
             <div>
               <div className="text-sm text-muted-foreground">{t("account.current_plan")}</div>
               <div className="font-medium flex items-center gap-2 text-foreground">
@@ -275,7 +275,7 @@ export default function AccountScreen() {
       </div>
 
       {/* Content */}
-      <div className="max-w-md mx-auto px-6 mt-6 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 mt-6 space-y-6">
         {/* Stats Card */}
         <div className="bg-card rounded-3xl p-6 shadow-lg border border-border">
           <h3 className="font-medium mb-4">{t("account.your_stats")}</h3>
@@ -295,60 +295,62 @@ export default function AccountScreen() {
           </div>
         </div>
 
-        {/* Preferences */}
-        <div className="bg-card rounded-3xl p-6 shadow-lg space-y-4 border border-border">
-          <h3 className="font-medium">{t("account.dietary_preferences")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {selectedPrefLabels.map((pref) => (
-              <Badge key={pref.label} icon={pref.icon} label={pref.label} />
-            ))}
-            {customPreferences.map((pref) => {
-              const icon = typeof pref === 'string' ? '✨' : pref.emoji;
-              const label = typeof pref === 'string' ? pref : pref.text;
-              return <Badge key={label} icon={icon} label={label} />;
-            })}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* Preferences */}
+          <div className="bg-card rounded-3xl p-6 shadow-lg space-y-4 border border-border">
+            <h3 className="font-medium">{t("account.dietary_preferences")}</h3>
+            <div className="flex flex-wrap gap-2">
+              {selectedPrefLabels.map((pref) => (
+                <Badge key={pref.label} icon={pref.icon} label={pref.label} />
+              ))}
+              {customPreferences.map((pref) => {
+                const icon = typeof pref === 'string' ? '✨' : pref.emoji;
+                const label = typeof pref === 'string' ? pref : pref.text;
+                return <Badge key={label} icon={icon} label={label} />;
+              })}
+            </div>
+            <button
+              onClick={() => navigate("/dietary-profile", { state: { from: 'account' } })}
+              className="text-sm text-primary hover:underline"
+            >
+              {t("account.change_preferences")}
+            </button>
           </div>
-          <button
-            onClick={() => navigate("/dietary-profile", { state: { from: 'account' } })}
-            className="text-sm text-primary hover:underline"
-          >
-            {t("account.change_preferences")}
-          </button>
-        </div>
 
-        {/* Settings */}
-        <div className="bg-card rounded-3xl shadow-lg overflow-hidden border border-border">
-          <MenuItem
-            icon={<ChefHat className="h-5 w-5" />}
-            label={t("account.scan_history")}
-            onClick={() => navigate("/scan-history")}
-          />
-          <MenuItem
-            icon={<Settings className="h-5 w-5" />}
-            label={t("account.settings")}
-            onClick={() => navigate("/settings")}
-          />
-          <MenuItem
-            icon={resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            label={resolvedTheme === "dark" ? t("account.light_mode") : t("account.dark_mode")}
-            action={
-              <Switch
-                checked={resolvedTheme === "dark"}
-                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-              />
-            }
-          />
-          <MenuItem
-            icon={<MessageSquare className="h-5 w-5" />}
-            label={t("account.send_feedback")}
-            onClick={() => setShowFeedbackModal(true)}
-          />
-          <MenuItem
-            icon={<LogOut className="h-5 w-5" />}
-            label={t("account.logout")}
-            onClick={handleLogout}
-            danger
-          />
+          {/* Settings */}
+          <div className="bg-card rounded-3xl shadow-lg overflow-hidden border border-border">
+            <MenuItem
+              icon={<ChefHat className="h-5 w-5" />}
+              label={t("account.scan_history")}
+              onClick={() => navigate("/scan-history")}
+            />
+            <MenuItem
+              icon={<Settings className="h-5 w-5" />}
+              label={t("account.settings")}
+              onClick={() => navigate("/settings")}
+            />
+            <MenuItem
+              icon={resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              label={resolvedTheme === "dark" ? t("account.light_mode") : t("account.dark_mode")}
+              action={
+                <Switch
+                  checked={resolvedTheme === "dark"}
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                />
+              }
+            />
+            <MenuItem
+              icon={<MessageSquare className="h-5 w-5" />}
+              label={t("account.send_feedback")}
+              onClick={() => setShowFeedbackModal(true)}
+            />
+            <MenuItem
+              icon={<LogOut className="h-5 w-5" />}
+              label={t("account.logout")}
+              onClick={handleLogout}
+              danger
+            />
+          </div>
         </div>
 
         {/* Version */}

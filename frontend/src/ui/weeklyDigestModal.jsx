@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { X, TrendingUp, ChefHat, Clock, Star, Calendar } from "lucide-react";
 import { Button } from "./button";
 import { useLanguage } from "../app/lib/languageContext.jsx";
+import { toast } from "sonner";
 
 export function WeeklyDigestModal({ isOpen, onClose }) {
   const { language, t } = useLanguage();
@@ -50,33 +51,47 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
         const user = JSON.parse(
           localStorage.getItem("user")
         );
+        const token = localStorage.getItem("token");
+
+        if (!user?.id || !token) {
+          return;
+        }
 
         const response = await fetch(
-          `http://localhost:3000/api/weekly-digest/${user.id}`
+          `http://localhost:3000/api/weekly-digest/${user.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
         );
 
         const data = await response.json();
 
+        if (!response.ok) {
+          throw new Error(data?.message || t("common.error"));
+        }
+
         setStats({
           scans: {
-            value: data.scans,
-            change: data.scanChange,
-            percentage: Math.min(data.scans * 10, 100)
+            value: data.scans || 0,
+            change: data.scanChange || 0,
+            percentage: Math.min((data.scans || 0) * 10, 100)
           },
           recipes: {
-            value: data.recipes,
-            change: 0,
-            percentage: Math.min(data.recipes * 10, 100)
+            value: data.recipes || 0,
+            change: data.recipeChange || 0,
+            percentage: Math.min((data.recipes || 0) * 10, 100)
           },
           cookings: {
-            value: data.cookings,
-            change: 0,
-            percentage: Math.min(data.cookings * 10, 100)
+            value: data.cookings || 0,
+            change: data.cookingChange || 0,
+            percentage: Math.min((data.cookings || 0) * 10, 100)
           },
           savedRecipes: {
-            value: data.savedRecipes,
-            change: 0,
-            percentage: Math.min(data.savedRecipes * 10, 100)
+            value: data.savedRecipes || 0,
+            change: data.savedRecipeChange || 0,
+            percentage: Math.min((data.savedRecipes || 0) * 10, 100)
           }
         });
 
@@ -101,6 +116,8 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
 
       } catch (err) {
         console.error(err);
+        toast.error(err.message || t("common.error"));
+        onClose();
       }
     };
 
@@ -108,7 +125,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
       loadStats();
     }
 
-  }, [isOpen]);
+  }, [isOpen, onClose, t]);
 
   return (
     <AnimatePresence>
@@ -289,6 +306,7 @@ function StatCard({
   percentage,
 }) {
   const isPositive = change > 0;
+  const isNeutral = change === 0;
 
   return (
     <div className="bg-muted/50 rounded-2xl p-4 space-y-2">
@@ -296,13 +314,13 @@ function StatCard({
       <div className="flex items-end justify-between">
         <p className="text-2xl font-medium text-primary">{value}</p>
         <div
-          className={`flex items-center gap-1 text-xs font-medium ${isPositive ? "text-green-600" : "text-red-600"
+          className={`flex items-center gap-1 text-xs font-medium ${isNeutral ? "text-muted-foreground" : isPositive ? "text-green-600" : "text-red-600"
             }`}
         >
           <TrendingUp
-            className={`h-3 w-3 ${!isPositive && "rotate-180"}`}
+            className={`h-3 w-3 ${change < 0 ? "rotate-180" : ""} ${isNeutral ? "opacity-60" : ""}`}
           />
-          <span>{isPositive ? "+" : ""}{change}</span>
+          <span>{isPositive ? "+" : ""}{change}%</span>
         </div>
       </div>
       <div className="flex items-center gap-2">

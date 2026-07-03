@@ -128,7 +128,8 @@ export const analyzeAndGenerateRecipes = async (imageBase64) => {
 
 export const tweakRecipeWithAI = async (
   recipe,
-  request
+  request,
+  language = 'id'
 ) => {
 
   const model =
@@ -138,6 +139,8 @@ export const tweakRecipeWithAI = async (
 
   const prompt = `
 Kamu adalah chef profesional.
+
+Gunakan bahasa output: ${language === 'en' ? 'English' : 'Bahasa Indonesia'}.
 
 Berikut resep asli:
 

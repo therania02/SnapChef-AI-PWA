@@ -14,7 +14,9 @@ module.exports = (sequelize, DataTypes) => {
   Scan.init({
     image: DataTypes.TEXT('long'),
     ingredients: DataTypes.TEXT,
+    ingredientsEn: DataTypes.TEXT,
     rawRecipes: DataTypes.TEXT('long'),
+    rawRecipesEn: DataTypes.TEXT('long'),
     userId: DataTypes.INTEGER
   }, {
     sequelize,

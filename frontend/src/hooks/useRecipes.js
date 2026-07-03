@@ -39,14 +39,14 @@ export const useRecipes = () => {
     const [error, setError] = useState(null);
 
     // 1. Fitur Scan Bahan (AI Vision)
-    const scanFood = async (imageBase64, preferences = '', userId = null) => {
+    const scanFood = async (imageBase64, preferences = '', userId = null, language = 'id') => {
         setLoading(true);
         setError(null);
         try {
             const response = await fetch(`${API_URL}/scan`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageBase64, preferences, userId }),
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ imageBase64, preferences, userId, language }),
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || "Gagal melakukan scan");
@@ -134,5 +134,47 @@ export const useRecipes = () => {
         }
     };
 
-    return { scanFood, saveRecipe, getRecipes, rateRecipe, removeRecipe, loading, error };
+    const getSousChefMessages = async (recipeId, recipeRef = '') => {
+        try {
+            const query = recipeRef ? `?recipeRef=${encodeURIComponent(recipeRef)}` : '';
+            const response = await fetch(`${API_URL}/${recipeId}/souschef-chat${query}`, {
+                method: 'GET',
+                headers: getAuthHeaders()
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Gagal mengambil chat SousChef');
+            return result.data || [];
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    const sendSousChefMessage = async ({ recipeId, message, recipeRef = '', recipe = null, language = 'id' }) => {
+        try {
+            const response = await fetch(`${API_URL}/${recipeId}/souschef-chat`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ message, recipeRef, recipe, language })
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Gagal mengirim chat SousChef');
+            return result.data;
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    return {
+        scanFood,
+        saveRecipe,
+        getRecipes,
+        rateRecipe,
+        removeRecipe,
+        getSousChefMessages,
+        sendSousChefMessage,
+        loading,
+        error
+    };
 };

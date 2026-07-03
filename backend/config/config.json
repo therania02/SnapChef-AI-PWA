@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": null,
+    "password": "vonxeris-36542",
     "database": "snapchef_db",
     "host": "localhost",
     "dialect": "mysql"

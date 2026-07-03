@@ -17,7 +17,7 @@ export default function ScanResultScreen() {
 
   const { user } = useUser();
   const { saveRecipe } = useRecipes();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [showIngredients, setShowIngredients] = useState(false);
@@ -258,14 +258,23 @@ export default function ScanResultScreen() {
                         // Menggabungkan array bahan & instruksi menjadi string sebelum masuk database
                         const recipeToSave = {
                           title: recipe.title,
+                          titleEn: recipe.titleEn || null,
 
                           ingredients: Array.isArray(recipe.ingredients)
                             ? recipe.ingredients.join('\n')
                             : recipe.ingredients,
 
+                          ingredientsEn: Array.isArray(recipe.ingredientsEn)
+                            ? recipe.ingredientsEn.join('\n')
+                            : (recipe.ingredientsEn || null),
+
                           instructions: Array.isArray(recipe.steps)
                             ? recipe.steps.join('\n')
                             : recipe.steps,
+
+                          instructionsEn: Array.isArray(recipe.stepsEn)
+                            ? recipe.stepsEn.join('\n')
+                            : (recipe.stepsEn || null),
 
                           detectedIngredients: ingredients,
 
@@ -273,6 +282,7 @@ export default function ScanResultScreen() {
                           protein: recipe.protein,
                           carbs: recipe.carbs,
                           prepTime: recipe.prepTime,
+                          language,
                           userId: user?.id || null
                         };
 

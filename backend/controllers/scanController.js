@@ -5,6 +5,59 @@ import db from '../models/index.cjs';
 const { Recipe, Scan, User } = db;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+const cleanJsonText = (text = '') => {
+  const cleaned = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
+  const jsonStart = cleaned.indexOf('{');
+  const jsonEnd = cleaned.lastIndexOf('}');
+  if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+    throw new Error('Hasil AI tidak berformat JSON yang valid. Silakan coba lagi.');
+  }
+  return cleaned.slice(jsonStart, jsonEnd + 1);
+};
+
+const parseGeminiJson = (text) => JSON.parse(cleanJsonText(text));
+
+const translateRecipesPayload = async (payload, targetLanguage) => {
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const outputLanguage = targetLanguage === 'en' ? 'English' : 'Bahasa Indonesia';
+
+  const prompt = `
+Terjemahkan konten JSON resep berikut ke ${outputLanguage}.
+
+ATURAN:
+- Kunci JSON jangan diubah.
+- Jumlah item array harus tetap sama.
+- calories/protein/carbs/prepTime tetap angka.
+- type ikut diterjemahkan.
+
+Kembalikan JSON valid saja tanpa markdown.
+
+JSON sumber:
+${JSON.stringify(payload, null, 2)}
+`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return parseGeminiJson(await response.text());
+};
+
+const normalizeLocalizedRecipes = (recipes = [], idRecipes = [], enRecipes = []) => {
+  return recipes.map((recipe, index) => {
+    const idRecipe = idRecipes[index] || {};
+    const enRecipe = enRecipes[index] || {};
+
+    return {
+      ...recipe,
+      titleId: idRecipe.title || recipe.title,
+      titleEn: enRecipe.title || recipe.title,
+      ingredientsId: Array.isArray(idRecipe.ingredients) ? idRecipe.ingredients : recipe.ingredients,
+      ingredientsEn: Array.isArray(enRecipe.ingredients) ? enRecipe.ingredients : recipe.ingredients,
+      stepsId: Array.isArray(idRecipe.steps) ? idRecipe.steps : recipe.steps,
+      stepsEn: Array.isArray(enRecipe.steps) ? enRecipe.steps : recipe.steps,
+    };
+  });
+};
+
 class ScanController extends BaseController {
 
   // 1. Jalur Proses Unggah & Pengurangan Limit Scan AI
@@ -14,7 +67,8 @@ class ScanController extends BaseController {
       const userInstance = req.userInstance; // Diambil langsung dari hasil olahan middleware
       const {
         image,
-        preferences = []
+        preferences = [],
+        language = 'id'
       } = req.body;
 
       if (!image) {
@@ -42,7 +96,15 @@ WAJIB menyesuaikan semua resep dengan preferensi tersebut.
 `;
       }
 
+      const normalizedLanguage = language === 'en' ? 'en' : 'id';
+      const outputLanguage = normalizedLanguage === 'en' ? 'English' : 'Bahasa Indonesia';
+
       const prompt = `${dietPrompt} Analisis foto bahan makanan ini.
+
+    BAHASA OUTPUT WAJIB:
+    - Semua nilai konten resep (title, ingredients, steps, type) HARUS dalam ${outputLanguage}.
+    - Kunci JSON tetap seperti contoh agar kompatibel.
+
 Kamu WAJIB mengembalikan TEPAT 3 pilihan resep berdasarkan bahan yang terdeteksi.
 Urutan resep harus bervariasi dan mudah dibuat di rumah.
 
@@ -101,22 +163,27 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
       console.log("2");
       const response = await result.response;
       const text = await response.text();
-      const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      const jsonStart = cleaned.indexOf('{');
-      const jsonEnd = cleaned.lastIndexOf('}');
-      if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
-        console.error("Gemini output tidak berformat JSON valid:", cleaned);
-        throw new Error("Hasil AI tidak berformat JSON yang valid. Silakan coba lagi.");
+      let geminiResult = parseGeminiJson(text);
+
+      let idPayload = geminiResult;
+      let enPayload = geminiResult;
+
+      try {
+        if (normalizedLanguage === 'id') {
+          enPayload = await translateRecipesPayload(geminiResult, 'en');
+        } else {
+          idPayload = await translateRecipesPayload(geminiResult, 'id');
+        }
+      } catch (translationError) {
+        console.warn('Gagal membuat terjemahan bilingual scan, memakai fallback bahasa tunggal.', translationError);
       }
 
-      const jsonPayload = cleaned.slice(jsonStart, jsonEnd + 1);
-      let geminiResult;
-      try {
-        geminiResult = JSON.parse(jsonPayload);
-      } catch (parseError) {
-        console.error("Gagal mem-parse hasil Gemini JSON:", jsonPayload, parseError);
-        throw new Error("Hasil AI tidak valid. Silakan coba lagi.");
-      }
+      const localizedPayload = normalizedLanguage === 'en' ? enPayload : idPayload;
+      const localizedRecipes = normalizeLocalizedRecipes(
+        localizedPayload.recipes || [],
+        idPayload.recipes || localizedPayload.recipes || [],
+        enPayload.recipes || localizedPayload.recipes || []
+      );
 
       // Kurangi limit scan user sebanyak 1 dan simpan ke MySQL
       // Jangan kurangi untuk pengguna premium, dan jangan biarkan nilai menjadi negatif
@@ -133,16 +200,18 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
       // Simpan log pencarian ke tabel database `Scans`
       await Scan.create({
         image: scanImage,
-        ingredients: JSON.stringify(geminiResult.ingredients_detected),
-        rawRecipes: JSON.stringify(geminiResult.recipes),
+        ingredients: JSON.stringify(idPayload.ingredients_detected || localizedPayload.ingredients_detected || []),
+        ingredientsEn: JSON.stringify(enPayload.ingredients_detected || localizedPayload.ingredients_detected || []),
+        rawRecipes: JSON.stringify(idPayload.recipes || localizedPayload.recipes || []),
+        rawRecipesEn: JSON.stringify(enPayload.recipes || localizedPayload.recipes || []),
         userId: userId
       });
 
       // Kembalikan respons sukses terstandardisasi
       return this.sendSuccess(res, 200, "Scan berhasil diproses", {
         scanLimit: userInstance.scanLimit,
-        ingredients_detected: geminiResult.ingredients_detected,
-        recipes: geminiResult.recipes
+        ingredients_detected: localizedPayload.ingredients_detected || [],
+        recipes: localizedRecipes
       });
 
     } catch (error) {
@@ -153,6 +222,7 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
   // 2. Jalur Ambil Semua Daftar Riwayat Scan Milik User
   getScanHistory = async (req, res) => {
     try {
+      const language = req.query.language === 'en' ? 'en' : 'id';
       const scans = await Scan.findAll({
         where: { userId: req.user.id },
         order: [['createdAt', 'DESC']]
@@ -164,8 +234,16 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
         let parsedRecipes = [];
 
         try {
-          parsedIngredients = JSON.parse(item.ingredients);
-          parsedRecipes = JSON.parse(item.rawRecipes);
+          parsedIngredients = JSON.parse(
+            language === 'en'
+              ? (item.ingredientsEn || item.ingredients || '[]')
+              : (item.ingredients || item.ingredientsEn || '[]')
+          );
+          parsedRecipes = JSON.parse(
+            language === 'en'
+              ? (item.rawRecipesEn || item.rawRecipes || '[]')
+              : (item.rawRecipes || item.rawRecipesEn || '[]')
+          );
         } catch (e) {
           console.error("Gagal melakukan parsing JSON riwayat data ID: ", item.id);
         }

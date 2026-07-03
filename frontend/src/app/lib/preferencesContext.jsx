@@ -4,29 +4,32 @@ import React, {
   useState,
   useEffect
 } from "react";
+import { useUser } from "./userContext.jsx";
 
 const PreferencesContext = createContext(null);
 
 export function PreferencesProvider({ children }) {
+  const { user } = useUser();
   const [selectedPreferences, setSelectedPreferences] = useState([]);
   const [customPreferences, setCustomPreferencesState] = useState([]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const userFromStorage = JSON.parse(localStorage.getItem("user"));
+    const sourceUser = user || userFromStorage;
 
-    if (user?.dietPreferences) {
+    if (sourceUser?.dietPreferences) {
       setSelectedPreferences(
-        user.dietPreferences.selectedPreferences || []
+        sourceUser.dietPreferences.selectedPreferences || []
       );
 
       setCustomPreferencesState(
-        user.dietPreferences.customPreferences || []
+        sourceUser.dietPreferences.customPreferences || []
       );
     } else {
       setSelectedPreferences([]);
       setCustomPreferencesState([]);
     }
-  }, []);
+  }, [user]);
 
   const setPreferences = (preferences) => {
     setSelectedPreferences(preferences);

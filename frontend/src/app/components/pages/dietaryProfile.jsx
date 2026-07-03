@@ -5,6 +5,7 @@ import { Check, Plus, X } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { dietaryPreferences } from "../../lib/data.js";
 import { usePreferences } from "../../lib/preferencesContext.jsx";
+import { useUser } from "../../lib/userContext.jsx";
 import { toast } from "sonner";
 
 // Helper function to auto-detect emoji based on keywords
@@ -71,6 +72,7 @@ const detectEmoji = (text) => {
 export default function DietaryProfileScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setUser } = useUser();
   const { selectedPreferences, customPreferences, togglePreference, setCustomPreferences } = usePreferences();
   const [customPreference, setCustomPreference] = useState("");
 
@@ -95,29 +97,54 @@ export default function DietaryProfileScreen() {
   const handleContinue = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
+      const token = localStorage.getItem("token");
 
-      await fetch("http://localhost:3000/api/auth/diet-preferences", {
+      if (!token) {
+        throw new Error("Token tidak ditemukan");
+      }
+
+      const response = await fetch("http://localhost:3000/api/auth/diet-preferences", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: user.id,
           selectedPreferences,
           customPreferences
         })
       });
 
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal menyimpan preferensi");
+      }
+
       // UPDATE USER YANG ADA DI LOCALSTORAGE
+      const updatedUser = {
+        ...(result?.data?.user || user),
+        dietPreferences: {
+          selectedPreferences,
+          customPreferences
+        }
+      };
+
+      if (result?.data?.token) {
+        localStorage.setItem("token", result.data.token);
+      }
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(updatedUser)
+      );
+
+      setUser(updatedUser);
+
       user.dietPreferences = {
         selectedPreferences,
         customPreferences
       };
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(user)
-      );
 
       toast.success("Preferensi berhasil disimpan");
 
@@ -127,7 +154,7 @@ export default function DietaryProfileScreen() {
         navigate('/home');
       }
     } catch (error) {
-      toast.error("Gagal menyimpan preferensi");
+      toast.error(error.message || "Gagal menyimpan preferensi");
     }
   };
 

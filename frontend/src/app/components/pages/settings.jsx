@@ -34,6 +34,20 @@ export default function SettingsScreen() {
 
   const [autoSave, setAutoSave] = useState(true);
 
+  const openWeeklyDigest = () => {
+    if (!user?.isPremium) {
+      toast.error(t("recipe.premium_only"), {
+        action: {
+          label: t("common.upgrade"),
+          onClick: () => navigate("/premium"),
+        },
+      });
+      return;
+    }
+
+    setShowWeeklyDigest(true);
+  };
+
   const handleWeeklyDigestToggle = (checked) => {
     setNotifications({ ...notifications, weeklyDigest: checked });
     if (checked) {
@@ -43,7 +57,7 @@ export default function SettingsScreen() {
           description: t("settings.weekly_enabled_desc"),
           action: {
             label: t("settings.view"),
-            onClick: () => setShowWeeklyDigest(true),
+            onClick: openWeeklyDigest,
           },
         }
       );
@@ -148,7 +162,7 @@ export default function SettingsScreen() {
             icon={<Bell className="h-5 w-5" />}
             label={t("settings.weekly_digest")}
             description={t("settings.weekly_digest_desc_short")}
-            onClick={() => setShowWeeklyDigest(true)}
+            onClick={openWeeklyDigest}
           />
 
           <SettingItem

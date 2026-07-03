@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url);
 const db = require('../models/index.cjs');
 
 // Import Sequelize dan Op untuk fitur Filter (Pencarian)
-const { Recipe, Sequelize } = db;
+const { Recipe, SousChefMessage, Sequelize } = db;
 const { Op } = Sequelize;
 
 // Import BaseController untuk Inheritance
@@ -12,6 +12,58 @@ import BaseController from './basecontroller.js';
 
 // Inisialisasi Gemini menggunakan API Key dari file .env
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const normalizeSousChefMessages = (messages) =>
+    messages.map((item) => ({
+        id: item.id,
+        type: item.role === 'assistant' ? 'ai' : 'user',
+        text: item.text || '',
+        createdAt: item.createdAt
+    }));
+
+const toTextArray = (value) => {
+    if (Array.isArray(value)) return value;
+    if (!value) return [];
+    return String(value).split('\n').filter((v) => v.trim() !== '');
+};
+
+const parseRecipeTranslationResponse = (rawText) => {
+    const cleanText = String(rawText || '')
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+
+    const parsed = JSON.parse(cleanText);
+
+    return {
+        title: String(parsed.title || '').trim(),
+        ingredients: toTextArray(parsed.ingredients),
+        steps: toTextArray(parsed.steps)
+    };
+};
+
+const translateRecipeFields = async ({ title, ingredients, steps, targetLanguage }) => {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const prompt = `
+Terjemahkan resep berikut ke bahasa ${targetLanguage === 'en' ? 'English' : 'Bahasa Indonesia'}.
+
+Kembalikan JSON valid saja tanpa markdown dengan format:
+{
+  "title": "...",
+  "ingredients": ["..."],
+  "steps": ["..."]
+}
+
+Jangan ubah jumlah item ingredients atau steps.
+
+Resep sumber:
+${JSON.stringify({ title, ingredients, steps }, null, 2)}
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return parseRecipeTranslationResponse(response.text());
+};
 
 // RecipeController mewarisi BaseController
 class RecipeController extends BaseController {
@@ -125,25 +177,170 @@ class RecipeController extends BaseController {
         }
     };
 
+    getSousChefMessages = async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const { id: recipeId } = req.params;
+            const recipeRef = req.query.recipeRef || '';
+
+            const messages = await SousChefMessage.findAll({
+                where: {
+                    userId,
+                    recipeId,
+                    ...(recipeRef ? { recipeRef } : {})
+                },
+                order: [['createdAt', 'ASC']],
+                limit: 150
+            });
+
+            return this.sendSuccess(
+                res,
+                200,
+                'Berhasil mengambil riwayat chat SousChef',
+                normalizeSousChefMessages(messages)
+            );
+        } catch (error) {
+            console.error('Get SousChef Messages Error:', error);
+            return this.sendError(res, 500, 'Gagal mengambil riwayat chat SousChef');
+        }
+    };
+
+    sendSousChefMessage = async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const userName = req.user.name || 'User';
+            const { id: recipeId } = req.params;
+            const {
+                message,
+                recipe,
+                recipeRef = '',
+                language = 'id'
+            } = req.body;
+
+            if (!message || !String(message).trim()) {
+                return this.sendError(res, 400, 'Pesan tidak boleh kosong');
+            }
+
+            const userMessage = await SousChefMessage.create({
+                userId,
+                recipeId,
+                recipeRef,
+                role: 'user',
+                text: String(message).trim(),
+                language
+            });
+
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const outputLanguage = language === 'en' ? 'English' : 'Bahasa Indonesia';
+
+            const prompt = `
+Kamu adalah SousChef AI untuk aplikasi SnapChef.
+
+ATURAN WAJIB:
+- Jawab singkat, praktis, dan aman untuk memasak di rumah.
+- Fokus pada konteks resep yang diberikan.
+- Jika pertanyaan di luar konteks resep, arahkan kembali secara sopan.
+- Selalu jawab dalam bahasa: ${outputLanguage}.
+
+KONTEKS RESEP:
+${JSON.stringify(recipe || {}, null, 2)}
+
+PERTANYAAN USER:
+${String(message).trim()}
+`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const aiText = response.text()?.trim() || (language === 'en'
+                ? 'Sorry, I could not generate an answer right now.'
+                : 'Maaf, saya belum bisa menghasilkan jawaban saat ini.');
+
+            const aiMessage = await SousChefMessage.create({
+                userId,
+                recipeId,
+                recipeRef,
+                role: 'assistant',
+                text: aiText,
+                language
+            });
+
+            return this.sendSuccess(
+                res,
+                200,
+                'Pesan SousChef berhasil dikirim',
+                {
+                    userMessage: normalizeSousChefMessages([userMessage])[0],
+                    aiMessage: normalizeSousChefMessages([aiMessage])[0]
+                }
+            );
+        } catch (error) {
+            console.error('Send SousChef Message Error:', error);
+            return this.sendError(res, 500, 'Gagal mengirim pesan ke SousChef AI');
+        }
+    };
+
     saveRecipe = async (req, res) => {
         try {
             const {
                 title,
+                titleEn,
                 ingredients,
+                ingredientsEn,
                 instructions,
+                instructionsEn,
                 detectedIngredients,
                 calories,
                 protein,
                 carbs,
-                prepTime
+                prepTime,
+                language = 'id'
             } = req.body;
 
             const userId = req.user.id;
 
+            let finalTitle = title;
+            let finalTitleEn = titleEn || null;
+            let finalIngredients = ingredients;
+            let finalIngredientsEn = ingredientsEn || null;
+            let finalInstructions = instructions;
+            let finalInstructionsEn = instructionsEn || null;
+
+            if (!finalTitleEn || !finalIngredientsEn || !finalInstructionsEn) {
+                const source = {
+                    title: title,
+                    ingredients: toTextArray(ingredients),
+                    steps: toTextArray(instructions)
+                };
+
+                const translated = await translateRecipeFields({
+                    ...source,
+                    targetLanguage: language === 'en' ? 'id' : 'en'
+                });
+
+                if (language === 'en') {
+                    finalTitleEn = source.title;
+                    finalIngredientsEn = source.ingredients.join('\n');
+                    finalInstructionsEn = source.steps.join('\n');
+                    finalTitle = translated.title || finalTitle;
+                    finalIngredients = (translated.ingredients || source.ingredients).join('\n');
+                    finalInstructions = (translated.steps || source.steps).join('\n');
+                } else {
+                    finalTitle = source.title;
+                    finalIngredients = source.ingredients.join('\n');
+                    finalInstructions = source.steps.join('\n');
+                    finalTitleEn = translated.title || finalTitleEn;
+                    finalIngredientsEn = (translated.ingredients || source.ingredients).join('\n');
+                    finalInstructionsEn = (translated.steps || source.steps).join('\n');
+                }
+            }
+
             const newRecipe = await Recipe.create({
-                title,
-                ingredients,
-                instructions,
+                title: finalTitle,
+                titleEn: finalTitleEn,
+                ingredients: finalIngredients,
+                ingredientsEn: finalIngredientsEn,
+                instructions: finalInstructions,
+                instructionsEn: finalInstructionsEn,
 
                 detectedIngredients:
                     detectedIngredients || [],

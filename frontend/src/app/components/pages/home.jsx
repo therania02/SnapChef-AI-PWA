@@ -50,7 +50,7 @@ export default function HomeScreen() {
   const [scanHistory, setScanHistory] = useState([]);
   const navigate = useNavigate();
   const { user, setUser } = useUser();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   const { scanFood } = useRecipes();
   const { selectedPreferences, customPreferences } = usePreferences();
@@ -126,7 +126,7 @@ export default function HomeScreen() {
     if (!token) return;
 
     try {
-      const response = await fetch("http://localhost:3000/api/history", {
+      const response = await fetch(`http://localhost:3000/api/history?language=${language}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -151,7 +151,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchScanHistory();
-  }, [token]);
+  }, [token, language]);
 
   const startCamera = async () => {
     if (loadingScan) return;
@@ -216,6 +216,7 @@ export default function HomeScreen() {
         },
         body: JSON.stringify({
           image: resized,
+          language,
           preferences:
             user?.dietPreferences?.selectedPreferences || []
         })

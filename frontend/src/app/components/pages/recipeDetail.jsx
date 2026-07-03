@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
-  ArrowLeft, Heart, Share2, Plus, Minus, AlertCircle, Flame, MessageCircle, Star, ArrowRight, X, Crown, Lock
+  ArrowLeft, Heart, Share2, Plus, Minus, AlertCircle, Flame, MessageCircle, Star, ArrowRight, X, Crown, Lock, Send
 } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { Badge } from "../../../ui/badge.jsx";
@@ -75,9 +75,9 @@ export default function RecipeDetailScreen() {
   // 👇 PINDAHKAN KETIGA HOOK INI KE SINI 👇
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useUser();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   console.log(user);
-  const { rateRecipe } = useRecipes();
+  const { rateRecipe, getSousChefMessages, sendSousChefMessage } = useRecipes();
 
   const incomingRecipe = location.state?.recipeData;
 
@@ -97,10 +97,22 @@ export default function RecipeDetailScreen() {
     incomingRecipe?.detectedIngredients ||
     [];
 
+  const localizedTitle = language === "en"
+    ? (incomingRecipe?.titleEn || incomingRecipe?.title)
+    : (incomingRecipe?.title || incomingRecipe?.titleEn);
+
+  const localizedIngredientsRaw = language === "en"
+    ? (incomingRecipe?.ingredientsEn || incomingRecipe?.ingredients)
+    : (incomingRecipe?.ingredients || incomingRecipe?.ingredientsEn);
+
+  const localizedInstructionsRaw = language === "en"
+    ? (incomingRecipe?.instructionsEn || incomingRecipe?.instructions || incomingRecipe?.steps)
+    : (incomingRecipe?.instructions || incomingRecipe?.instructionsEn || incomingRecipe?.steps);
+
 
   const formattedAIRecipe = incomingRecipe ? {
     id: incomingRecipe.id || id,
-    title: incomingRecipe.title,
+    title: localizedTitle,
     image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
     type: t("recipe.ai_recommendation"),
     isHalal: true,
@@ -124,21 +136,26 @@ export default function RecipeDetailScreen() {
     prepTime: incomingRecipe.prepTime ?? 0,
     servings: 2,
     ingredients: Array.isArray(
-      incomingRecipe.ingredients
+      localizedIngredientsRaw
     )
-      ? incomingRecipe.ingredients.map(item =>
+      ? localizedIngredientsRaw.map(item =>
         typeof item === "string"
           ? parseIngredientLine(item)
           : item
       )
       : String(
-        incomingRecipe.ingredients || ""
+        localizedIngredientsRaw || ""
       )
         .split("\n")
         .filter(i => i.trim() !== "")
         .map(parseIngredientLine),
 
-    steps: parsedSteps.map(step => ({
+    steps: (Array.isArray(localizedInstructionsRaw)
+      ? localizedInstructionsRaw
+      : String(localizedInstructionsRaw || "")
+        .split("\n")
+        .filter(s => s.trim() !== "")
+    ).map(step => ({
       instruction: String(step)
         .replace(/^\d+[\.\)]\s*/, "")
         .trim(),
@@ -190,7 +207,11 @@ export default function RecipeDetailScreen() {
   const [showChat, setShowChat] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const [isSendingChat, setIsSendingChat] = useState(false);
   const [ingredientSubstitutions, setIngredientSubstitutions] = useState({});
+
+  const recipeRef = `${recipe.id || id}-${recipe.title || "recipe"}`;
 
   const calculateSubstituteAmount = (ratio, originalAmount) => {
     const parts = ratio.split(":");
@@ -346,7 +367,8 @@ export default function RecipeDetailScreen() {
       const result =
         await tweakRecipeWithAI(
           recipe,
-          request
+          request,
+          language
         );
 
       toast.dismiss();
@@ -389,23 +411,56 @@ export default function RecipeDetailScreen() {
 
   const cancelSaveRating = () => setShowRatingConfirm(false);
 
-  const handleChatSubmit = () => {
-    if (chatInput.trim()) {
-      const userMessage = { type: 'user', text: chatInput };
-      setChatMessages(prev => [...prev, userMessage]);
+  useEffect(() => {
+    const loadSousChefHistory = async () => {
+      if (!showChat) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        setIsLoadingChat(true);
+        const messages = await getSousChefMessages(recipe.id || id, recipeRef);
+        setChatMessages(Array.isArray(messages) ? messages : []);
+      } catch (error) {
+        toast.error(error.message || t("common.error"));
+      } finally {
+        setIsLoadingChat(false);
+      }
+    };
+
+    loadSousChefHistory();
+  }, [showChat, recipe.id, id, recipeRef, t]);
+
+  const handleChatSubmit = async () => {
+    const trimmed = chatInput.trim();
+    if (!trimmed || isSendingChat) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error(t("premium.login_required"));
+      return;
+    }
+
+    try {
+      setIsSendingChat(true);
+      const payload = await sendSousChefMessage({
+        recipeId: recipe.id || id,
+        message: trimmed,
+        recipeRef,
+        recipe,
+        language
+      });
+
       setChatInput("");
-      setTimeout(() => {
-        const aiResponses = [
-          "Saus tiram bisa diganti dengan kecap manis + sedikit MSG untuk rasa umami!",
-          "Untuk pengganti bawang putih, coba pakai bawang bombay cincang halus dengan perbandingan 1:3.",
-          "Kalau tidak ada daun bawang, bisa pakai seledri cincang sebagai garnish.",
-          "Cabai merah bisa diganti cabai hijau, tapi rasanya akan sedikit berbeda.",
-          "Untuk hasil terbaik, pastikan api tidak terlalu besar agar bumbu tidak gosong!",
-        ];
-        const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-        const aiMessage = { type: 'ai', text: randomResponse };
-        setChatMessages(prev => [...prev, aiMessage]);
-      }, 1000);
+
+      if (payload?.userMessage && payload?.aiMessage) {
+        setChatMessages((prev) => [...prev, payload.userMessage, payload.aiMessage]);
+      }
+    } catch (error) {
+      toast.error(error.message || t("common.error"));
+    } finally {
+      setIsSendingChat(false);
     }
   };
 
@@ -728,6 +783,9 @@ export default function RecipeDetailScreen() {
           </div>
           {showChat && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+              {isLoadingChat && (
+                <div className="text-xs text-muted-foreground text-center py-2">{t("chat.loading")}</div>
+              )}
               {chatMessages.length > 0 && (
                 <div className="max-h-60 overflow-y-auto space-y-2 mb-3">
                   {chatMessages.map((msg, idx) => (
@@ -746,8 +804,8 @@ export default function RecipeDetailScreen() {
                 </div>
               )}
               <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter') handleChatSubmit(); }} placeholder={t("recipe.question_placeholder")} className="w-full rounded-2xl px-4 py-3 bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              <Button size="sm" variant="default" className="w-full rounded-2xl" onClick={handleChatSubmit} disabled={!chatInput.trim()}>
-                <Send className="h-4 w-4 mr-1" /> {t("recipe.send")}
+              <Button size="sm" variant="default" className="w-full rounded-2xl" onClick={handleChatSubmit} disabled={!chatInput.trim() || isSendingChat}>
+                <Send className="h-4 w-4 mr-1" /> {isSendingChat ? t("common.loading") : t("recipe.send")}
               </Button>
             </motion.div>
           )}

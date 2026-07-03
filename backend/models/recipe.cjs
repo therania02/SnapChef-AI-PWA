@@ -3,13 +3,16 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Recipe extends Model {
     static associate(models) {
-      // define association here
+      Recipe.hasMany(models.SousChefMessage, { foreignKey: 'recipeId' });
     }
   }
   Recipe.init({
     title: DataTypes.STRING,
+    titleEn: DataTypes.STRING,
     ingredients: DataTypes.TEXT,
+    ingredientsEn: DataTypes.TEXT,
     instructions: DataTypes.TEXT,
+    instructionsEn: DataTypes.TEXT,
 
     detectedIngredients: {
       type: DataTypes.JSON,

@@ -32,7 +32,7 @@ const determineRecipeTags = (title = "") => {
 export default function CookbookScreen() {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { favorites } = useFavorites();
   const { selectedPreferences } = usePreferences();
 
@@ -62,12 +62,27 @@ export default function CookbookScreen() {
       setCurrentPage(page);
 
       const formattedData = data.map(recipe => {
-        const detectedTags = determineRecipeTags(recipe.title);
+        const localizedTitle = language === 'en'
+          ? (recipe.titleEn || recipe.title)
+          : (recipe.title || recipe.titleEn);
+
+        const localizedIngredients = language === 'en'
+          ? (recipe.ingredientsEn || recipe.ingredients)
+          : (recipe.ingredients || recipe.ingredientsEn);
+
+        const localizedInstructions = language === 'en'
+          ? (recipe.instructionsEn || recipe.instructions)
+          : (recipe.instructions || recipe.instructionsEn);
+
+        const detectedTags = determineRecipeTags(localizedTitle);
         return {
           id: recipe.id,
-          title: recipe.title,
-          ingredients: recipe.ingredients,
-          instructions: recipe.instructions,
+          title: localizedTitle,
+          titleEn: recipe.titleEn || null,
+          ingredients: localizedIngredients,
+          ingredientsEn: recipe.ingredientsEn || null,
+          instructions: localizedInstructions,
+          instructionsEn: recipe.instructionsEn || null,
 
           detectedIngredients:
             recipe.detectedIngredients || [],
@@ -104,7 +119,7 @@ export default function CookbookScreen() {
 
   useEffect(() => {
     fetchRecipes(1);
-  }, [user]);
+  }, [user, language]);
 
   const handleDelete = async (e, recipeId) => {
     e.stopPropagation();
