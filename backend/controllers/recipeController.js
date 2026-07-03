@@ -8,7 +8,7 @@ const { Recipe, SousChefMessage, Sequelize } = db;
 const { Op } = Sequelize;
 
 // Import BaseController untuk Inheritance
-import BaseController from './basecontroller.js';
+import BaseController from './baseController.js';
 
 // Inisialisasi Gemini menggunakan API Key dari file .env
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -169,7 +169,7 @@ class RecipeController extends BaseController {
             } catch (error) {
                 return this.sendError(res, 500, "Format respons AI tidak valid");
             }
-            
+
 
         } catch (error) {
             console.error("Gemini Error:", error);

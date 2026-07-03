@@ -5,7 +5,7 @@ const db = require('../models/index.cjs');
 
 const { Feedback } = db;
 
-import BaseController from './basecontroller.js';
+import BaseController from './baseController.js';
 
 class FeedbackController extends BaseController {
 

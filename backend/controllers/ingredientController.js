@@ -4,7 +4,7 @@ const db = require('../models/index.cjs');
 const { Ingredient, Sequelize } = db;
 const { Op } = Sequelize;
 
-import BaseController from './basecontroller.js';
+import BaseController from './baseController.js';
 
 class IngredientController extends BaseController {
     // C - Create
@@ -63,7 +63,7 @@ class IngredientController extends BaseController {
         try {
             const ingredient = await Ingredient.findByPk(req.params.id);
             if (!ingredient) return this.sendError(res, 404, "Bahan tidak ditemukan");
-            
+
             if (String(ingredient.userId) != String(req.user.id)) {
                 return this.sendError(res, 403, "Anda tidak memiliki izin untuk mengedit bahan")
             }

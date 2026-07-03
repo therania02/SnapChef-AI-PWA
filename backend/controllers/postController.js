@@ -4,7 +4,7 @@ const db = require('../models/index.cjs');
 const { Post, User, Comment, Sequelize } = db;
 const { Op } = Sequelize;
 
-import BaseController from './basecontroller.js';
+import BaseController from './baseController.js';
 
 class PostController extends BaseController {
     create = async (req, res) => {
@@ -54,7 +54,7 @@ class PostController extends BaseController {
                 include: [
                     {
                         model: User,
-                        attributes: ['name'] 
+                        attributes: ['name']
                     }
                 ],
                 limit: limit,
