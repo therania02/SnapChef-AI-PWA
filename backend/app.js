@@ -14,7 +14,7 @@ import commentRoutes from './routes/commentRoutes.js';
 import scanRoutes from './routes/scanRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
-import { DEFAULT_CHAT_AVATAR, createChatMessage } from './controllers/messageController.js';
+import { DEFAULT_CHAT_AVATAR } from './controllers/messageController.js';
 import { setupSocket } from './sockets/socketHandler.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import weeklyDigestRoutes from "./routes/weeklyDigestRoutes.js";
@@ -96,7 +96,7 @@ io.on('connection', (socket) => {
                 throw new Error('chatId wajib diisi');
             }
 
-            const message = await createChatMessage({
+            const message = await messageController.sendMessage({
                 chatId,
                 senderId: socket.data.user.id,
                 senderName: socket.data.user.name,
