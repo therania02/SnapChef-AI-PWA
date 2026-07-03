@@ -205,7 +205,7 @@ export default function AccountScreen() {
               ) : (
                 <>
                   <div className="flex items-center gap-2 text-foreground justify-center sm:justify-start">
-                    <h1 className="text-2xl text-foreground font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
+                    <h1 className="text-2xl text-white font-medium" style={{ fontFamily: 'var(--font-family-display)' }}>
                       {/* 👇 NAMA USER DIREnder DI SINI 👇 */}
                       {currentName}
                     </h1>
@@ -232,7 +232,7 @@ export default function AccountScreen() {
                     </button>
                   </div>
                   {/* 👇 EMAIL USER DIREnder DI SINI 👇 */}
-                  <p className="text-sm text-muted-foreground">{currentEmail}</p>
+                  <p className="text-sm text-white">{currentEmail}</p>
                 </>
               )}
             </div>
