@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner"; // Pastikan sonner tetap ada
 import { useUser } from "../lib/userContext.jsx";
-import { API_BASE_URL } from "../api/config";
+import { API_BASE_URL } from "../../api/config";
 
 const CookingPostsContext = createContext(null);
 
