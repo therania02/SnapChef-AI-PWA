@@ -21,6 +21,7 @@ import { usePreferences } from "../../lib/preferencesContext.jsx";
 import { UploadCookingPostModal } from "../../../ui/uploadCookingPostModal.jsx";
 import { CookingPostCard } from "../../../ui/cookingPostCard.jsx";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../../../api/config.js";
 
 // IMPORT CUSTOM HOOKS BACKEND NODE.JS
 import { useRecipes } from "../../../hooks/useRecipes.js";
