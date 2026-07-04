@@ -1,5 +1,7 @@
-const API_URL    = 'http://localhost:3000/api/messages';
-const UPLOAD_URL = 'http://localhost:3000/api/messages/upload';
+import { API_BASE_URL } from "../../api/config.js";
+
+const API_URL = `${API_BASE_URL}/api/messages`;
+const UPLOAD_URL = `${API_BASE_URL}/api/messages/upload`;
 
 const jsonHeaders = (token) => {
     const h = { 'Content-Type': 'application/json' };

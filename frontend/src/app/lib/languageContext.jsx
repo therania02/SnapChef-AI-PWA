@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { API_BASE_URL } from "../../api/config.js";
 
 const getStoredToken = () => {
   const token = localStorage.getItem("token");
@@ -208,7 +209,7 @@ const translations = {
     "payment.premium_active_package": "Paket Premium Aktif",
     "payment.valid_until": "Berlaku hingga 10 Mei 2026",
     "common.confirm": "Konfirmasi",
-    
+
     // Home Screen
     "home.greeting.morning": "Selamat Pagi",
     "home.greeting.afternoon": "Selamat Siang",
@@ -262,7 +263,7 @@ const translations = {
     "home.post_shared": "Masakan berhasil dibagikan!",
     "home.post_deleted": "Masakan berhasil dihapus!",
     "home.privacy_changed": "Privasi diubah ke {{label}}",
-    
+
     // Scan Result
     "scan.detected_ingredients": "Bahan Terdeteksi",
     "scan.add_ingredient": "Tambah Bahan",
@@ -284,7 +285,7 @@ const translations = {
     "scan.preparing_recipe": "Menyiapkan Resep...",
     "scan.save_view_recipe": "Simpan & Lihat Resep",
     "scan.save_failed": "Gagal menyimpan resep: {{message}}",
-    
+
     // Recipe Detail
     "recipe.ingredients": "Bahan-Bahan",
     "recipe.instructions": "Cara Membuat",
@@ -302,7 +303,7 @@ const translations = {
     "recipe.protein": "Protein",
     "recipe.carbs": "Karbo",
     "recipe.time": "Waktu",
-    
+
     // Cooking Mode
     "cooking.step": "Langkah",
     "cooking.previous": "Sebelumnya",
@@ -328,7 +329,7 @@ const translations = {
     "cooking.ask_about_step": "Ada yang ingin ditanyakan tentang langkah ini?",
     "cooking.question_time": "\"Berapa lama harus ditumis?\"",
     "cooking.question_substitute": "\"Bisa ganti bahan ini?\"",
-    
+
     // Cookbook
     "cookbook.title": "Buku Resep",
     "cookbook.all": "Semua",
@@ -350,7 +351,7 @@ const translations = {
     "cookbook.confirm_delete": "Yakin ingin menghapus resep ini dari Cookbook?",
     "cookbook.delete_success": "Resep berhasil dihapus!",
     "cookbook.delete_error": "Gagal menghapus resep.",
-    
+
     // Shopping List
     "shopping.title": "Daftar Belanja",
     "shopping.add_item": "Tambah Item",
@@ -372,7 +373,7 @@ const translations = {
     "shopping.delete_error": "Gagal menghapus: {{message}}",
     "shopping.connection_error": "Kesalahan koneksi ke server",
     "shopping.shopee_info_short": "Klik tombol \"Beli\" untuk langsung mencari produk di aplikasi Shopee.",
-    
+
     // Account
     "account.title": "Akun",
     "account.free_plan": "Paket Gratis",
@@ -408,7 +409,7 @@ const translations = {
     "account.confirm_name_premium": "Apakah Anda yakin ingin mengubah nama Anda?",
     "account.confirm_name_free": "Apakah Anda yakin ingin mengubah nama Anda? Sebagai pengguna gratis, Anda hanya dapat mengubah nama sekali.",
     "account.confirm_change": "Ya, Ubah",
-    
+
     // Settings
     "settings.title": "Pengaturan",
     "settings.notifications": "Notifikasi",
@@ -454,7 +455,7 @@ const translations = {
     "settings.weekly_enabled": "Ringkasan mingguan diaktifkan!",
     "settings.weekly_enabled_desc": "Klik untuk lihat contoh ringkasan",
     "settings.view": "Lihat",
-    
+
     // Premium
     "premium.title": "Upgrade ke Premium",
     "premium.subtitle": "Nikmati fitur lengkap SnapChef AI",
@@ -500,7 +501,7 @@ const translations = {
     "premium.login_required": "Anda harus login terlebih dahulu!",
     "premium.transaction_failed": "Gagal membuat transaksi",
     "premium.payment_open_failed": "Gagal membuka pembayaran Midtrans",
-    
+
     // Navigation
     "nav.home": "Home",
     "nav.cookbook": "Resep",
@@ -699,7 +700,7 @@ const translations = {
     "payment.premium_active_package": "Premium Package Active",
     "payment.valid_until": "Valid until May 10, 2026",
     "common.confirm": "Confirm",
-    
+
     // Home Screen
     "home.greeting.morning": "Good Morning",
     "home.greeting.afternoon": "Good Afternoon",
@@ -753,7 +754,7 @@ const translations = {
     "home.post_shared": "Dish shared successfully!",
     "home.post_deleted": "Dish deleted successfully!",
     "home.privacy_changed": "Privacy changed to {{label}}",
-    
+
     // Scan Result
     "scan.detected_ingredients": "Detected Ingredients",
     "scan.add_ingredient": "Add Ingredient",
@@ -775,7 +776,7 @@ const translations = {
     "scan.preparing_recipe": "Preparing Recipe...",
     "scan.save_view_recipe": "Save & View Recipe",
     "scan.save_failed": "Failed to save recipe: {{message}}",
-    
+
     // Recipe Detail
     "recipe.ingredients": "Ingredients",
     "recipe.instructions": "Instructions",
@@ -793,7 +794,7 @@ const translations = {
     "recipe.protein": "Protein",
     "recipe.carbs": "Carbs",
     "recipe.time": "Time",
-    
+
     // Cooking Mode
     "cooking.step": "Step",
     "cooking.previous": "Previous",
@@ -819,7 +820,7 @@ const translations = {
     "cooking.ask_about_step": "Want to ask about this step?",
     "cooking.question_time": "\"How long should I stir-fry it?\"",
     "cooking.question_substitute": "\"Can I substitute this ingredient?\"",
-    
+
     // Cookbook
     "cookbook.title": "Cookbook",
     "cookbook.all": "All",
@@ -841,7 +842,7 @@ const translations = {
     "cookbook.confirm_delete": "Are you sure you want to delete this recipe from Cookbook?",
     "cookbook.delete_success": "Recipe deleted successfully!",
     "cookbook.delete_error": "Failed to delete recipe.",
-    
+
     // Shopping List
     "shopping.title": "Shopping List",
     "shopping.add_item": "Add Item",
@@ -863,7 +864,7 @@ const translations = {
     "shopping.delete_error": "Failed to delete: {{message}}",
     "shopping.connection_error": "Server connection error",
     "shopping.shopee_info_short": "Click the \"Buy\" button to search for products directly in the Shopee app.",
-    
+
     // Account
     "account.title": "Account",
     "account.free_plan": "Free Plan",
@@ -899,7 +900,7 @@ const translations = {
     "account.confirm_name_premium": "Are you sure you want to change your name?",
     "account.confirm_name_free": "Are you sure you want to change your name? As a free user, you can only change your name once.",
     "account.confirm_change": "Yes, Change",
-    
+
     // Settings
     "settings.title": "Settings",
     "settings.notifications": "Notifications",
@@ -945,7 +946,7 @@ const translations = {
     "settings.weekly_enabled": "Weekly digest enabled!",
     "settings.weekly_enabled_desc": "Click to view a sample digest",
     "settings.view": "View",
-    
+
     // Premium
     "premium.title": "Upgrade to Premium",
     "premium.subtitle": "Enjoy full features of SnapChef AI",
@@ -991,7 +992,7 @@ const translations = {
     "premium.login_required": "You must log in first!",
     "premium.transaction_failed": "Failed to create transaction",
     "premium.payment_open_failed": "Failed to open Midtrans payment",
-    
+
     // Navigation
     "nav.home": "Home",
     "nav.cookbook": "Recipes",
@@ -1018,7 +1019,7 @@ export function LanguageProvider({ children }) {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (!user?.id) return;
 
-    fetch("http://localhost:3000/api/auth/users/" + user.id, {
+    fetch(`${API_BASE_URL}/api/auth/users/${user.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

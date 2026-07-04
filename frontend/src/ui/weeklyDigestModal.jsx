@@ -4,6 +4,7 @@ import { X, TrendingUp, ChefHat, Clock, Star, Calendar } from "lucide-react";
 import { Button } from "./button";
 import { useLanguage } from "../app/lib/languageContext.jsx";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../api/config.js";
 
 export function WeeklyDigestModal({ isOpen, onClose }) {
   const { language, t } = useLanguage();
@@ -33,8 +34,8 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
   const weekRange =
     getWeekRange();
 
-  const [ topIngredients, setTopIngredients ] = useState([]);
-  const [ achievements, setAchievements ] = useState([]);
+  const [topIngredients, setTopIngredients] = useState([]);
+  const [achievements, setAchievements] = useState([]);
   const [stats, setStats] = useState({
     scans: { value: 0, change: 0, percentage: 0 },
     recipes: { value: 0, change: 0, percentage: 0 },
@@ -58,7 +59,7 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
         }
 
         const response = await fetch(
-          `http://localhost:3000/api/weekly-digest/${user.id}`,
+          `${API_BASE_URL}/api/weekly-digest/${user.id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`

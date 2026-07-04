@@ -5,6 +5,7 @@ import React, {
   useEffect
 } from "react";
 import { useUser } from "./userContext.jsx";
+import { API_BASE_URL } from "../../api/config";
 
 const PreferencesContext = createContext(null);
 
@@ -54,7 +55,7 @@ export function PreferencesProvider({ children }) {
     try {
       const token = localStorage.getItem("token");
 
-      await fetch("http://localhost:3000/api/auth/diet-preferences", {
+      await fetch(`${API_BASE_URL}/api/auth/diet-preferences`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

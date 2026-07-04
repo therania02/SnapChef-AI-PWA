@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/api/recipes";
+import { API_BASE_URL } from "./config";
+const API_URL = `${API_BASE_URL}/api/recipes`;
 
 // Tambahkan parameter preferences
 export const analyzeImageAI = async (base64Image, userPreferences = "") => {
@@ -43,14 +44,14 @@ export const saveSelectedRecipe = async (recipeData) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-            title: recipeData.title,
-            ingredients: recipeData.ingredients,
-            instructions: recipeData.steps,
-            calories: recipeData.calories,
-            protein: recipeData.protein,
-            carbs: recipeData.carbs,
-            prepTime: recipeData.prepTime,
-            userId: userId
+                title: recipeData.title,
+                ingredients: recipeData.ingredients,
+                instructions: recipeData.steps,
+                calories: recipeData.calories,
+                protein: recipeData.protein,
+                carbs: recipeData.carbs,
+                prepTime: recipeData.prepTime,
+                userId: userId
             })
         });
 

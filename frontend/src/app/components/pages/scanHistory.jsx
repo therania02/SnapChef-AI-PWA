@@ -6,6 +6,7 @@ import { Button } from "../../../ui/button";
 import { toast } from "sonner";
 import { useUser } from "../../lib/userContext.jsx";
 import { useLanguage } from "../../lib/languageContext.jsx";
+import { API_BASE_URL } from "../../../api/config";
 
 export default function ScanHistoryScreen() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function ScanHistoryScreen() {
   const fetchHistory = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:3000/api/history?language=${language}`, {
+      const response = await fetch(`${API_BASE_URL}/api/history?language=${language}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "X-User-Premium": user?.isPremium ? "true" : "false"
@@ -53,18 +54,18 @@ export default function ScanHistoryScreen() {
 
   const handleViewScan = (scanItem) => {
     // Navigasi ke halaman hasil dengan format bungkusan object yang tepat
-    navigate("/scan-result", { 
-      state: { 
-        ingredients_detected: scanItem.ingredients, 
-        recipes: scanItem.rawRecipes 
-      } 
+    navigate("/scan-result", {
+      state: {
+        ingredients_detected: scanItem.ingredients,
+        recipes: scanItem.rawRecipes
+      }
     });
   };
 
   const handleDeleteScan = async (scanId, e) => {
     e.stopPropagation();
     try {
-      const response = await fetch(`http://localhost:3000/api/history/${scanId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/history/${scanId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -83,7 +84,7 @@ export default function ScanHistoryScreen() {
 
   const handleDeleteAll = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/history", {
+      const response = await fetch(`${API_BASE_URL}/api/history`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,

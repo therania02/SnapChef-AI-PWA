@@ -11,6 +11,7 @@ import { Button } from "../../../ui/button";
 import { BottomNav } from "../../../ui/bottomNav";
 import { toast } from "sonner";
 import { useLanguage } from "../../lib/languageContext";
+import { API_BASE_URL } from "../../../api/config";
 
 export default function ShoppingListScreen() {
   const navigate = useNavigate();
@@ -23,11 +24,11 @@ export default function ShoppingListScreen() {
   // Ambil data user dari localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user.id;
-  
+
   // Ambil token dari localStorage
   const token = localStorage.getItem("token") || user.token || "";
 
-  const API_URL = "http://localhost:3000/api/ingredients";
+  const API_URL = `${API_BASE_URL}/api/ingredients`;
 
   const localizeUnit = (unit) => {
     if (!unit) return "";
@@ -68,7 +69,7 @@ export default function ShoppingListScreen() {
         headers: getAuthHeaders()
       });
       const result = await response.json();
-      
+
       if (result.success) {
         const data = result.data.data || [];
         setItems(data);
@@ -99,9 +100,9 @@ export default function ShoppingListScreen() {
         method: 'PUT',
         headers: getAuthHeaders(),
         // Kirim field yang ingin diubah (sesuai database)
-        body: JSON.stringify({ checked: newCheckedStatus }) 
+        body: JSON.stringify({ checked: newCheckedStatus })
       });
-      
+
       if (response.ok) {
         setItems(items.map((item) =>
           item.id === id ? { ...item, checked: newCheckedStatus } : item
@@ -138,7 +139,7 @@ export default function ShoppingListScreen() {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ userId: userId }) 
+        body: JSON.stringify({ userId: userId })
       });
 
       const result = await response.json();
@@ -230,9 +231,8 @@ export default function ShoppingListScreen() {
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => toggleItem(item.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-colors ${
-                      item.checked ? "bg-primary border-primary" : "border-muted-foreground"
-                    }`}
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-colors ${item.checked ? "bg-primary border-primary" : "border-muted-foreground"
+                      }`}
                   >
                     {item.checked && <Check className="h-4 w-4 text-primary-foreground" />}
                   </motion.button>

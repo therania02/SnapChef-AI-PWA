@@ -1,10 +1,11 @@
 import { io } from 'socket.io-client';
+import { API_BASE_URL } from "../../api/config.js";
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = API_BASE_URL;
 
 let socketInstance = null;
-let currentToken   = null;
-let currentUserId  = null;
+let currentToken = null;
+let currentUserId = null;
 
 /**
  * Ambil atau buat socket.
@@ -26,7 +27,7 @@ export const getChatSocket = (token, userId) => {
         socketInstance = null;
     }
 
-    currentToken  = token;
+    currentToken = token;
     currentUserId = uid;
 
     socketInstance = io(SOCKET_URL, {
@@ -42,8 +43,8 @@ export const getChatSocket = (token, userId) => {
 export const disconnectSocket = () => {
     if (socketInstance) {
         socketInstance.disconnect();
-        socketInstance  = null;
-        currentToken    = null;
-        currentUserId   = null;
+        socketInstance = null;
+        currentToken = null;
+        currentUserId = null;
     }
 };

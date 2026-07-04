@@ -15,6 +15,7 @@ import { Button } from "../../../ui/button.jsx";
 import { toast } from "sonner";
 import { useUser } from "../../lib/userContext.jsx";
 import { useLanguage } from "../../lib/languageContext.jsx";
+import { API_BASE_URL } from "../../../api/config.js";
 
 export default function PremiumScreen() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function PremiumScreen() {
     try {
       setIsUpgrading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3000/api/payment/create", {
+      const response = await fetch(`${API_BASE_URL}/api/payment/create`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -193,8 +194,8 @@ export default function PremiumScreen() {
               onClick={handleUpgrade}
               disabled={user?.isPremium || isUpgrading}
               className={`w-full rounded-2xl shadow-lg ${user?.isPremium
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-foreground"
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-gradient-to-r from-[#D4AF37] to-[#E8C968] hover:from-[#E8C968] hover:to-[#D4AF37] text-foreground"
                 }`}
             >
               <Crown className="h-5 w-5 mr-2" />

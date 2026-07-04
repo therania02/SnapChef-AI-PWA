@@ -18,6 +18,8 @@ import {
   from "../../lib/geminiVision";
 import { useLanguage } from "../../lib/languageContext.jsx";
 
+import { API_BASE_URL } from "../../../api/config.js";
+
 // --- FUNGSI PARSER CERDAS UNTUK BAHAN ---
 const parseIngredientLine = (line) => {
   let cleanLine = line.replace(/^[-*•]\s*/, '').trim();
@@ -213,9 +215,9 @@ const unitLabels = {
 };
 
 const localizeUnit = (unit, language) => {
-    if (!unit) return '';
-    const normalized = String(unit).toLowerCase();
-    return unitLabels[language]?.[normalized] || unitLabels.id?.[normalized] || unit;
+  if (!unit) return '';
+  const normalized = String(unit).toLowerCase();
+  return unitLabels[language]?.[normalized] || unitLabels.id?.[normalized] || unit;
 };
 
 const normalizeIngredientName = (name) => {
@@ -573,7 +575,7 @@ export default function RecipeDetailScreen() {
       );
 
       const response = await fetch(
-        "http://localhost:3000/api/ingredients",
+        `${API_BASE_URL}/api/ingredients`,
         {
           method: "POST",
           headers: {
@@ -773,7 +775,7 @@ export default function RecipeDetailScreen() {
       const token = localStorage.getItem("token");
 
       await fetch(
-        "http://localhost:3000/api/cooking/start",
+        `${API_BASE_URL}/api/cooking/start`,
         {
           method: "POST",
 

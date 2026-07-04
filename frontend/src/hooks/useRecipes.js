@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE_URL } from "../api/config.js";
 
 // Helper function untuk mendapatkan auth token
 const getAuthToken = () => {
@@ -34,7 +35,7 @@ const getAuthHeaders = () => {
 };
 
 export const useRecipes = () => {
-    const API_URL = "http://localhost:3000/api/recipes";
+    const API_URL = `${API_BASE_URL}/api/recipes`;
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -123,7 +124,7 @@ export const useRecipes = () => {
 
     const removeRecipe = async (id) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/recipes/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/recipes/${id}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders()
             });

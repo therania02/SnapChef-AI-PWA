@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE_URL } from "../api/config.js";
 
 // Helper function untuk mendapatkan auth token
 const getAuthToken = () => {
@@ -34,7 +35,7 @@ const getAuthHeaders = () => {
 };
 
 export const useIngredients = () => {
-    const API_URL = "http://localhost:3000/api/ingredients";
+    const API_URL = `${API_BASE_URL}/api/ingredients`;
     const [loading, setLoading] = useState(false);
 
     const getIngredients = async (page = 1, limit = 10) => {

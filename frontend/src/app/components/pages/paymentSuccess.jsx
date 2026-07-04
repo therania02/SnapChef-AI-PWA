@@ -4,6 +4,8 @@ import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "../../../ui/button.jsx";
 import { useUser } from "../../lib/userContext.jsx";
 import { useLanguage } from "../../lib/languageContext.jsx";
+import { API_BASE_URL } from "../../../api/config";
+
 
 export default function PaymentSuccessScreen() {
   const navigate = useNavigate();
@@ -28,7 +30,7 @@ export default function PaymentSuccessScreen() {
         }
 
         const response = await fetch(
-          `http://localhost:3000/api/payment/status/${encodeURIComponent(orderId)}`,
+          `${API_BASE_URL}/api/payment/status/${encodeURIComponent(orderId)}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

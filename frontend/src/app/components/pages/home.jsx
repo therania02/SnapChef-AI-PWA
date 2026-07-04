@@ -126,7 +126,7 @@ export default function HomeScreen() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/history?language=${language}`, {
+      const response = await fetch(`${API_BASE_URL}/api/history?language=${language}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -207,7 +207,7 @@ export default function HomeScreen() {
       const resized = await resizeImage(base64Image);
 
       // Request langsung ke endpoint backend baru
-      const response = await fetch("http://localhost:3000/api/scan", {
+      const response = await fetch(`${API_BASE_URL}/api/scan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

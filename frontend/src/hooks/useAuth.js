@@ -1,7 +1,7 @@
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider, isFirebaseConfigured } from "../api/firebase";
 
-import { API_BASE_URL } from "../api/config";
+import { API_BASE_URL } from "../api/config.js";
 
 export const useAuth = () => {
   // Alamat server backend Node.js kamu

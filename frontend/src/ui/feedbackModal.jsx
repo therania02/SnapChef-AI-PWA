@@ -4,6 +4,7 @@ import { X, Send, Star } from "lucide-react";
 import { Button } from "./button";
 import { toast } from "sonner";
 import { useLanguage } from "../app/lib/languageContext.jsx";
+import { API_BASE_URL } from "../api/config.js";
 
 
 export function FeedbackModal({ isOpen, onClose }) {
@@ -38,7 +39,7 @@ export function FeedbackModal({ isOpen, onClose }) {
     );
 
     await fetch(
-      "http://localhost:3000/api/feedback",
+      `${API_BASE_URL}/api/feedback`,
       {
         method: "POST",
         headers: {

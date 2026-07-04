@@ -59,7 +59,7 @@ export default function AccountScreen() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch(`http://localhost:3000/api/stats`, {
+    fetch(`${API_BASE_URL}/api/stats`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (response) => {

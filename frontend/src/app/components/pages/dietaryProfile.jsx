@@ -7,6 +7,7 @@ import { dietaryPreferences } from "../../lib/data.js";
 import { usePreferences } from "../../lib/preferencesContext.jsx";
 import { useUser } from "../../lib/userContext.jsx";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../../../api/config.js";
 
 // Helper function to auto-detect emoji based on keywords
 const detectEmoji = (text) => {
@@ -103,7 +104,7 @@ export default function DietaryProfileScreen() {
         throw new Error("Token tidak ditemukan");
       }
 
-      const response = await fetch("http://localhost:3000/api/auth/diet-preferences", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/diet-preferences`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
