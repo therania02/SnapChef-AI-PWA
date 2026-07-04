@@ -26,45 +26,310 @@ const parseIngredientLine = (line) => {
     return {
       name: cleanLine.replace(/secukupnya/i, '').replace(/,/g, '').trim() || cleanLine,
       amount: null,
-      unit: "secukupnya",
-      available: true
+      unit: 'secukupnya',
+      available: true,
+      nameEn: null
     };
   }
 
-  const match = cleanLine.match(/^([\d./,]+)\s*(sdm|sdt|gram|g|gr|kg|ml|l|liter|siung|buah|bh|biji|ikat|lembar|lbr|piring|bungkus|bks|batang|potong|ruas|butir|kaleng|sachet|tetes|genggam|jumput|pcs)?\s+(.*)/i);
+  const match = cleanLine.match(/^(?:(\d+(?:[.,]\d+)?(?:\/\d+)?)\s*)(?:(cups?|cup|cangkir|cups?|grams?|gram|g|gr|kg|kg|milliliters?|ml|l|liters?|liter|tablespoons?|tablespoon|tbsp|sendok makan|sendok teh|sendok|sdm|sdt|teaspoon|teaspoons|tsp|siung|buah|bh|biji|ikat|lembar|lbr|piring|bungkus|bks|batang|potong|ruas|butir|kaleng|sachet|tetes|genggam|jumput|pcs|oz|ounce|ounces|lb|pounds?|as needed|to taste|secukupnya)\s+)?(.*)$/i);
 
   if (match) {
     let numStr = match[1];
-    let amount = 1;
+    let amount = null;
 
-    if (numStr.includes('/')) {
-      const [num, den] = numStr.split('/');
-      amount = parseFloat(num) / parseFloat(den);
-    } else {
-      amount = parseFloat(numStr.replace(',', '.'));
+    if (numStr) {
+      if (numStr.includes('/')) {
+        const [num, den] = numStr.split('/');
+        amount = parseFloat(num) / parseFloat(den);
+      } else {
+        amount = parseFloat(numStr.replace(',', '.'));
+      }
     }
 
-    let extractedUnit = match[2] ? match[2].toLowerCase() : "buah";
+    let extractedUnit = match[2] ? match[2].toLowerCase() : null;
+    if (!extractedUnit && numStr) extractedUnit = 'buah';
 
-    if (extractedUnit === 'g' || extractedUnit === 'gr') extractedUnit = 'gram';
+    if (extractedUnit === 'g' || extractedUnit === 'gr' || extractedUnit === 'grams') extractedUnit = 'gram';
     if (extractedUnit === 'bh' || extractedUnit === 'pcs') extractedUnit = 'buah';
     if (extractedUnit === 'bks') extractedUnit = 'bungkus';
     if (extractedUnit === 'lbr') extractedUnit = 'lembar';
+    if (extractedUnit === 'cup') extractedUnit = 'cups';
+    if (extractedUnit === 'cups') extractedUnit = 'cups';
+    if (extractedUnit === 'kilogram' || extractedUnit === 'kilograms') extractedUnit = 'kilogram';
+    if (extractedUnit === 'milliliter' || extractedUnit === 'milliliters') extractedUnit = 'ml';
+    if (extractedUnit === 'liter' || extractedUnit === 'liters') extractedUnit = 'liter';
+    if (extractedUnit === 'tbsp') extractedUnit = 'tablespoon';
+    if (extractedUnit === 'tsp') extractedUnit = 'teaspoon';
+    if (extractedUnit === 'sdm') extractedUnit = 'tablespoon';
+    if (extractedUnit === 'sdt') extractedUnit = 'teaspoon';
+    if (extractedUnit === 'sendok') extractedUnit = 'sendok';
+    if (extractedUnit === 'ounce' || extractedUnit === 'ounces' || extractedUnit === 'oz') extractedUnit = 'oz';
+    if (extractedUnit === 'lb' || extractedUnit === 'pound' || extractedUnit === 'pounds') extractedUnit = 'lb';
+    if (extractedUnit === 'as needed' || extractedUnit === 'to taste') extractedUnit = 'to taste';
+    if (extractedUnit === 'secukupnya') extractedUnit = 'secukupnya';
 
     return {
       name: match[3].trim(),
-      amount: isNaN(amount) ? 1 : amount,
+      amount: (numStr ? (isNaN(amount) ? 1 : amount) : 1),
       unit: extractedUnit,
-      available: true
+      available: true,
+      nameEn: null
     };
   }
 
   return {
     name: cleanLine,
     amount: null,
-    unit: "",
-    available: true
+    unit: '',
+    available: true,
+    nameEn: null
   };
+};
+
+const parseIngredientList = (source) => {
+  const lines = Array.isArray(source)
+    ? source
+    : String(source || "").split("\n").filter((line) => line.trim() !== "");
+
+  return lines.map((item) =>
+    typeof item === "string" ? parseIngredientLine(item) : item
+  );
+};
+
+const mergeBilingualIngredients = (idIngredients, enIngredients, language) => {
+  const normalizeKey = (item) => normalizeIngredientName(item?.name || '');
+
+  const enIndexByNormalized = new Map();
+  enIngredients.forEach((item, index) => {
+    const normalized = normalizeKey(item);
+    if (normalized) enIndexByNormalized.set(normalized, index);
+  });
+
+  const usedEnIndexes = new Set();
+  const mergedItems = [];
+
+  const makeMergedItem = (idItem, enItem) => {
+    const baseItem = language === 'en' ? (enItem || idItem) : (idItem || enItem);
+
+    return {
+      ...baseItem,
+      name: language === 'en'
+        ? (enItem?.name || idItem?.name || baseItem.name)
+        : (idItem?.name || enItem?.name || baseItem.name),
+      nameId: idItem?.name || enItem?.name || '',
+      nameEn: enItem?.name || idItem?.name || '',
+      rawNameId: idItem?.name || '',
+      rawNameEn: enItem?.name || ''
+    };
+  };
+
+  idIngredients.forEach((idItem, index) => {
+    const normalizedId = normalizeKey(idItem);
+    let enItem = null;
+
+    if (normalizedId && enIndexByNormalized.has(normalizedId)) {
+      const matchedIndex = enIndexByNormalized.get(normalizedId);
+      if (!usedEnIndexes.has(matchedIndex)) {
+        enItem = enIngredients[matchedIndex];
+        usedEnIndexes.add(matchedIndex);
+      }
+    }
+
+    if (!enItem && enIngredients[index] && !usedEnIndexes.has(index)) {
+      enItem = enIngredients[index];
+      usedEnIndexes.add(index);
+    }
+
+    mergedItems.push(makeMergedItem(idItem, enItem));
+  });
+
+  enIngredients.forEach((enItem, index) => {
+    if (!usedEnIndexes.has(index)) {
+      mergedItems.push(makeMergedItem(null, enItem));
+    }
+  });
+
+  return mergedItems;
+};
+
+const unitLabels = {
+  id: {
+    cups: 'cangkir',
+    cup: 'cangkir',
+    tablespoon: 'sendok makan',
+    tablespoons: 'sendok makan',
+    teaspoon: 'sendok teh',
+    teaspoons: 'sendok teh',
+    gram: 'gram',
+    kilograms: 'kilogram',
+    kilogram: 'kilogram',
+    liter: 'liter',
+    liters: 'liter',
+    ml: 'ml',
+    l: 'l',
+    siung: 'siung',
+    buah: 'buah',
+    butir: 'butir',
+    bungkus: 'bungkus',
+    batang: 'batang',
+    lembar: 'lembar',
+    piring: 'piring',
+    sendok: 'sendok',
+    cangkir: 'cangkir',
+    'sendok makan': 'sendok makan',
+    'sendok teh': 'sendok teh',
+    'secukupnya': 'secukupnya',
+    'to taste': 'secukupnya'
+  },
+  en: {
+    cups: 'cups',
+    cup: 'cups',
+    tablespoon: 'tablespoon',
+    tablespoons: 'tablespoons',
+    teaspoon: 'teaspoon',
+    teaspoons: 'teaspoons',
+    gram: 'gram',
+    kilograms: 'kilogram',
+    kilogram: 'kilogram',
+    liter: 'liter',
+    liters: 'liter',
+    ml: 'ml',
+    l: 'l',
+    siung: 'clove',
+    buah: 'piece',
+    butir: 'piece',
+    bungkus: 'pack',
+    batang: 'stem',
+    lembar: 'sheet',
+    piring: 'plate',
+    sendok: 'spoon',
+    cangkir: 'cup',
+    'sendok makan': 'tablespoon',
+    'sendok teh': 'teaspoon',
+    'secukupnya': 'to taste',
+    'to taste': 'to taste'
+  }
+};
+
+const localizeUnit = (unit, language) => {
+    if (!unit) return '';
+    const normalized = String(unit).toLowerCase();
+    return unitLabels[language]?.[normalized] || unitLabels.id?.[normalized] || unit;
+};
+
+const normalizeIngredientName = (name) => {
+  return String(name)
+    .toLowerCase()
+    .replace(/\b(cups?|cup|tablespoons?|tablespoon|tbsp|sendok makan|sendok teh|teaspoon|teaspoons|tsp|grams?|gram|g|gr|kg|kilograms?|kilogram|liter|liters?|liter|ml|l|milliliters?|milliliter|siung|buah|bh|biji|ikat|lembar|lbr|piring|bungkus|bks|batang|potong|ruas|butir|kaleng|sachet|tetes|genggam|jumput|pcs|oz|ounce|ounces|lb|pound|pounds?|as needed|to taste|secukupnya|sendok)\b/gi, ' ')
+    .replace(/[\d.,\/]+/g, ' ')
+    .replace(/[^a-z0-9\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const ingredientTranslationMap = {
+  selada: ['lettuce'],
+  tomat: ['tomato', 'tomatoes'],
+  'tomat cherry': ['cherry tomatoes'],
+  'bawang putih': ['garlic'],
+  'bawang merah': ['shallot', 'shallots'],
+  'bawang bombay': ['onion'],
+  bawang: ['onion', 'garlic'],
+  ayam: ['chicken'],
+  'daging ayam': ['chicken meat', 'chicken'],
+  wortel: ['carrot', 'carrots'],
+  kubis: ['cabbage'],
+  garam: ['salt'],
+  gula: ['sugar'],
+  telur: ['egg', 'eggs'],
+  'minyak goreng': ['cooking oil', 'vegetable oil'],
+  kacang: ['nuts'],
+  keju: ['cheese'],
+  saus: ['sauce'],
+  rumput: ['grass'],
+  serai: ['lemongrass'],
+  jahe: ['ginger'],
+  kunyit: ['turmeric'],
+  mentega: ['butter'],
+  susu: ['milk'],
+  terigu: ['flour'],
+  nasi: ['rice'],
+  'kecap manis': ['sweet soy sauce'],
+  cabe: ['chili', 'chilli'],
+  cabai: ['chili', 'chilli'],
+  'daun bawang': ['spring onion', 'scallion'],
+  'daun ketumbar': ['cilantro', 'coriander'],
+  salmon: ['salmon'],
+  pisang: ['banana', 'bananas'],
+  madu: ['honey'],
+  stroberi: ['strawberries', 'strawberry'],
+  raspberry: ['raspberries', 'raspberry'],
+  blueberry: ['blueberries', 'blueberry'],
+  ceri: ['cherries', 'cherry'],
+  apel: ['apel'],
+  laya: ['pir'],
+  jeruk: ['orange', 'oranges'],
+  anggur: ['grapes', 'grape'],
+  brokoli: ['broccoli']
+};
+
+const expandIngredientTranslations = (name) => {
+  if (!name) return [];
+  const normalized = normalizeIngredientName(name);
+  const variants = [normalized];
+  Object.entries(ingredientTranslationMap).forEach(([key, translations]) => {
+    if (normalized.includes(key)) {
+      translations.forEach((translation) => {
+        variants.push(normalizeIngredientName(translation));
+      });
+    }
+  });
+  return [...new Set(variants.filter(Boolean))];
+};
+
+const tokenizeIngredientWords = (name) => {
+  return new Set(
+    normalizeIngredientName(name)
+      .split(/\s+/)
+      .map((word) => {
+        const token = word.trim();
+        if (!token) return '';
+        if (token.endsWith('es') && token.length > 4) return token.slice(0, -2);
+        if (token.endsWith('s') && token.length > 3) return token.slice(0, -1);
+        return token;
+      })
+      .filter((word) => word.length > 2)
+  );
+};
+
+const parseDetectedIngredients = (input) => {
+  if (!input) return [];
+
+  if (typeof input === 'string') {
+    try {
+      const parsed = JSON.parse(input);
+      if (Array.isArray(parsed)) return parsed.map((item) => String(item).trim()).filter(Boolean);
+      return [String(parsed).trim()].filter(Boolean);
+    } catch {
+      return String(input)
+        .split(/\r?\n|,|;|\t/)
+        .map((item) => String(item).trim())
+        .filter(Boolean);
+    }
+  }
+
+  if (Array.isArray(input)) {
+    return input.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof input === 'object' && input !== null) {
+    return Object.values(input)
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+  }
+
+  return [String(input).trim()].filter(Boolean);
 };
 
 export default function RecipeDetailScreen() {
@@ -92,22 +357,23 @@ export default function RecipeDetailScreen() {
       .split("\n")
       .filter(s => s.trim() !== "");
 
-  const detectedIngredients =
+  const detectedIngredients = parseDetectedIngredients(
     location.state?.detectedIngredients ||
     incomingRecipe?.detectedIngredients ||
-    [];
+    []
+  );
 
   const localizedTitle = language === "en"
-    ? (incomingRecipe?.titleEn || incomingRecipe?.title)
-    : (incomingRecipe?.title || incomingRecipe?.titleEn);
+    ? (incomingRecipe?.titleEn || incomingRecipe?.title || incomingRecipe?.titleId)
+    : (incomingRecipe?.title || incomingRecipe?.titleEn || incomingRecipe?.titleId);
 
   const localizedIngredientsRaw = language === "en"
-    ? (incomingRecipe?.ingredientsEn || incomingRecipe?.ingredients)
-    : (incomingRecipe?.ingredients || incomingRecipe?.ingredientsEn);
+    ? (incomingRecipe?.ingredientsEn || incomingRecipe?.ingredients || incomingRecipe?.ingredientsId)
+    : (incomingRecipe?.ingredients || incomingRecipe?.ingredientsEn || incomingRecipe?.ingredientsId);
 
   const localizedInstructionsRaw = language === "en"
-    ? (incomingRecipe?.instructionsEn || incomingRecipe?.instructions || incomingRecipe?.steps)
-    : (incomingRecipe?.instructions || incomingRecipe?.instructionsEn || incomingRecipe?.steps);
+    ? (incomingRecipe?.instructionsEn || incomingRecipe?.instructions || incomingRecipe?.steps || incomingRecipe?.stepsEn)
+    : (incomingRecipe?.instructions || incomingRecipe?.instructionsEn || incomingRecipe?.steps || incomingRecipe?.stepsEn);
 
 
   const formattedAIRecipe = incomingRecipe ? {
@@ -135,20 +401,11 @@ export default function RecipeDetailScreen() {
       0,
     prepTime: incomingRecipe.prepTime ?? 0,
     servings: 2,
-    ingredients: Array.isArray(
-      localizedIngredientsRaw
-    )
-      ? localizedIngredientsRaw.map(item =>
-        typeof item === "string"
-          ? parseIngredientLine(item)
-          : item
-      )
-      : String(
-        localizedIngredientsRaw || ""
-      )
-        .split("\n")
-        .filter(i => i.trim() !== "")
-        .map(parseIngredientLine),
+    ingredients: mergeBilingualIngredients(
+      parseIngredientList(incomingRecipe.ingredients || incomingRecipe.ingredientsId || []),
+      parseIngredientList(incomingRecipe.ingredientsEn || []),
+      language
+    ),
 
     steps: (Array.isArray(localizedInstructionsRaw)
       ? localizedInstructionsRaw
@@ -178,19 +435,65 @@ export default function RecipeDetailScreen() {
   if (recipe?.ingredients) {
     recipe.ingredients =
       recipe.ingredients.map((ingredient) => {
+        const normalizedIngredientName = normalizeIngredientName(ingredient.name || "");
+        const normalizedIngredientId = normalizeIngredientName(ingredient.nameId || "");
+        const normalizedIngredientEn = normalizeIngredientName(ingredient.nameEn || "");
+        const normalizedRawNameId = normalizeIngredientName(ingredient.rawNameId || "");
+        const normalizedRawNameEn = normalizeIngredientName(ingredient.rawNameEn || "");
 
-        const ingredientName =
-          ingredient.name.toLowerCase();
+        const ingredientVariants = [
+          normalizedIngredientName,
+          normalizedIngredientId,
+          normalizedIngredientEn,
+          normalizedRawNameId,
+          normalizedRawNameEn
+        ].filter(Boolean);
 
-        const available =
-          normalizedDetected.some((detected) =>
-            ingredientName.includes(detected) ||
-            detected.includes(ingredientName)
+        const ingredientExpandedVariants = [...new Set(
+          ingredientVariants.flatMap((variant) => [variant, ...expandIngredientTranslations(variant)])
+        )];
+
+        const ingredientTokens = ingredientExpandedVariants.reduce((tokens, variant) => {
+          tokenizeIngredientWords(variant).forEach((word) => tokens.add(word));
+          return tokens;
+        }, new Set());
+
+        const available = normalizedDetected.some((detected) => {
+          const normalizedDetectedName = normalizeIngredientName(detected);
+          const detectedVariants = [...new Set([
+            normalizedDetectedName,
+            ...expandIngredientTranslations(normalizedDetectedName)
+          ])];
+
+          const detectedTokens = detectedVariants.reduce((tokens, variant) => {
+            tokenizeIngredientWords(variant).forEach((word) => tokens.add(word));
+            return tokens;
+          }, new Set());
+
+          const directMatch = ingredientExpandedVariants.some((variant) =>
+            detectedVariants.some((detectedVariant) =>
+              variant === detectedVariant ||
+              variant.includes(detectedVariant) ||
+              detectedVariant.includes(variant)
+            )
           );
+
+          const sharedWordMatch = [...ingredientTokens].some((word) =>
+            detectedTokens.has(word)
+          );
+
+          return directMatch || sharedWordMatch;
+        });
+
+        const displayName = language === 'en'
+          ? (ingredient.nameEn || ingredient.name || ingredient.nameId)
+          : (ingredient.nameId || ingredient.name);
 
         return {
           ...ingredient,
-          available
+          available,
+          displayName,
+          nameEn: ingredient.nameEn || (language === 'en' ? ingredient.name : null)
         };
       });
   }
@@ -279,6 +582,7 @@ export default function RecipeDetailScreen() {
           },
           body: JSON.stringify({
             name: ingredient.name,
+            nameEn: ingredient.nameEn || ingredient.name,
             amount: ingredient.amount || 1,
             unit: ingredient.unit || "",
             userId: currentUser.id,
@@ -674,14 +978,14 @@ export default function RecipeDetailScreen() {
                           <AlertCircle className="h-5 w-5 text-destructive" />
                         </motion.div>
                       )}
-                      <span className={`font-medium ${hasSubstitution ? "line-through text-muted-foreground" : ""}`}>{ingredient.name}</span>
+                      <span className={`font-medium ${hasSubstitution ? "line-through text-muted-foreground" : ""}`}>{ingredient.displayName || ingredient.name}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
                       <span className={`text-sm ${hasSubstitution ? "line-through text-muted-foreground" : "text-muted-foreground"}`}>
                         {ingredient.amount === null
-                          ? (ingredient.unit || "")
-                          : `${Math.round(ingredient.amount * servingMultiplier * 10) / 10} ${ingredient.unit || ""}`
+                          ? localizeUnit(ingredient.unit, language)
+                          : `${Math.round(ingredient.amount * servingMultiplier * 10) / 10} ${localizeUnit(ingredient.unit, language)}`
                         }
                       </span>
                       {!ingredient.available && !hasSubstitution && (
@@ -706,7 +1010,7 @@ export default function RecipeDetailScreen() {
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-green-900 dark:text-green-100">{substitution.substitute.name}</span>
                               <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                                {calculateSubstituteAmount(substitution.substitute.ratio, (ingredient.amount || 1) * servingMultiplier)} {ingredient.unit || ""}
+                                {calculateSubstituteAmount(substitution.substitute.ratio, (ingredient.amount || 1) * servingMultiplier)} {localizeUnit(ingredient.unit, language)}
                               </span>
                             </div>
                             <div className="mt-2 space-y-1">

@@ -109,8 +109,8 @@ export default function ScanHistoryScreen() {
   return (
     <div className="min-h-screen bg-background pb-6">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-primary/70 backdrop-blur-lg text-primary-foreground px-6 pt-6 pb-4 shadow-lg">
-        <div className="max-w-md mx-auto space-y-3">
+      <div className="sticky top-0 z-50 bg-primary/70 backdrop-blur-lg text-primary-foreground px-4 sm:px-6 lg:px-8 pt-6 pb-4 shadow-lg">
+        <div className="max-w-5xl mx-auto space-y-3">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/home")} className="p-2 hover:bg-card/20 rounded-full">
               <ArrowLeft className="h-5 w-5" />
@@ -131,13 +131,13 @@ export default function ScanHistoryScreen() {
       </div>
 
       {/* List Content */}
-      <div className="max-w-md mx-auto px-6 mt-4 space-y-4">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-4">
         {isLoading ? (
           <div className="text-center py-12 text-muted-foreground">{t("scan_history.loading")}</div>
         ) : filteredHistory.length > 0 ? (
           filteredHistory.map((item) => (
-            <div key={item.id} className="bg-card rounded-3xl shadow-lg overflow-hidden flex gap-4 p-4">
-              <div onClick={() => handleViewScan(item)} className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 cursor-pointer bg-muted">
+            <div key={item.id} className="bg-card rounded-3xl shadow-lg overflow-hidden flex flex-col sm:flex-row gap-4 p-4">
+              <div onClick={() => handleViewScan(item)} className="w-full sm:w-24 h-40 sm:h-24 rounded-2xl overflow-hidden flex-shrink-0 cursor-pointer bg-muted">
                 <img src={item.image || "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=500"} alt="Scan" className="w-full h-full object-cover" />
               </div>
 
@@ -157,7 +157,7 @@ export default function ScanHistoryScreen() {
                 </div>
               </div>
 
-              <button onClick={(e) => handleDeleteScan(item.id, e)} className="self-start p-2 text-destructive rounded-full hover:bg-destructive/10">
+              <button onClick={(e) => handleDeleteScan(item.id, e)} className="self-end sm:self-start p-2 text-destructive rounded-full hover:bg-destructive/10">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>

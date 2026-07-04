@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Ingredient.init({
     name: DataTypes.STRING,
+    nameEn: DataTypes.STRING,
     amount: DataTypes.INTEGER,
     unit: DataTypes.STRING,
     userId: DataTypes.INTEGER

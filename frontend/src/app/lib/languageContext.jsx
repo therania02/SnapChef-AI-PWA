@@ -1,5 +1,17 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
+const getStoredToken = () => {
+  const token = localStorage.getItem("token");
+  if (token) return token;
+
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    return user?.token || "";
+  } catch {
+    return "";
+  }
+};
+
 const LanguageContext = createContext(undefined);
 
 const translations = {
@@ -22,6 +34,8 @@ const translations = {
     "common.upgrade": "Upgrade",
     "common.unlimited": "Tanpa batas",
     "common.page_of": "Halaman {{current}} dari {{total}}",
+    "common.prev": "Sebelumnya",
+    "common.next": "Berikutnya",
     "common.version": "Versi",
     "auth.login_subtitle": "Masuk ke akun Anda",
     "auth.forgot_password": "Lupa Password?",
@@ -995,6 +1009,23 @@ export function LanguageProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem("snapchef_language", language);
+  }, [language]);
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) return;
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user?.id) return;
+
+    fetch("http://localhost:3000/api/auth/users/" + user.id, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ preferredLanguage: language }),
+    }).catch(() => undefined);
   }, [language]);
 
   const setLanguage = (lang) => {

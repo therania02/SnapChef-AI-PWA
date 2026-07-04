@@ -31,7 +31,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0
     },
-    dietPreferences: DataTypes.JSON
+    dietPreferences: DataTypes.JSON,
+    preferredLanguage: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'id'
+    }
   }, {
     sequelize,
     modelName: 'User',

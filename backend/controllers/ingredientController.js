@@ -10,9 +10,9 @@ class IngredientController extends BaseController {
     // C - Create
     create = async (req, res) => {
         try {
-            const { name, amount, unit } = req.body;
+            const { name, nameEn, amount, unit } = req.body;
             const userId = req.user.id;
-            const newIngredient = await Ingredient.create({ name, amount, unit, userId });
+            const newIngredient = await Ingredient.create({ name, nameEn, amount, unit, userId });
             return this.sendSuccess(res, 201, "Bahan berhasil ditambahkan", newIngredient);
         } catch (error) {
             return this.sendError(res, 500, error.message);
@@ -26,6 +26,7 @@ class IngredientController extends BaseController {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const offset = (page - 1) * limit;
+            const language = req.query.language === 'en' ? 'en' : 'id';
 
             const ingredients = await Ingredient.findAndCountAll({
                 where: {
@@ -36,11 +37,16 @@ class IngredientController extends BaseController {
                 offset: offset
             });
 
+            const formattedData = ingredients.rows.map((item) => ({
+                ...item.toJSON(),
+                displayName: language === 'en' ? (item.nameEn || item.name) : (item.name || item.nameEn)
+            }));
+
             return this.sendSuccess(res, 200, "Berhasil mengambil bahan", {
                 totalData: ingredients.count,
                 totalPages: Math.ceil(ingredients.count / limit),
                 currentPage: page,
-                data: ingredients.rows
+                data: formattedData
             });
         } catch (error) {
             return this.sendError(res, 500, error.message);
@@ -52,7 +58,11 @@ class IngredientController extends BaseController {
         try {
             const ingredient = await Ingredient.findByPk(req.params.id);
             if (!ingredient) return this.sendError(res, 404, "Bahan tidak ditemukan");
-            return this.sendSuccess(res, 200, "Berhasil", ingredient);
+            const language = req.query.language === 'en' ? 'en' : 'id';
+            return this.sendSuccess(res, 200, "Berhasil", {
+                ...ingredient.toJSON(),
+                displayName: language === 'en' ? (ingredient.nameEn || ingredient.name) : (ingredient.name || ingredient.nameEn)
+            });
         } catch (error) {
             return this.sendError(res, 500, error.message);
         }
@@ -68,7 +78,13 @@ class IngredientController extends BaseController {
                 return this.sendError(res, 403, "Anda tidak memiliki izin untuk mengedit bahan")
             }
 
-            await ingredient.update(req.body);
+            const payload = req.body;
+            await ingredient.update({
+                ...(payload.name ? { name: payload.name } : {}),
+                ...(payload.nameEn ? { nameEn: payload.nameEn } : {}),
+                ...(payload.amount !== undefined ? { amount: payload.amount } : {}),
+                ...(payload.unit !== undefined ? { unit: payload.unit } : {})
+            });
             return this.sendSuccess(res, 200, "Bahan berhasil diupdate", ingredient);
         } catch (error) {
             return this.sendError(res, 500, error.message);

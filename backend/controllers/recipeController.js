@@ -33,13 +33,22 @@ const parseRecipeTranslationResponse = (rawText) => {
         .replace(/```/g, '')
         .trim();
 
-    const parsed = JSON.parse(cleanText);
+    try {
+        const parsed = JSON.parse(cleanText);
 
-    return {
-        title: String(parsed.title || '').trim(),
-        ingredients: toTextArray(parsed.ingredients),
-        steps: toTextArray(parsed.steps)
-    };
+        return {
+            title: String(parsed.title || '').trim(),
+            ingredients: toTextArray(parsed.ingredients),
+            steps: toTextArray(parsed.steps)
+        };
+    } catch (error) {
+        console.warn('Hasil terjemahan tidak dapat diparse sebagai JSON, menggunakan fallback langsung:', error.message);
+        return {
+            title: String(rawText || '').split('\n')[0] || '',
+            ingredients: toTextArray(rawText),
+            steps: toTextArray(rawText)
+        };
+    }
 };
 
 const translateRecipeFields = async ({ title, ingredients, steps, targetLanguage }) => {
@@ -60,9 +69,18 @@ Resep sumber:
 ${JSON.stringify({ title, ingredients, steps }, null, 2)}
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return parseRecipeTranslationResponse(response.text());
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return parseRecipeTranslationResponse(response.text());
+    } catch (error) {
+      console.warn('Gagal menerjemahkan resep:', error);
+      return {
+        title: String(title || '').trim(),
+        ingredients: toTextArray(ingredients),
+        steps: toTextArray(steps)
+      };
+    }
 };
 
 // RecipeController mewarisi BaseController

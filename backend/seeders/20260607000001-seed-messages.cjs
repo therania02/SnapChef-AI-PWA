@@ -30,28 +30,6 @@ module.exports = {
         updatedAt: minutesAgo(42)
       },
       {
-        chatId: '1-2',
-        senderId: 1,
-        senderName: 'Pak Gilbert Fernando Situmorang',
-        senderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-        text: 'aaa',
-        image: null,
-        reactions: JSON.stringify([]),
-        createdAt: minutesAgo(39),
-        updatedAt: minutesAgo(39)
-      },
-      {
-        chatId: '1-2',
-        senderId: 2,
-        senderName: 'Carita Angel Samudra Tjoatja',
-        senderAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-        text: 'bbb',
-        image: null,
-        reactions: JSON.stringify([]),
-        createdAt: minutesAgo(36),
-        updatedAt: minutesAgo(36)
-      },
-      {
         chatId: '2-3',
         senderId: 2,
         senderName: 'Carita Angel Samudra Tjoatja',

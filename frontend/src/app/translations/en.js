@@ -46,4 +46,6 @@ const translations = {
     "recipe.difficulty.easy": "Easy",
     "recipe.difficulty.medium": "Medium",
     "recipe.difficulty.hard": "Hard",
+    "common.prev": "Previous",
+    "common.next": "Next",
 }

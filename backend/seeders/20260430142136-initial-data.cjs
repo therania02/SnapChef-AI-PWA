@@ -18,6 +18,7 @@ module.exports = {
         role: 'premium',
         scanLimit: 3,
         lastScanDate: new Date(),
+        preferredLanguage: 'id',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -28,6 +29,7 @@ module.exports = {
         role: 'user',
         scanLimit: 3,
         lastScanDate: new Date(),
+        preferredLanguage: 'id',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -38,6 +40,7 @@ module.exports = {
         role: 'user',
         scanLimit: 3,
         lastScanDate: new Date(),
+        preferredLanguage: 'en',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -48,6 +51,7 @@ module.exports = {
         role: 'user',
         scanLimit: 3,
         lastScanDate: new Date(),
+        preferredLanguage: 'id',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -58,6 +62,7 @@ module.exports = {
         role: 'user',
         scanLimit: 3,
         lastScanDate: new Date(),
+        preferredLanguage: 'en',
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -70,8 +75,11 @@ module.exports = {
     const recipes = await queryInterface.bulkInsert('Recipes', [
       {
         title: 'Nasi Goreng Sisa Semalam',
+        titleEn: 'Leftover Fried Rice',
         ingredients: '2 piring nasi putih\n1 butir telur\n2 siung bawang putih\nKecap manis secukupnya',
+        ingredientsEn: '2 plates of cooked rice\n1 egg\n2 cloves garlic\nSoy sauce to taste',
         instructions: '1. Tumis bawang putih hingga harum.\n2. Masukkan telur, orak-arik.\n3. Masukkan nasi dan kecap, aduk rata.\n4. Sajikan hangat.',
+        instructionsEn: '1. Sauté garlic until fragrant.\n2. Add egg and scramble.\n3. Add rice and soy sauce, stir well.\n4. Serve warm.',
         calories: 350,
         protein: 10,
         carbs: 45,
@@ -82,8 +90,11 @@ module.exports = {
       },
       {
         title: 'Mie Goreng',
+        titleEn: 'Fried Noodles',
         ingredients: '1 bungkus mie \n1 butir telur\n2 siung bawang putih\nKecap manis secukupnya',
+        ingredientsEn: '1 pack noodles\n1 egg\n2 cloves garlic\nSoy sauce to taste',
         instructions: '1. Tumis bawang putih hingga harum.\n2. Masukkan telur, orak-arik.\n3. Masukkan mie yang sudah di rebus dan kecap, aduk rata.\n4. Sajikan hangat.',
+        instructionsEn: '1. Sauté garlic until fragrant.\n2. Add egg and scramble.\n3. Add the boiled noodles and soy sauce, stir well.\n4. Serve warm.',
         calories: 250,
         protein: 5,
         carbs: 50,
@@ -94,8 +105,11 @@ module.exports = {
       },
       {
         title: 'Ayam Kecap Bawang Bombay',
+        titleEn: 'Soy Sauce Chicken with Onion',
         ingredients: '500 gram ayam potong\n1 buah bawang bombay, iris\n3 siung bawang putih, cincang\n4 sdm kecap manis\n1 sdt garam dan lada',
+        ingredientsEn: '500 grams chicken\n1 onion, sliced\n3 cloves garlic, minced\n4 tbsp sweet soy sauce\n1 tsp salt and pepper',
         instructions: '1. Tumis bawang putih dan bombay hingga harum.\n2. Masukkan ayam, masak hingga berubah warna.\n3. Tambahkan kecap manis, garam, lada, dan sedikit air.\n4. Masak hingga bumbu meresap dan ayam matang.',
+        instructionsEn: '1. Sauté garlic and onion until fragrant.\n2. Add chicken and cook until it changes color.\n3. Add sweet soy sauce, salt, pepper, and a little water.\n4. Cook until the seasoning is absorbed and the chicken is cooked through.',
         calories: 320,
         protein: 25,
         carbs: 15,
@@ -106,8 +120,11 @@ module.exports = {
       },
       {
         title: 'Sayur Sop Bening Bakso',
+        titleEn: 'Clear Soup with Meatballs',
         ingredients: '2 buah wortel, potong\n1/2 bonggol kubis, potong\n5 buah bakso sapi, belah\n2 siung bawang putih, memarkan\nKaldu bubuk dan seledri secukupnya',
+        ingredientsEn: '2 carrots, sliced\n1/2 head cabbage, chopped\n5 beef meatballs, halved\n2 cloves garlic, crushed\nBroth powder and celery to taste',
         instructions: '1. Didihkan air, masukkan bawang putih memar.\n2. Masukkan wortel dan bakso, masak hingga setengah empuk.\n3. Tambahkan kubis, kaldu bubuk, dan seledri.\n4. Masak sebentar hingga sayuran matang, angkat dan sajikan.',
+        instructionsEn: '1. Bring water to a boil and add the crushed garlic.\n2. Add carrots and meatballs and cook until halfway tender.\n3. Add cabbage, broth powder, and celery.\n4. Cook briefly until the vegetables are done, then serve.',
         calories: 150,
         protein: 8,
         carbs: 20,
@@ -118,8 +135,11 @@ module.exports = {
       },
       {
         title: 'Telur Dadar Khas Padang',
+        titleEn: 'Padang-Style Omelette',
         ingredients: '3 butir telur ayam/bebek\n2 sdm kelapa parut sangrai\n2 sdm tepung beras\n3 butir bawang merah, iris tipis\n1 sdt bumbu kari bubuk',
+        ingredientsEn: '3 eggs\n2 tbsp toasted grated coconut\n2 tbsp rice flour\n3 shallots, thinly sliced\n1 tsp curry powder',
         instructions: '1. Campur semua bahan dalam mangkuk, kocok hingga rata dan sedikit mengembang.\n2. Panaskan minyak yang cukup banyak di wajan.\n3. Tuang adonan telur, masak dengan api sedang.\n4. Balik perlahan saat bagian bawah sudah kokoh, masak hingga kecoklatan.',
+        instructionsEn: '1. Mix all ingredients in a bowl and whisk until smooth and slightly fluffy.\n2. Heat enough oil in a pan.\n3. Pour in the egg mixture and cook over medium heat.\n4. Flip gently once the bottom is set and cook until golden brown.',
         calories: 280,
         protein: 18,
         carbs: 10,
@@ -132,17 +152,17 @@ module.exports = {
 
     // 3. Seed Ingredient (Stok Bahan)
     await queryInterface.bulkInsert('Ingredients', [
-      { name: 'Telur Ayam', amount: 5, unit: 'butir', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Tomat', amount: 3, unit: 'buah', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Bawang Putih', amount: 10, unit: 'siung', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Bawang Merah', amount: 15, unit: 'siung', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Bawang Bombay', amount: 2, unit: 'buah', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Daging Ayam', amount: 500, unit: 'gram', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Kecap Manis', amount: 1, unit: 'botol', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Wortel', amount: 4, unit: 'buah', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Kubis', amount: 1, unit: 'bonggol', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Minyak Goreng', amount: 1, unit: 'liter', userId: userId, createdAt: new Date(), updatedAt: new Date() },
-      { name: 'Mie Telur Kuning', amount: 2, unit: 'bungkus', userId: userId, createdAt: new Date(), updatedAt: new Date() }
+      { name: 'Telur Ayam', nameEn: 'Chicken Eggs', amount: 5, unit: 'butir', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Tomat', nameEn: 'Tomatoes', amount: 3, unit: 'buah', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Bawang Putih', nameEn: 'Garlic', amount: 10, unit: 'siung', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Bawang Merah', nameEn: 'Shallots', amount: 15, unit: 'siung', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Bawang Bombay', nameEn: 'Onion', amount: 2, unit: 'buah', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Daging Ayam', nameEn: 'Chicken Meat', amount: 500, unit: 'gram', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Kecap Manis', nameEn: 'Sweet Soy Sauce', amount: 1, unit: 'botol', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Wortel', nameEn: 'Carrots', amount: 4, unit: 'buah', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Kubis', nameEn: 'Cabbage', amount: 1, unit: 'bonggol', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Minyak Goreng', nameEn: 'Cooking Oil', amount: 1, unit: 'liter', userId: userId, createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Mie Telur Kuning', nameEn: 'Yellow Egg Noodles', amount: 2, unit: 'bungkus', userId: userId, createdAt: new Date(), updatedAt: new Date() }
     ]);
 
     // 4. Seed Post (Galeri Masakan)

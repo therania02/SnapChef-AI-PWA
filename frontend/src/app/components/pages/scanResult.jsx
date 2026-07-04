@@ -79,8 +79,23 @@ export default function ScanResultScreen() {
           return {
             id: i,
             title: r.title,
-            ingredients: r.ingredients,
+            titleEn: r.titleEn || r.title,
+            ingredients: Array.isArray(r.ingredients)
+              ? r.ingredients
+              : typeof r.ingredients === 'string'
+                ? r.ingredients.split(/\r?\n/).map((item) => item.trim()).filter(Boolean)
+                : [],
+            ingredientsEn: Array.isArray(r.ingredientsEn)
+              ? r.ingredientsEn
+              : typeof r.ingredientsEn === 'string'
+                ? r.ingredientsEn.split(/\r?\n/).map((item) => item.trim()).filter(Boolean)
+                : [],
             steps: stepsArray,
+            stepsEn: Array.isArray(r.stepsEn)
+              ? r.stepsEn
+              : Array.isArray(r.steps)
+                ? r.steps
+                : (r.stepsEn || r.steps || "").split("\n"),
             calories,
             protein,
             carbs,
@@ -265,16 +280,16 @@ export default function ScanResultScreen() {
                             : recipe.ingredients,
 
                           ingredientsEn: Array.isArray(recipe.ingredientsEn)
-                            ? recipe.ingredientsEn.join('\n')
-                            : (recipe.ingredientsEn || null),
+                            ? (recipe.ingredientsEn.length ? recipe.ingredientsEn.join('\n') : null)
+                            : (typeof recipe.ingredientsEn === 'string' && recipe.ingredientsEn.trim() ? recipe.ingredientsEn : null),
 
                           instructions: Array.isArray(recipe.steps)
                             ? recipe.steps.join('\n')
                             : recipe.steps,
 
                           instructionsEn: Array.isArray(recipe.stepsEn)
-                            ? recipe.stepsEn.join('\n')
-                            : (recipe.stepsEn || null),
+                            ? (recipe.stepsEn.length ? recipe.stepsEn.join('\n') : null)
+                            : (typeof recipe.stepsEn === 'string' && recipe.stepsEn.trim() ? recipe.stepsEn : null),
 
                           detectedIngredients: ingredients,
 
@@ -299,8 +314,8 @@ export default function ScanResultScreen() {
 
                       } catch (err) {
                         alert(t("scan.save_failed", { message: err.message }));
-                        e.currentTarget.innerText = t("scan.save_view_recipe");
-                        e.currentTarget.disabled = false;
+                        btn.innerText = t("scan.save_view_recipe");
+                        btn.disabled = false;
                       }
                     }}
                   >

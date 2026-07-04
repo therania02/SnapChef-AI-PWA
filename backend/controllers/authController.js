@@ -17,6 +17,7 @@ const buildUserData = (user) => ({
     lastScanDate: user.lastScanDate,
     premiumExpiresAt: user.premiumExpiresAt,
     dietPreferences: user.dietPreferences,
+    preferredLanguage: user.preferredLanguage || 'id',
     isPremium: user.role === 'premium' && (!user.premiumExpiresAt || new Date(user.premiumExpiresAt) > new Date())
 });
 
@@ -76,7 +77,8 @@ class AuthController extends BaseController {
                 password: hashedPassword,
                 role: 'user',
                 scanLimit: 3,
-                lastScanDate: new Date().toISOString().split('T')[0] // Set ke tanggal hari ini
+                lastScanDate: new Date().toISOString().split('T')[0], // Set ke tanggal hari ini
+                preferredLanguage: 'id'
             });
 
             // Menggunakan method dari class induk (BaseController)
@@ -139,7 +141,8 @@ class AuthController extends BaseController {
                     password: null,
                     role: 'user',
                     scanLimit: 3,
-                    lastScanDate: new Date().toISOString().split('T')[0]
+                    lastScanDate: new Date().toISOString().split('T')[0],
+                    preferredLanguage: 'id'
                 });
             }
 
@@ -259,10 +262,11 @@ class AuthController extends BaseController {
                 return this.sendError(res, 403, "Tidak memiliki akses");
             }
 
-            const { name } = req.body;
+            const { name, preferredLanguage } = req.body;
 
             await user.update({
-                name
+                ...(name ? { name } : {}),
+                ...(preferredLanguage ? { preferredLanguage } : {})
             });
 
             // Hapus password dari objek sebelum dikembalikan ke client

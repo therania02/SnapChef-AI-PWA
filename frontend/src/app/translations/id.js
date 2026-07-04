@@ -146,7 +146,9 @@ const translations = {
     "shopping.clear_error": "Gagal menghapus item. Silakan coba lagi.",
     "shopping.buy_success": "Berhasil membuka Shopee dengan daftar belanja kamu!",
     "shopping.buy_error": "Gagal membuka Shopee. Pastikan aplikasi Shopee terinstal dan coba lagi.",
-    
+    "common.prev": "Sebelumnya",
+    "common.next": "Berikutnya",
+
     // Account
     "account.title": "Akun",
     "account.free_plan": "Paket Gratis",

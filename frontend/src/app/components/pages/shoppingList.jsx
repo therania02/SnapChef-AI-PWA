@@ -14,19 +14,46 @@ import { useLanguage } from "../../lib/languageContext";
 
 export default function ShoppingListScreen() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const [items, setItems] = useState([]);
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 8;
+
   // Ambil data user dari localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user.id;
   
   // Ambil token dari localStorage
-  // Try 1: Check localStorage.token (stored separately in login.jsx)
-  // Try 2: Check localStorage.user.token (stored as part of user object)
   const token = localStorage.getItem("token") || user.token || "";
 
   const API_URL = "http://localhost:3000/api/ingredients";
+
+  const localizeUnit = (unit) => {
+    if (!unit) return "";
+    const normalized = String(unit).toLowerCase();
+    const map = {
+      cups: language === 'en' ? 'cups' : 'cangkir',
+      cup: language === 'en' ? 'cup' : 'cangkir',
+      tablespoon: language === 'en' ? 'tablespoon' : 'sendok makan',
+      tablespoons: language === 'en' ? 'tablespoons' : 'sendok makan',
+      teaspoon: language === 'en' ? 'teaspoon' : 'sendok teh',
+      teaspoons: language === 'en' ? 'teaspoons' : 'sendok teh',
+      gram: 'gram',
+      kg: 'kg',
+      liter: 'liter',
+      ml: 'ml',
+      l: 'l',
+      siung: language === 'en' ? 'clove' : 'siung',
+      buah: language === 'en' ? 'piece' : 'buah',
+      butir: language === 'en' ? 'piece' : 'butir',
+      bungkus: language === 'en' ? 'pack' : 'bungkus',
+      batang: language === 'en' ? 'stem' : 'batang',
+      lembar: language === 'en' ? 'sheet' : 'lembar',
+      piring: language === 'en' ? 'plate' : 'piring'
+    };
+    return map[normalized] || unit;
+  };
 
   // Helper untuk membuat auth headers
   const getAuthHeaders = () => ({
@@ -35,19 +62,18 @@ export default function ShoppingListScreen() {
   });
 
   // --- R: READ (Hanya untuk User yang Login) ---
-  const fetchIngredients = async () => {
+  const fetchIngredients = async (page = 1) => {
     try {
-      // Kita tambahkan query parameter q atau filter khusus jika API mendukung, 
-      // namun cara paling umum adalah mengirim userId
-      const response = await fetch(`${API_URL}?userId=${userId}`, {
+      const response = await fetch(`${API_URL}?page=${page}&limit=${ITEMS_PER_PAGE}&language=${language}`, {
         headers: getAuthHeaders()
       });
       const result = await response.json();
       
       if (result.success) {
-        // Filter di frontend jika backend mengembalikan semua (sebagai pengaman tambahan)
-        const myItems = result.data.data.filter(item => item.userId === userId);
-        setItems(myItems);
+        const data = result.data.data || [];
+        setItems(data);
+        setCurrentPage(result.data.currentPage || page);
+        setTotalPages(result.data.totalPages || 1);
       }
     } catch (error) {
       toast.error(t("shopping.load_error"));
@@ -56,12 +82,12 @@ export default function ShoppingListScreen() {
 
   useEffect(() => {
     if (userId) {
-      fetchIngredients();
+      fetchIngredients(1);
     } else {
       toast.error(t("shopping.login_first"));
       navigate("/login");
     }
-  }, [userId]);
+  }, [userId, language]);
 
   // --- U: UPDATE ---
   const toggleItem = async (id) => {
@@ -213,10 +239,10 @@ export default function ShoppingListScreen() {
 
                   <div className="flex-1">
                     <h3 className={`font-medium ${item.checked ? "line-through" : ""}`}>
-                      {item.name}
+                      {item.displayName || item.name}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {item.amount} {item.unit}
+                      {item.amount} {localizeUnit(item.unit)}
                     </p>
                     <p className="text-xs text-primary mt-1">{item.fromRecipe}</p>
                   </div>
@@ -246,6 +272,31 @@ export default function ShoppingListScreen() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {items.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between gap-2 py-4">
+            <Button
+              variant="outline"
+              disabled={currentPage <= 1}
+              onClick={() => fetchIngredients(currentPage - 1)}
+              className="rounded-2xl"
+            >
+              {t("common.prev")}
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {t("common.page_of", { current: currentPage, total: totalPages })}
+            </span>
+            <Button
+              variant="outline"
+              disabled={currentPage >= totalPages}
+              onClick={() => fetchIngredients(currentPage + 1)}
+              className="rounded-2xl"
+            >
+              {t("common.next")}
+            </Button>
           </div>
         )}
 
