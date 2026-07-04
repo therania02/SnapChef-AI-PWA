@@ -1,9 +1,11 @@
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider, isFirebaseConfigured } from "../api/firebase";
 
+import { API_BASE_URL } from "../api/config";
+
 export const useAuth = () => {
   // Alamat server backend Node.js kamu
-  const API_URL = "http://localhost:3000/api/auth";
+  const API_URL = `${API_BASE_URL}/api/auth`;
 
   // 1. Register: Mengirim data ke Backend (Node.js + MySQL)
   const register = async (email, password, name) => {

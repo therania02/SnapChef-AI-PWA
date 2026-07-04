@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner"; // Pastikan sonner tetap ada
 import { useUser } from "../lib/userContext.jsx";
+import { API_BASE_URL } from "../api/config";
 
 const CookingPostsContext = createContext(null);
 
 // URL Backend kalian
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `${API_BASE_URL}/api`;
 
 // Helper function untuk mendapatkan auth token
 const getAuthToken = () => {
@@ -77,13 +78,13 @@ export function CookingPostsProvider({ children }) {
         headers: getAuthHeaders()
       });
       const result = await response.json();
-      
+
       // Pastikan mengambil properti 'data' dari dalam objek hasil respons
       const actualPosts = result.data?.data || [];
-      
+
       if (response.ok) {
         setPosts(actualPosts);
-        
+
         // GUNAKAN == (double equals) atau konversi ke Number agar filter tidak gagal
         const mine = actualPosts.filter(p => Number(p.userId) === Number(userId));
         setMyPosts(mine);
@@ -104,7 +105,7 @@ export function CookingPostsProvider({ children }) {
       setMyPosts(mine);
     }
   }, [posts, userId]);
-  
+
   // FITUR 2: POST MASAKAN KE BACKEND
   const addPost = async (post) => {
     if (!userId) {
@@ -119,7 +120,7 @@ export function CookingPostsProvider({ children }) {
         body: JSON.stringify({
           recipeName: post.recipeName || "Masakan Baru",
           description: post.description || "",
-          image: post.image || "", 
+          image: post.image || "",
           privacy: post.privacy || "public",
           userId: userId // KIRIM USER ID KE BACKEND
         })
@@ -136,7 +137,7 @@ export function CookingPostsProvider({ children }) {
           likes: 0,
           comments: 0
         };
-        
+
         setMyPosts([dbPost, ...myPosts]);
         if (dbPost.privacy === "public") {
           setPosts([dbPost, ...posts]);
@@ -159,7 +160,7 @@ export function CookingPostsProvider({ children }) {
         headers: getAuthHeaders(),
         body: JSON.stringify({ userId: userId }) // Mengirim userId untuk validasi kepemilikan
       });
-      
+
       if (response.ok) {
         setMyPosts(myPosts.filter((post) => post.id !== postId));
         setPosts(posts.filter((post) => post.id !== postId));
@@ -233,8 +234,8 @@ export function CookingPostsProvider({ children }) {
       const response = await fetch(`${API_URL}/comments`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ 
-          postId: postId, 
+        body: JSON.stringify({
+          postId: postId,
           text: text,
           userId: userId // KIRIM USER ID KE BACKEND
         })
@@ -255,7 +256,7 @@ export function CookingPostsProvider({ children }) {
         });
 
         const updateCommentCount = (postList) => postList.map((p) =>
-            p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p
+          p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p
         );
         setPosts(updateCommentCount(posts));
         setMyPosts(updateCommentCount(myPosts));
@@ -271,12 +272,12 @@ export function CookingPostsProvider({ children }) {
   // FITUR 7: HAPUS KOMENTAR DARI BACKEND
   const deleteComment = async (postId, commentId) => {
     try {
-      const response = await fetch(`${API_URL}/comments/${commentId}`, { 
+      const response = await fetch(`${API_URL}/comments/${commentId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ userId: userId }) 
+        body: JSON.stringify({ userId: userId })
       });
-      
+
       if (response.ok) {
         setComments({
           ...comments,
@@ -307,7 +308,7 @@ export function CookingPostsProvider({ children }) {
       if (response.ok) {
         setComments({
           ...comments,
-          [postId]: comments[postId].map((c) => 
+          [postId]: comments[postId].map((c) =>
             c.id === commentId ? { ...c, text: newText } : c
           ),
         });
