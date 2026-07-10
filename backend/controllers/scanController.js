@@ -3,7 +3,9 @@ import BaseController from './baseController.js';
 import db from '../models/index.cjs';
 
 const { Recipe, Scan, User } = db;
-const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
+// Try gemini-1.5-flash first (more stable), fallback to gemini-2.0-flash
+const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
+const BACKUP_GEMINI_MODEL = 'gemini-3.5-flash';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const cleanJsonText = (text = '') => {
@@ -95,7 +97,16 @@ class ScanController extends BaseController {
         return this.sendError(res, 400, "Gambar masakan wajib dikirimkan.");
       }
 
-      const model = genAI.getGenerativeModel({ model: DEFAULT_GEMINI_MODEL });
+      // Validate API key
+      if (!process.env.GEMINI_API_KEY) {
+        console.error('❌ GEMINI_API_KEY not configured');
+        return this.sendError(res, 500, "API Key tidak dikonfigurasi. Hubungi administrator.");
+      }
+
+      console.log('🔍 Starting scan process...');
+      console.log('📸 Image size:', image.length, 'bytes');
+      console.log('🌐 Language:', language);
+      console.log('🎯 Preferences:', preferences);
 
       let dietPrompt = "";
 
@@ -178,130 +189,80 @@ Kembalikan balasan WAJIB dalam bentuk JSON murni (tanpa awalan markdown \`\`\`js
           mimeType: "image/jpeg"
         }
       };
+
+      // Try with primary model, fallback to backup if needed
+      let model = genAI.getGenerativeModel({ model: DEFAULT_GEMINI_MODEL });
+      let result;
+      let usedModel = DEFAULT_GEMINI_MODEL;
+
       try {
-        const result = await model.generateContent([prompt, imagePart]);
-        const response = await result.response;
-        const text = await response.text();
-        let geminiResult = parseGeminiJson(text);
-
-        let idPayload = geminiResult;
-        let enPayload = geminiResult;
-
-        try {
-          if (normalizedLanguage === 'id') {
-            enPayload = await translateRecipesPayload(geminiResult, 'en');
-          } else {
-            idPayload = await translateRecipesPayload(geminiResult, 'id');
-          }
-        } catch (translationError) {
-          console.warn('Gagal membuat terjemahan bilingual scan, memakai fallback bahasa tunggal.', translationError);
-        }
-
-        const localizedPayload = normalizedLanguage === 'en' ? enPayload : idPayload;
-        const localizedRecipes = normalizeLocalizedRecipes(
-          localizedPayload.recipes || [],
-          idPayload.recipes || localizedPayload.recipes || [],
-          enPayload.recipes || localizedPayload.recipes || []
-        );
-
-        if (userInstance.role !== 'premium') {
-          userInstance.scanLimit = Math.max(0, (userInstance.scanLimit || 0) - 1);
-          await userInstance.save();
-        }
-
-        const scanImage = image.startsWith('data:')
-          ? image
-          : `data:image/jpeg;base64,${image}`;
-
-        await Scan.create({
-          image: scanImage,
-          ingredients: JSON.stringify(idPayload.ingredients_detected || localizedPayload.ingredients_detected || []),
-          ingredientsEn: JSON.stringify(enPayload.ingredients_detected || localizedPayload.ingredients_detected || []),
-          rawRecipes: JSON.stringify(idPayload.recipes || localizedPayload.recipes || []),
-          rawRecipesEn: JSON.stringify(enPayload.recipes || localizedPayload.recipes || []),
-          userId: userId
-        });
-
-        return this.sendSuccess(res, 200, "Scan berhasil diproses", {
-          scanLimit: userInstance.scanLimit,
-          ingredients_detected: localizedPayload.ingredients_detected || [],
-          recipes: localizedRecipes
-        });
-      } catch (aiError) {
-        console.warn('Gemini scan gagal karena batas kuota atau error API, memakai fallback lokal:', aiError?.message || aiError);
-
-        const fallbackPayload = buildFallbackScanPayload({
-          ingredients_detected: [
-            'Bahan utama yang terdeteksi dari foto',
-            'Bumbu dasar',
-            'Sayuran atau protein tambahan'
-          ],
-          recipes: [
-            {
-              title: normalizedLanguage === 'en' ? 'Quick Stir Fry' : 'Tumis Cepat',
-              ingredients: ['2 potong bahan utama', '2 siung bawang putih', '1 sdm minyak'],
-              steps: ['Panaskan minyak', 'Tumis bawang putih', 'Masukkan bahan utama', 'Sajikan hangat'],
-              calories: 320,
-              protein: 12,
-              carbs: 30,
-              prepTime: 15,
-              type: normalizedLanguage === 'en' ? 'Stir Fry' : 'Tumis'
-            },
-            {
-              title: normalizedLanguage === 'en' ? 'Simple Fried Dish' : 'Masakan Goreng Sederhana',
-              ingredients: ['250 gram bahan utama', '1 sdm kecap', '1 sdm minyak'],
-              steps: ['Panaskan wajan', 'Tumis bahan utama', 'Tambahkan bumbu', 'Sajikan'],
-              calories: 380,
-              protein: 14,
-              carbs: 35,
-              prepTime: 20,
-              type: normalizedLanguage === 'en' ? 'Fried' : 'Goreng'
-            },
-            {
-              title: normalizedLanguage === 'en' ? 'Comfort Soup' : 'Sup Hangat',
-              ingredients: ['1 liter air', '2 buah bahan utama', '1 siung bawang putih'],
-              steps: ['Didihkan air', 'Masukkan bahan utama', 'Masak sampai empuk', 'Sajikan hangat'],
-              calories: 260,
-              protein: 10,
-              carbs: 25,
-              prepTime: 25,
-              type: normalizedLanguage === 'en' ? 'Soup' : 'Sup'
-            }
-          ]
-        });
-
-        const localizedRecipes = normalizeLocalizedRecipes(
-          fallbackPayload.recipes || [],
-          fallbackPayload.recipes || [],
-          fallbackPayload.recipes || []
-        );
-
-        if (userInstance.role !== 'premium') {
-          userInstance.scanLimit = Math.max(0, (userInstance.scanLimit || 0) - 1);
-          await userInstance.save();
-        }
-
-        const scanImage = image.startsWith('data:')
-          ? image
-          : `data:image/jpeg;base64,${image}`;
-
-        await Scan.create({
-          image: scanImage,
-          ingredients: JSON.stringify(fallbackPayload.ingredients_detected || []),
-          ingredientsEn: JSON.stringify(fallbackPayload.ingredients_detected || []),
-          rawRecipes: JSON.stringify(fallbackPayload.recipes || []),
-          rawRecipesEn: JSON.stringify(fallbackPayload.recipes || []),
-          userId: userId
-        });
-
-        return this.sendSuccess(res, 200, "Scan berhasil diproses dengan jawaban lokal", {
-          scanLimit: userInstance.scanLimit,
-          ingredients_detected: fallbackPayload.ingredients_detected || [],
-          recipes: localizedRecipes
-        });
+        console.log(`🤖 Calling Gemini API with model: ${DEFAULT_GEMINI_MODEL}`);
+        result = await model.generateContent([prompt, imagePart]);
+      } catch (modelError) {
+        console.warn(`⚠️ Primary model failed (${DEFAULT_GEMINI_MODEL}), trying backup...`, modelError.message);
+        model = genAI.getGenerativeModel({ model: BACKUP_GEMINI_MODEL });
+        usedModel = BACKUP_GEMINI_MODEL;
+        console.log(`🤖 Calling Gemini API with backup model: ${BACKUP_GEMINI_MODEL}`);
+        result = await model.generateContent([prompt, imagePart]);
       }
 
+      const response = await result.response;
+      const text = await response.text();
+      console.log(`✅ Gemini response received (${usedModel}), parsing JSON...`);
+      let geminiResult = parseGeminiJson(text);
+      console.log(`✅ AI result parsed successfully`);
 
+      let idPayload = geminiResult;
+      let enPayload = geminiResult;
+
+      try {
+        if (normalizedLanguage === 'id') {
+          enPayload = await translateRecipesPayload(geminiResult, 'en');
+        } else {
+          idPayload = await translateRecipesPayload(geminiResult, 'id');
+        }
+      } catch (translationError) {
+        // ❌ NO FALLBACK - Throw translation error
+        console.error('❌ Translation Error:', translationError?.message);
+        throw new Error(`Gagal membuat terjemahan bilingual: ${translationError?.message}`);
+      }
+
+      const localizedPayload = normalizedLanguage === 'en' ? enPayload : idPayload;
+      const localizedRecipes = normalizeLocalizedRecipes(
+        localizedPayload.recipes || [],
+        idPayload.recipes || localizedPayload.recipes || [],
+        enPayload.recipes || localizedPayload.recipes || []
+      );
+
+      console.log(`📋 Detected ingredients: ${localizedPayload.ingredients_detected?.length || 0}`);
+      console.log(`🍽️ Generated recipes: ${localizedRecipes.length}`);
+
+      if (userInstance.role !== 'premium') {
+        userInstance.scanLimit = Math.max(0, (userInstance.scanLimit || 0) - 1);
+        await userInstance.save();
+        console.log(`📉 Scan limit updated: ${userInstance.scanLimit} remaining`);
+      }
+
+      const scanImage = image.startsWith('data:')
+        ? image
+        : `data:image/jpeg;base64,${image}`;
+
+      await Scan.create({
+        image: scanImage,
+        ingredients: JSON.stringify(idPayload.ingredients_detected || localizedPayload.ingredients_detected || []),
+        ingredientsEn: JSON.stringify(enPayload.ingredients_detected || localizedPayload.ingredients_detected || []),
+        rawRecipes: JSON.stringify(idPayload.recipes || localizedPayload.recipes || []),
+        rawRecipesEn: JSON.stringify(enPayload.recipes || localizedPayload.recipes || []),
+        userId: userId
+      });
+
+      console.log(`✅ Scan saved to database successfully`);
+
+      return this.sendSuccess(res, 200, "Scan berhasil diproses", {
+        scanLimit: userInstance.scanLimit,
+        ingredients_detected: localizedPayload.ingredients_detected || [],
+        recipes: localizedRecipes
+      });
     } catch (error) {
       return this.sendError(res, 500, error.message);
     }

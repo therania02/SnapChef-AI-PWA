@@ -11,8 +11,8 @@ const { Op } = Sequelize;
 import BaseController from './baseController.js';
 
 // Inisialisasi Gemini menggunakan API Key dari file .env
-const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
-const GEMINI_MODEL_FALLBACKS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
+const GEMINI_MODEL_FALLBACKS = ['gemini-3.5-flash', 'gemini-3.1-pro'];
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const getSousChefFallbackReply = (message = '', language = 'id', recipe = null) => {
