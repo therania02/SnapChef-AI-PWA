@@ -12,6 +12,10 @@ class CommentController extends BaseController {
             const { text, postId } = req.body;
             const userId = req.user.id;
             const newComment = await Comment.create({ text, postId, userId });
+            try {
+                const io = req.app.get('io');
+                if (io) io.emit('comments:new', { postId, comment: newComment });
+            } catch (e) { console.warn('Socket emit comments:new failed', e); }
             return this.sendSuccess(res, 201, "Komentar berhasil ditambahkan", newComment);
         } catch (error) {
             return this.sendError(res, 500, error.message);
@@ -95,6 +99,10 @@ class CommentController extends BaseController {
             }
 
             await comment.destroy();
+            try {
+                const io = req.app.get('io');
+                if (io) io.emit('comments:delete', { id: req.params.id, postId: comment.postId });
+            } catch (e) { console.warn('Socket emit comments:delete failed', e); }
             return this.sendSuccess(res, 200, "Komentar berhasil dihapus");
         } catch (error) {
             return this.sendError(res, 500, error.message);

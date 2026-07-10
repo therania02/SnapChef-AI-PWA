@@ -11,7 +11,68 @@ const { Op } = Sequelize;
 import BaseController from './baseController.js';
 
 // Inisialisasi Gemini menggunakan API Key dari file .env
+const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL_FALLBACKS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const getSousChefFallbackReply = (message = '', language = 'id', recipe = null) => {
+    const normalized = String(message || '').toLowerCase();
+    const recipeTitle = recipe?.title || recipe?.name || '';
+    const recipeContext = recipeTitle ? ` untuk resep ${recipeTitle}` : '';
+
+    if (normalized.includes('keju') || normalized.includes('cheese')) {
+        return language === 'en'
+            ? 'You can swap cheese with cream cheese, yogurt, or a little nutritional yeast for a similar creamy flavor.'
+            : 'Kalau tidak ada keju, Anda bisa pakai cream cheese, yogurt, atau sedikit nutritional yeast untuk rasa creamy yang serupa.';
+    }
+
+    if (normalized.includes('susu') || normalized.includes('milk')) {
+        return language === 'en'
+            ? 'You can use oat milk, soy milk, or coconut milk as a simple substitute.'
+            : 'Bisa pakai susu oat, susu kedelai, atau santan/air kelapa sebagai pengganti yang sederhana.';
+    }
+
+    if (normalized.includes('telur') || normalized.includes('egg')) {
+        return language === 'en'
+            ? 'Try a flax egg, tofu, or a little yogurt as a substitute in many recipes.'
+            : 'Coba pakai flax egg, tahu, atau sedikit yogurt sebagai pengganti di banyak resep.';
+    }
+
+    if (normalized.includes('pengganti') || normalized.includes('substitusi') || normalized.includes('ganti')) {
+        return language === 'en'
+            ? `I can suggest a practical substitute for that ingredient${recipeContext}. Share the ingredient name and I will recommend a simple swap.`
+            : `Saya bisa sarankan pengganti bahan yang praktis${recipeContext}. Sebutkan nama bahannya, lalu saya akan beri opsi yang simpel.`;
+    }
+
+    if (normalized.includes('waktu') || normalized.includes('berapa lama') || normalized.includes('time')) {
+        return language === 'en'
+            ? `For most home recipes, a quick check is to keep the heat moderate and cook until the texture looks right${recipeContext}.`
+            : `Untuk resep rumahan, biasanya cukup masak dengan api sedang dan cek teksturnya sampai terasa pas${recipeContext}.`;
+    }
+
+    if (normalized.includes('cara') || normalized.includes('langkah') || normalized.includes('masak')) {
+        return language === 'en'
+            ? `I can guide you step by step${recipeContext}. Tell me which part feels unclear and I will explain it simply.`
+            : `Saya bisa bantu langkah demi langkah${recipeContext}. Sebutkan bagian yang masih membingungkan, lalu saya jelaskan secara sederhana.`;
+    }
+
+    return language === 'en'
+        ? `I can help with this question${recipeContext}. If you share the ingredient or cooking issue, I can give you a more specific answer.`
+        : `Saya bisa bantu menjawab pertanyaan ini${recipeContext}. Kalau Anda sebutkan bahan atau masalah masak yang sedang dihadapi, saya bisa beri jawaban yang lebih spesifik.`;
+};
+
+const getGeminiReplyOrFallback = async ({ prompt, fallbackText, language = 'id' }) => {
+    try {
+        const model = genAI.getGenerativeModel({ model: DEFAULT_GEMINI_MODEL });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text()?.trim();
+        return text || fallbackText;
+    } catch (error) {
+        console.warn('Gemini request gagal, memakai fallback lokal:', error?.message || error);
+        return fallbackText || getSousChefFallbackReply('', language);
+    }
+};
 
 const normalizeSousChefMessages = (messages) =>
     messages.map((item) => ({
@@ -25,6 +86,43 @@ const toTextArray = (value) => {
     if (Array.isArray(value)) return value;
     if (!value) return [];
     return String(value).split('\n').filter((v) => v.trim() !== '');
+};
+
+const getDefaultSousChefReply = (language = 'id') => {
+    return language === 'en'
+        ? 'I am currently unavailable due to AI service limits. I can still help with simple cooking guidance based on your question.'
+        : 'Saya sedang tidak bisa menggunakan layanan AI karena batas kuota. Saya tetap bisa bantu dengan panduan masak sederhana berdasarkan pertanyaan Anda.';
+};
+
+const generateSousChefReply = async ({ prompt, language, message = '', recipe = null }) => {
+    const apiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
+
+    if (!apiKey) {
+        return getSousChefFallbackReply(message, language, recipe);
+    }
+
+    const modelNames = GEMINI_MODEL_FALLBACKS;
+    let lastError = null;
+
+    for (const modelName of modelNames) {
+        try {
+            const client = new GoogleGenerativeAI(apiKey);
+            const model = client.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const aiText = response.text()?.trim();
+
+            if (aiText) {
+                return aiText;
+            }
+        } catch (error) {
+            lastError = error;
+            console.warn(`Gemini model ${modelName} failed for SousChef:`, error?.message || error);
+        }
+    }
+
+    console.error('All Gemini models failed for SousChef:', lastError);
+    return getSousChefFallbackReply(message, language, recipe);
 };
 
 const parseRecipeTranslationResponse = (rawText) => {
@@ -52,9 +150,8 @@ const parseRecipeTranslationResponse = (rawText) => {
 };
 
 const translateRecipeFields = async ({ title, ingredients, steps, targetLanguage }) => {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const prompt = `
-Terjemahkan resep berikut ke bahasa ${targetLanguage === 'en' ? 'English' : 'Bahasa Indonesia'}.
+Terjemahkan resep berikut ke bahasa ${targetLanguage === 'en' ? 'English' : 'Bahasa Indonesia'}. 
 
 Kembalikan JSON valid saja tanpa markdown dengan format:
 {
@@ -70,6 +167,7 @@ ${JSON.stringify({ title, ingredients, steps }, null, 2)}
 `;
 
     try {
+      const model = genAI.getGenerativeModel({ model: DEFAULT_GEMINI_MODEL });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       return parseRecipeTranslationResponse(response.text());
@@ -95,7 +193,7 @@ class RecipeController extends BaseController {
                 return this.sendError(res, 400, "Gambar tidak ditemukan");
             }
 
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: DEFAULT_GEMINI_MODEL });
 
             const prefText = preferences
                 ? `PREFERENSI DIET PENGGUNA: ${preferences}
@@ -219,7 +317,13 @@ class RecipeController extends BaseController {
             );
         } catch (error) {
             console.error('Get SousChef Messages Error:', error);
-            return this.sendError(res, 500, 'Gagal mengambil riwayat chat SousChef');
+            
+            let errorMessage = 'Gagal mengambil riwayat chat SousChef';
+            if (error.message?.includes('API key') || error.statusText === 'Forbidden') {
+                errorMessage = 'API key SousChef AI tidak valid. Hubungi admin untuk memperbaikinya.';
+            }
+            
+            return this.sendError(res, 500, errorMessage);
         }
     };
 
@@ -248,7 +352,6 @@ class RecipeController extends BaseController {
                 language
             });
 
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
             const outputLanguage = language === 'en' ? 'English' : 'Bahasa Indonesia';
 
             const prompt = `
@@ -267,11 +370,12 @@ PERTANYAAN USER:
 ${String(message).trim()}
 `;
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const aiText = response.text()?.trim() || (language === 'en'
-                ? 'Sorry, I could not generate an answer right now.'
-                : 'Maaf, saya belum bisa menghasilkan jawaban saat ini.');
+            const aiText = await generateSousChefReply({
+                prompt,
+                language,
+                message: String(message).trim(),
+                recipe
+            });
 
             const aiMessage = await SousChefMessage.create({
                 userId,
@@ -293,7 +397,19 @@ ${String(message).trim()}
             );
         } catch (error) {
             console.error('Send SousChef Message Error:', error);
-            return this.sendError(res, 500, 'Gagal mengirim pesan ke SousChef AI');
+            
+            // Better error messaging for specific cases
+            let errorMessage = 'Gagal mengirim pesan ke SousChef AI';
+            
+            if (error.message?.includes('API key') || error.statusText === 'Forbidden') {
+                errorMessage = 'API key SousChef AI tidak valid. Hubungi admin untuk memperbaikinya.';
+            } else if (error.message?.includes('timeout') || error.message?.includes('ECONNREFUSED')) {
+                errorMessage = 'Koneksi ke AI SousChef timeout. Coba lagi nanti.';
+            } else if (error.message?.includes('rate limit')) {
+                errorMessage = 'Terlalu banyak permintaan. Coba lagi dalam beberapa menit.';
+            }
+            
+            return this.sendError(res, 500, errorMessage);
         }
     };
 

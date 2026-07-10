@@ -104,9 +104,18 @@ export default function MessageScreen() {
             );
         };
 
+        const handleConnect = () => {
+            socket.emit('online:request_list');
+        };
+
         socket.on('online:list', handleOnlineList);
         socket.on('online:join', handleOnlineJoin);
         socket.on('online:leave', handleOnlineLeave);
+        socket.on('connect', handleConnect);
+
+        if (socket.connected) {
+            handleConnect();
+        }
 
         const handleNewMessage = (msg) => {
             if (!msg?.chatId) return;
@@ -156,6 +165,7 @@ export default function MessageScreen() {
             socket.off('online:list', handleOnlineList);
             socket.off('online:join', handleOnlineJoin);
             socket.off('online:leave', handleOnlineLeave);
+            socket.off('connect', handleConnect);
             socket.off('message:new', handleNewMessage);
         };
     }, [userId]);

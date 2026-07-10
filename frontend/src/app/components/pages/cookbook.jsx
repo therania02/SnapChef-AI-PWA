@@ -36,12 +36,13 @@ export default function CookbookScreen() {
   const { favorites } = useFavorites();
   const { selectedPreferences } = usePreferences();
 
-  const { getRecipes, removeRecipe } = useRecipes();
+  const { getRecipes, removeRecipe, getRecipeById } = useRecipes();
 
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("all");
 
   const [dbRecipes, setDbRecipes] = useState([]);
+  const [allRecipes, setAllRecipes] = useState([]); // store full dataset for client-side filter pagination
   const [isLoading, setIsLoading] = useState(true);
   
   // State untuk pagination
@@ -49,17 +50,14 @@ export default function CookbookScreen() {
   const [totalPages, setTotalPages] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
-  const fetchRecipes = async (page = 1) => {
+  // Fetch all recipes once and use client-side filtering/pagination per-filter
+  const fetchAllRecipes = async () => {
     try {
       setIsLoading(true);
-      const response = await getRecipes(page, ITEMS_PER_PAGE, '', user?.id);
-      
-      // Ambil data dari response
+      // request a large limit to get all recipes for client-side filtering
+      const response = await getRecipes(1, 10000, '', user?.id);
+
       const data = response?.data || [];
-      const totalPagesFromResponse = response?.totalPages || 1;
-      
-      setTotalPages(totalPagesFromResponse);
-      setCurrentPage(page);
 
       const formattedData = data.map(recipe => {
         const localizedTitle = language === 'en'
@@ -109,6 +107,7 @@ export default function CookbookScreen() {
         };
       });
 
+      setAllRecipes(formattedData);
       setDbRecipes(formattedData);
     } catch (error) {
       console.error("Gagal memuat resep:", error);
@@ -118,8 +117,102 @@ export default function CookbookScreen() {
   };
 
   useEffect(() => {
-    fetchRecipes(1);
+    // Always fetch all recipes when user or language changes; client will paginate/filter
+    fetchAllRecipes();
+    // reset page when switching sort/filter
+    setCurrentPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, language]);
+
+  useEffect(() => {
+    // reset page whenever user changes filter/sort
+    setCurrentPage(1);
+  }, [filter, sortBy]);
+
+  // Recompute pagination whenever filters or recipe set change
+  useEffect(() => {
+    const total = Math.max(1, Math.ceil(getFilteredRecipes().length / ITEMS_PER_PAGE));
+    setTotalPages(total);
+    setCurrentPage((p) => Math.min(p, total));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, sortBy, favorites, language, allRecipes]);
+
+  // When user selects Favorites sort, load favorite recipes (ignore server pagination)
+  useEffect(() => {
+    const loadFavoriteRecipes = async () => {
+      if (sortBy !== 'favorites') return;
+
+      if (!favorites || favorites.length === 0) {
+        setDbRecipes([]);
+        setTotalPages(1);
+        setCurrentPage(1);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const fetched = await Promise.all(
+          favorites.map(async (id) => {
+            try {
+              const result = await getRecipeById(id);
+              const recipe = result || {};
+
+              const localizedTitle = language === 'en'
+                ? (recipe.titleEn || recipe.title)
+                : (recipe.title || recipe.titleEn);
+
+              const localizedIngredients = language === 'en'
+                ? (recipe.ingredientsEn || recipe.ingredients)
+                : (recipe.ingredients || recipe.ingredientsEn);
+
+              const localizedInstructions = language === 'en'
+                ? (recipe.instructionsEn || recipe.instructions)
+                : (recipe.instructions || recipe.instructionsEn);
+
+              const detectedTags = determineRecipeTags(localizedTitle);
+
+              return {
+                id: recipe.id,
+                title: localizedTitle,
+                titleEn: recipe.titleEn || null,
+                ingredients: localizedIngredients,
+                ingredientsEn: recipe.ingredientsEn || null,
+                instructions: localizedInstructions,
+                instructionsEn: recipe.instructionsEn || null,
+                detectedIngredients: recipe.detectedIngredients || [],
+                image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=500",
+                tags: detectedTags,
+                calories: recipe.calories || 0,
+                protein: recipe.protein || 0,
+                carbs: recipe.carbs || 0,
+                prepTime: recipe.prepTime || 0,
+                servings: 2,
+                createdAt: recipe.createdAt || new Date(),
+                isHalal: detectedTags.includes("HALAL"),
+                isVegetarian: detectedTags.includes("VEGETARIAN")
+              };
+            } catch (err) {
+              console.warn('Gagal fetch favorite recipe', id, err);
+              return null;
+            }
+          })
+        );
+
+        const valid = fetched.filter(Boolean);
+        setDbRecipes(valid);
+        const pages = Math.max(1, Math.ceil(valid.length / ITEMS_PER_PAGE));
+        setTotalPages(pages);
+        setCurrentPage(1);
+      } catch (err) {
+        console.error('Gagal memuat favorite recipes', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFavoriteRecipes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortBy, favorites, language]);
 
   const handleDelete = async (e, recipeId) => {
     e.stopPropagation();
@@ -128,7 +221,7 @@ export default function CookbookScreen() {
       try {
         await removeRecipe(recipeId);
         toast.success(t("cookbook.delete_success"));
-        fetchRecipes();
+        fetchAllRecipes();
       } catch (err) {
         toast.error(t("cookbook.delete_error"));
       }
@@ -136,7 +229,8 @@ export default function CookbookScreen() {
   };
 
   const getFilteredRecipes = () => {
-    let filtered = dbRecipes;
+    // Use favorites list when viewing favorites, otherwise use full dataset
+    let filtered = (sortBy === 'favorites') ? (Array.isArray(dbRecipes) ? dbRecipes.slice() : []) : (Array.isArray(allRecipes) ? allRecipes.slice() : []);
 
     if (filter === "halal") filtered = filtered.filter((r) => r.isHalal);
     if (filter === "vegetarian") filtered = filtered.filter((r) => r.isVegetarian);
@@ -153,7 +247,12 @@ export default function CookbookScreen() {
     return filtered;
   };
 
+  // Implement pagination: slice filteredRecipes according to currentPage
   const filteredRecipes = getFilteredRecipes();
+  const pagedRecipes = (() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredRecipes.slice(start, start + ITEMS_PER_PAGE);
+  })();
 
   const swipeConfidenceThreshold = 10000;
   const swipePower = (offset, velocity) => Math.abs(offset) * velocity;
@@ -217,7 +316,7 @@ export default function CookbookScreen() {
             </div>
           </motion.div>
         ) : (
-          filteredRecipes.map((recipe, index) => {
+          pagedRecipes.map((recipe, index) => {
             const isRecipeLoved = favorites.some(favId => String(favId) === String(recipe.id));
 
             return (
@@ -303,7 +402,7 @@ export default function CookbookScreen() {
       {!isLoading && filteredRecipes.length > 0 && (
         <div className="max-w-md lg:max-w-full mx-auto lg:mx-0 px-6 py-6 flex items-center justify-center gap-4">
           <Button
-            onClick={() => fetchRecipes(currentPage - 1)}
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
             variant="outline"
             size="icon"
@@ -319,7 +418,7 @@ export default function CookbookScreen() {
           </div>
           
           <Button
-            onClick={() => fetchRecipes(currentPage + 1)}
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
             variant="outline"
             size="icon"

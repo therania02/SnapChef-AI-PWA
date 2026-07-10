@@ -7,29 +7,23 @@ let socketInstance = null;
 let currentToken = null;
 let currentUserId = null;
 
-/**
- * Ambil atau buat socket.
- * userId (number) dikirim ke server agar server tahu siapa yang connect.
- */
-export const getChatSocket = (token, userId) => {
-    console.log('[CHAT_SOCKET] getChatSocket called', { token: token ? 'exists' : 'null', userId });
+export const getAppSocket = (token, userId) => {
+    console.log('[APP_SOCKET] getAppSocket called', { token: token ? 'exists' : 'null', userId });
 
     if (!token || !userId) {
-        console.log('[CHAT_SOCKET] Missing token or userId, returning null');
+        console.log('[APP_SOCKET] Missing token or userId, returning null');
         return null;
     }
 
     const uid = Number(userId) || 0;
 
-    // Reuse jika token dan userId sama
     if (socketInstance && currentToken === token && currentUserId === uid) {
-        console.log('[CHAT_SOCKET] Reusing existing socket instance');
+        console.log('[APP_SOCKET] Reusing existing socket instance');
         return socketInstance;
     }
 
-    // Disconnect yang lama
     if (socketInstance) {
-        console.log('[CHAT_SOCKET] Disconnecting old socket');
+        console.log('[APP_SOCKET] Disconnecting old socket');
         socketInstance.disconnect();
         socketInstance = null;
     }
@@ -37,35 +31,36 @@ export const getChatSocket = (token, userId) => {
     currentToken = token;
     currentUserId = uid;
 
-    console.log('[CHAT_SOCKET] Creating new socket connection to', SOCKET_URL);
+    console.log('[APP_SOCKET] Creating new socket connection to', SOCKET_URL);
     socketInstance = io(SOCKET_URL, {
         autoConnect: true,
         transports: ['websocket'],
-        auth: { token, userId: uid },
+        auth: { token, userId: uid }
     });
 
     socketInstance.on('connect', () => {
-        console.log('[CHAT_SOCKET] Connected!', socketInstance.id);
+        console.log('[APP_SOCKET] Connected!', socketInstance.id);
     });
 
     socketInstance.on('disconnect', (reason) => {
-        console.log('[CHAT_SOCKET] Disconnected:', reason);
+        console.log('[APP_SOCKET] Disconnected:', reason);
     });
 
     socketInstance.on('connect_error', (error) => {
-        console.error('[CHAT_SOCKET] Connection error:', error);
+        console.error('[APP_SOCKET] Connection error:', error);
     });
 
     return socketInstance;
 };
 
-/** Putus koneksi (dipanggil saat logout) */
-export const disconnectSocket = () => {
+export const disconnectAppSocket = () => {
     if (socketInstance) {
-        console.log('[CHAT_SOCKET] Disconnecting socket');
+        console.log('[APP_SOCKET] Disconnecting socket');
         socketInstance.disconnect();
         socketInstance = null;
         currentToken = null;
         currentUserId = null;
     }
 };
+
+export default getAppSocket;

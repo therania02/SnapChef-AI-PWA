@@ -120,10 +120,7 @@ export default function ChatDetailScreen() {
         const socket = getChatSocket(token, myId);
         if (!socket || !chatId) return;
 
-        socket.emit('chat:join', { chatId });
-        socket.emit('online:request_list');
-
-        socket.on('message:new', (msg) => {
+        const handleMessageNew = (msg) => {
             if (msg?.chatId !== chatId) return;
             setMessages((prev) => {
                 const idx = prev.findIndex(
@@ -140,39 +137,47 @@ export default function ChatDetailScreen() {
                 if (prev.some((m) => m.id === msg.id)) return prev;
                 return [...prev, msg];
             });
-        });
+        };
 
-        socket.on('online:list', (ids) => { setOnlineUserIds((prev) => { const merged = new Set([...prev, ...ids.map(Number)]); return [...merged]; }); });
-        socket.on('online:join', (id) => { setOnlineUserIds((prev) => [...new Set([...prev, Number(id)])]); });
-        socket.on('online:leave', (id) => { setOnlineUserIds((prev) => prev.filter((uid) => uid !== Number(id))); });
-        socket.on('connect', () => {
-            socket.emit('online:request_list');
+        const handleOnlineList = (ids) => {
+            setOnlineUserIds((prev) => {
+                const merged = new Set([...prev, ...ids.map(Number)]);
+                return [...merged];
+            });
+        };
 
-            if (chatId) {
-                socket.emit('chat:join', { chatId });
-            }
-        });
+        const handleOnlineJoin = (id) => {
+            setOnlineUserIds((prev) => [...new Set([...prev, Number(id)])]);
+        };
+
+        const handleOnlineLeave = (id) => {
+            setOnlineUserIds((prev) => prev.filter((uid) => uid !== Number(id)));
+        };
 
         const handleConnect = () => {
             socket.emit('online:request_list');
-
             if (chatId) {
                 socket.emit('chat:join', { chatId });
             }
         };
 
+        socket.on('message:new', handleMessageNew);
+        socket.on('online:list', handleOnlineList);
+        socket.on('online:join', handleOnlineJoin);
+        socket.on('online:leave', handleOnlineLeave);
         socket.on('connect', handleConnect);
 
-        return () => {
-            socket.off('connect', handleConnect);
-        };
+        if (socket.connected) {
+            handleConnect();
+        }
 
         return () => {
             socket.emit('chat:leave', { chatId });
-            socket.off('message:new');
-            socket.off('online:list');
-            socket.off('online:join');
-            socket.off('online:leave');
+            socket.off('message:new', handleMessageNew);
+            socket.off('online:list', handleOnlineList);
+            socket.off('online:join', handleOnlineJoin);
+            socket.off('online:leave', handleOnlineLeave);
+            socket.off('connect', handleConnect);
         };
     }, [token, chatId, myId]);
 

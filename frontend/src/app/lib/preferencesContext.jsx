@@ -15,7 +15,16 @@ export function PreferencesProvider({ children }) {
   const [customPreferences, setCustomPreferencesState] = useState([]);
 
   useEffect(() => {
-    const userFromStorage = JSON.parse(localStorage.getItem("user"));
+    // Initialize preferences from multiple sources synchronously to avoid blank render
+    const userFromStorage = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("user")) || null;
+      } catch (e) {
+        return null;
+      }
+    })();
+
+    // priority: current user object -> localStorage.user -> localStorage.selectedPreferences
     const sourceUser = user || userFromStorage;
 
     if (sourceUser?.dietPreferences) {
@@ -26,10 +35,26 @@ export function PreferencesProvider({ children }) {
       setCustomPreferencesState(
         sourceUser.dietPreferences.customPreferences || []
       );
-    } else {
-      setSelectedPreferences([]);
-      setCustomPreferencesState([]);
+      return;
     }
+
+    // fallback to separate keys in localStorage (when user not yet available)
+    const storedSelected = (() => {
+      try {
+        const s = localStorage.getItem('selectedPreferences');
+        return s ? JSON.parse(s) : null;
+      } catch (e) { return null; }
+    })();
+
+    const storedCustom = (() => {
+      try {
+        const s = localStorage.getItem('customPreferences');
+        return s ? JSON.parse(s) : null;
+      } catch (e) { return null; }
+    })();
+
+    if (storedSelected) setSelectedPreferences(storedSelected);
+    if (storedCustom) setCustomPreferencesState(storedCustom);
   }, [user]);
 
   const setPreferences = (preferences) => {

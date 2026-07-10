@@ -125,27 +125,37 @@ class WeeklyDigestController {
                     item.ingredients || [];
 
                 ingredients.forEach(ingredient => {
-                    const name =
-                        ingredient.name
-                            ?.toLowerCase()
-                            ?.trim();
+                    let name = null;
+
+                    // Support both { name: 'X' } objects and plain string entries
+                    if (typeof ingredient === 'string') {
+                        name = ingredient;
+                    } else if (ingredient && typeof ingredient === 'object') {
+                        name = ingredient.name || ingredient.label || null;
+                    }
 
                     if (!name) return;
 
-                    ingredientCounter[name] =
-                        (ingredientCounter[name] || 0) + 1;
+                    name = String(name).toLowerCase().trim();
+
+                    // Normalize common punctuation
+                    name = name.replace(/[.,;:()\[\]"']/g, '').trim();
+
+                    if (!name) return;
+
+                    ingredientCounter[name] = (ingredientCounter[name] || 0) + 1;
 
                 });
 
             });
 
-            const favoriteIngredient =
-            Object.entries(
-                ingredientCounter
-            )
-            .sort(
-                (a,b) => b[1] - a[1]
-            )[0];
+            const sortedIngredients = Object.entries(ingredientCounter)
+                .sort((a, b) => b[1] - a[1]);
+
+            const favoriteIngredient = sortedIngredients[0];
+
+            // Create topIngredients array up to 5 items
+            const topIngredients = sortedIngredients.slice(0, 5).map(([name, count]) => ({ name, count }));
 
             const savedRecipes = await Recipe.count({
                 where: {
@@ -205,6 +215,7 @@ class WeeklyDigestController {
                 cookingChange,
                 savedRecipeChange,
                 favoriteIngredient: favoriteIngredient ? { name: favoriteIngredient[0], count: favoriteIngredient[1] } : null,
+                topIngredients,
                 achievements
             });
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
@@ -73,6 +73,19 @@ export default function OnboardingScreen() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(e, info) => {
+                const threshold = 80; // px
+                if (info.offset.x < -threshold) {
+                  // swipe left -> next
+                  next();
+                } else if (info.offset.x > threshold) {
+                  // swipe right -> prev
+                  prev();
+                }
+              }}
             >
               {/* IMAGE */}
               <div className="rounded-3xl overflow-hidden shadow-lg">

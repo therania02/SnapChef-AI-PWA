@@ -12,6 +12,14 @@ class PostController extends BaseController {
             const { recipeName, description, image, privacy } = req.body;
             const userId = req.user.id;
             const newPost = await Post.create({ recipeName, description, image, privacy, likes: 0, userId });
+            // Emit socket event
+            try {
+                const io = req.app.get('io');
+                if (io) {
+                    io.emit('posts:new', newPost);
+                }
+            } catch (e) { console.warn('Socket emit posts:new failed', e); }
+
             return this.sendSuccess(res, 201, "Postingan berhasil dibuat", newPost);
         } catch (error) {
             return this.sendError(res, 500, error.message);
@@ -119,6 +127,10 @@ class PostController extends BaseController {
             if (String(post.userId) != String(req.user.id)) return this.sendError(res, 403, "Tidak memiliki akses");
 
             await post.update(req.body);
+            try {
+                const io = req.app.get('io');
+                if (io) io.emit('posts:update', post);
+            } catch (e) { console.warn('Socket emit posts:update failed', e); }
             return this.sendSuccess(res, 200, "Postingan berhasil diupdate", post);
         } catch (error) {
             return this.sendError(res, 500, error.message);
@@ -133,7 +145,52 @@ class PostController extends BaseController {
             if (String(post.userId) != String(req.user.id)) return this.sendError(res, 403, "Tidak memiliki akses");
 
             await post.destroy();
+            try {
+                const io = req.app.get('io');
+                if (io) io.emit('posts:delete', { id: req.params.id });
+            } catch (e) { console.warn('Socket emit posts:delete failed', e); }
             return this.sendSuccess(res, 200, "Postingan berhasil dihapus");
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    // Increment likes
+    like = async (req, res) => {
+        try {
+            const post = await Post.findByPk(req.params.id);
+            if (!post) return this.sendError(res, 404, "Postingan tidak ditemukan");
+
+            await post.increment('likes', { by: 1 });
+            await post.reload();
+
+            try {
+                const io = req.app.get('io');
+                if (io) io.emit('posts:like', { id: post.id, likes: post.likes });
+            } catch (e) { console.warn('Socket emit posts:like failed', e); }
+
+            return this.sendSuccess(res, 200, "Like berhasil disimpan", { likes: post.likes });
+        } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    };
+
+    // Decrement likes
+    unlike = async (req, res) => {
+        try {
+            const post = await Post.findByPk(req.params.id);
+            if (!post) return this.sendError(res, 404, "Postingan tidak ditemukan");
+
+            // Jangan sampai nilai likes negatif
+            const newLikes = Math.max(0, (post.likes || 0) - 1);
+            await post.update({ likes: newLikes });
+
+            try {
+                const io = req.app.get('io');
+                if (io) io.emit('posts:like', { id: post.id, likes: post.likes });
+            } catch (e) { console.warn('Socket emit posts:like failed', e); }
+
+            return this.sendSuccess(res, 200, "Unlike berhasil disimpan", { likes: post.likes });
         } catch (error) {
             return this.sendError(res, 500, error.message);
         }

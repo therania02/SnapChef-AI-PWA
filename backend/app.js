@@ -15,6 +15,7 @@ import scanRoutes from './routes/scanRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { DEFAULT_CHAT_AVATAR } from './controllers/messageController.js';
+import messageController from './controllers/messageController.js';
 import { setupSocket } from './sockets/socketHandler.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import weeklyDigestRoutes from "./routes/weeklyDigestRoutes.js";
@@ -23,12 +24,23 @@ import cookingRoutes from "./routes/cookingRoutes.js";
 const app = express();
 const httpServer = createServer(app);
 
+const allowedFrontendOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((origin) => origin.trim()).filter(Boolean)
+    : [];
+
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "https://localhost:5173",
-        process.env.FRONTEND_URL
-    ],
+    origin: (origin, callback) => {
+        if (!origin) {
+            return callback(null, true);
+        }
+        if (allowedFrontendOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        if (process.env.NODE_ENV !== "production") {
+            return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-User-Premium"]
@@ -56,17 +68,27 @@ const io = new Server(httpServer, {
 app.set('io', io);
 
 io.use((socket, next) => {
+    console.log('[SOCKET AUTH] Socket auth middleware', {
+        socketId: socket.id,
+        hasAuth: !!socket.handshake.auth,
+        hasToken: !!socket.handshake.auth?.token,
+        userId: socket.handshake.auth?.userId
+    });
+
     try {
         const token = socket.handshake.auth?.token || socket.handshake.headers.authorization?.split(' ')[1];
 
         if (!token) {
+            console.log('[SOCKET AUTH] No token provided, rejecting');
             return next(new Error('Unauthorized'));
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'rahasia_snapchef_2026');
         socket.data.user = decoded;
+        console.log('[SOCKET AUTH] Token verified for user:', decoded.id);
         next();
     } catch (error) {
+        console.error('[SOCKET AUTH] Auth error:', error.message);
         next(new Error('Unauthorized'));
     }
 });
@@ -119,7 +141,24 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-httpServer.listen(PORT, () => {
-    console.log(`Server SnapChef Backend berjalan di http://localhost:${PORT}`);
-});
+const startServer = (port) => {
+    httpServer.removeAllListeners('error');
+
+    httpServer.once('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+            const nextPort = port + 1;
+            console.warn(`Port ${port} sudah dipakai, mencoba port ${nextPort}...`);
+            startServer(nextPort);
+            return;
+        }
+
+        console.error('Server gagal berjalan:', error);
+        process.exit(1);
+    });
+
+    httpServer.listen(port, () => {
+        console.log(`Server SnapChef Backend berjalan di http://localhost:${port}`);
+    });
+};
+
+startServer(Number(process.env.PORT || 3000));

@@ -10,9 +10,12 @@ const { User } = db;
 
 const router = express.Router();
 
-const resolveFrontendUrl = () => {
-  const fallback = "http://localhost:5173";
-  const raw = process.env.FRONTEND_URL || fallback;
+const resolveFrontendUrl = (req) => {
+  const raw = process.env.FRONTEND_URL || req.get("origin");
+
+  if (!raw) {
+    throw new Error("Frontend URL is not configured. Set FRONTEND_URL in environment or call from a valid origin.");
+  }
 
   try {
     const parsed = new URL(raw);
@@ -26,7 +29,7 @@ const resolveFrontendUrl = () => {
 
     return parsed.toString().replace(/\/$/, "");
   } catch {
-    return fallback;
+    throw new Error("Invalid FRONTEND_URL or request origin");
   }
 };
 

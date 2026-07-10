@@ -167,10 +167,28 @@ export const useRecipes = () => {
         }
     };
 
+    const getRecipeById = async (id) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                headers: getAuthHeaders()
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Gagal mengambil resep');
+            return result.data || result;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         scanFood,
         saveRecipe,
         getRecipes,
+        getRecipeById,
         rateRecipe,
         removeRecipe,
         getSousChefMessages,

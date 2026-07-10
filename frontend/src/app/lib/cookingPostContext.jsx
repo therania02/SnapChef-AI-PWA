@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner"; // Pastikan sonner tetap ada
 import { useUser } from "../lib/userContext.jsx";
+import { getAppSocket } from "./appSocket.js";
 import { API_BASE_URL } from "../../api/config";
 
 const CookingPostsContext = createContext(null);
@@ -200,7 +201,7 @@ export function CookingPostsProvider({ children }) {
 
   const getPublicPosts = () => (Array.isArray(posts) ? posts.filter((post) => post.privacy === "public") : []);
   const getFriendsPosts = () => (Array.isArray(posts) ? posts.filter((post) => post.privacy === "public" || post.privacy === "friends") : []);
-  const getComments = (postId) => comments[postId] || [];
+  const getComments = (postId) => comments[String(postId)] || [];
 
   // FITUR 5: AMBIL KOMENTAR DARI BACKEND
   const fetchComments = async (postId) => {
@@ -215,7 +216,7 @@ export function CookingPostsProvider({ children }) {
       if (response.ok) {
         setComments(prev => ({
           ...prev,
-          [postId]: commentData
+          [String(postId)]: commentData
         }));
       }
     } catch (error) {
@@ -252,7 +253,7 @@ export function CookingPostsProvider({ children }) {
 
         setComments({
           ...comments,
-          [postId]: [...(comments[postId] || []), newComment],
+          [String(postId)]: [...(comments[String(postId)] || []), newComment],
         });
 
         const updateCommentCount = (postList) => postList.map((p) =>
@@ -281,7 +282,7 @@ export function CookingPostsProvider({ children }) {
       if (response.ok) {
         setComments({
           ...comments,
-          [postId]: (comments[postId] || []).filter((c) => c.id !== commentId),
+          [String(postId)]: (comments[String(postId)] || []).filter((c) => c.id !== commentId),
         });
 
         const updateCount = (list) => list.map((p) =>
@@ -308,7 +309,7 @@ export function CookingPostsProvider({ children }) {
       if (response.ok) {
         setComments({
           ...comments,
-          [postId]: comments[postId].map((c) =>
+          [String(postId)]: comments[String(postId)].map((c) =>
             c.id === commentId ? { ...c, text: newText } : c
           ),
         });
@@ -322,6 +323,62 @@ export function CookingPostsProvider({ children }) {
 
   useEffect(() => {
     fetchPosts();
+  }, [userId]);
+
+  // Setup realtime socket for posts/comments/likes
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !userId) return;
+
+    const socket = getAppSocket(token, userId);
+    if (!socket) return;
+
+    const onNewPost = (post) => {
+      setPosts((prev) => [post, ...prev]);
+    };
+
+    const onUpdatePost = (post) => {
+      setPosts((prev) => prev.map((p) => (String(p.id) === String(post.id) ? { ...p, ...post } : p)));
+      setMyPosts((prev) => prev.map((p) => (String(p.id) === String(post.id) ? { ...p, ...post } : p)));
+    };
+
+    const onDeletePost = ({ id }) => {
+      setPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+      setMyPosts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+    };
+
+    const onLike = ({ id, likes }) => {
+      setPosts((prev) => prev.map((p) => (String(p.id) === String(id) ? { ...p, likes } : p)));
+      setMyPosts((prev) => prev.map((p) => (String(p.id) === String(id) ? { ...p, likes } : p)));
+    };
+
+    const onNewComment = ({ postId, comment }) => {
+      const pid = String(postId);
+      setComments((prev) => ({
+        ...prev,
+        [pid]: [...(prev[pid] || []), comment]
+      }));
+
+      const updateCommentCount = (list) => list.map((p) => String(p.id) === pid ? { ...p, comments: (p.comments || 0) + 1 } : p);
+      setPosts((prev) => updateCommentCount(prev));
+      setMyPosts((prev) => updateCommentCount(prev));
+    };
+
+    socket.on('posts:new', onNewPost);
+    socket.on('posts:update', onUpdatePost);
+    socket.on('posts:delete', onDeletePost);
+    socket.on('posts:like', onLike);
+    socket.on('comments:new', onNewComment);
+
+    return () => {
+      try {
+        socket.off('posts:new', onNewPost);
+        socket.off('posts:update', onUpdatePost);
+        socket.off('posts:delete', onDeletePost);
+        socket.off('posts:like', onLike);
+        socket.off('comments:new', onNewComment);
+      } catch (e) {}
+    };
   }, [userId]);
 
   return (

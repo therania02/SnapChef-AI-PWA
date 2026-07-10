@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, MoreVertical, Globe, Users, Lock, Trash2, Edit } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../api/config.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,9 +22,40 @@ export function CookingPostCard({ post, isMyPost = false, onDelete, onUpdatePriv
   // Gunakan jumlah komentar dari database, atau fallback ke jumlah di context (real-time)
   const displayCommentCount = getComments(post.id).length || post.comments || 0;
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikesCount(liked ? likesCount - 1 : likesCount + 1);
+  // Sync likes when post prop changes (socket updates)
+  useEffect(() => {
+    setLikesCount(post.likes || 0);
+  }, [post.likes]);
+
+  const handleLike = async () => {
+    // Optimistic UI
+    const nextLiked = !liked;
+    setLiked(nextLiked);
+    setLikesCount(nextLiked ? likesCount + 1 : Math.max(0, likesCount - 1));
+
+    try {
+      const token = localStorage.getItem('token') || (JSON.parse(localStorage.getItem('user') || '{}').token || '');
+      const res = await fetch(`${API_BASE_URL}/api/posts/${post.id}/like`, {
+        method: nextLiked ? 'POST' : 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!res.ok) {
+        // revert optimistic
+        setLiked(!nextLiked);
+        setLikesCount(nextLiked ? Math.max(0, likesCount - 1) : likesCount + 1);
+        const err = await res.json().catch(() => ({}));
+        console.error('Gagal menyimpan like:', err.message || res.statusText);
+      }
+    } catch (error) {
+      // revert optimistic
+      setLiked(!nextLiked);
+      setLikesCount(nextLiked ? Math.max(0, likesCount - 1) : likesCount + 1);
+      console.error('Gagal menyimpan like:', error.message);
+    }
   };
  
   const getPrivacyIcon = (privacy) => {

@@ -96,7 +96,16 @@ export function WeeklyDigestModal({ isOpen, onClose }) {
           }
         });
 
-        if (data.favoriteIngredient) {
+        if (Array.isArray(data.topIngredients) && data.topIngredients.length > 0) {
+          setTopIngredients(
+            data.topIngredients.map((it, idx) => ({
+              name: it.name,
+              count: it.count,
+              emoji: ["🍽️", "🥕", "🍅", "🧂", "🍋"][idx] || "🍽️"
+            }))
+          );
+
+        } else if (data.favoriteIngredient) {
           setTopIngredients([
             {
               name: data.favoriteIngredient.name,
